@@ -14,6 +14,8 @@ namespace RUtil.Debug.Shell
 
         ITimeProvider TimeProvider { get; }
 
+        IUnishRcRepository RcRepository { get; }
+        
         string Prompt { get; set; }
 
         UniTask RunCommandAsync(string cmd);

@@ -13,10 +13,12 @@ namespace RUtil.Debug.Shell
         // non-serialized fields
         // ----------------------------------
 
+        private static bool mIsUprofileExecuted;
         private bool mIsInitialized;
         private bool mIsRunningUpdate;
         private bool mIsRunningCommand;
         private bool mIsClosing;
+        private bool mIsBackgroundMode;
 
         // 入力履歴
         private readonly List<string> mSubmittedInputs = new List<string>();
@@ -59,6 +61,7 @@ namespace RUtil.Debug.Shell
         public abstract IColorParser ColorParser { get; }
         public abstract IUnishInputHandler InputHandler { get; }
         public abstract ITimeProvider TimeProvider { get; }
+        public abstract IUnishRcRepository RcRepository { get; }
         public string Prompt { get; set; } = "> ";
 
         // ----------------------------------
@@ -79,6 +82,29 @@ namespace RUtil.Debug.Shell
             InputHandler.OnTextInput += OnCharInput;
             await OnPostOpenAsync();
             mIsInitialized = true;
+            mIsBackgroundMode = true;
+            try
+            {
+                if (!mIsUprofileExecuted)
+                {
+                    await foreach (var c in RcRepository.LoadUProfile()) await RunCommandAsync(c);
+
+                    mIsUprofileExecuted = true;
+                }
+
+                await foreach (var c in RcRepository.LoadUnishRc()) await RunCommandAsync(c);
+            }
+            catch (Exception e)
+            {
+                mIsBackgroundMode = false;
+                this.SubmitError(e.Message);
+                this.SubmitError(e.StackTrace);
+            }
+            finally
+            {
+                mIsBackgroundMode = false;
+            }
+
             StartUpdate().Forget();
         }
 
@@ -139,11 +165,13 @@ namespace RUtil.Debug.Shell
 
         public void WriteLine(string line)
         {
-            mSubmittedLines.Add(line ?? "");
+            if (!mIsBackgroundMode)
+                mSubmittedLines.Add(line ?? "");
         }
 
         public async UniTask<string> ReadLineAsync()
         {
+            if (mIsBackgroundMode) throw new Exception("ReadLine when background mode is not allowed.");
             mIsWaitingNewSubmission = true;
             mAdditionalSubmittedInput = null;
             while (string.IsNullOrEmpty(mAdditionalSubmittedInput))

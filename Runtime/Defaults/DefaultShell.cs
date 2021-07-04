@@ -10,5 +10,7 @@
             new DefaultUnishInputHandler(DefaultTimeProvider.Instance);
 
         public override ITimeProvider TimeProvider { get; } = DefaultTimeProvider.Instance;
+
+        public override IUnishRcRepository RcRepository { get; } = DefaultUnishRcRepository.Instance;
     }
 }
