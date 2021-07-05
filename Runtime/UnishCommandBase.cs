@@ -51,7 +51,42 @@ namespace RUtil.Debug.Shell
                 return;
             }
 
-            var args = argsNotParsed.Split(Separators, StringSplitOptions.RemoveEmptyEntries);
+            var isInString = false;
+            var header = 0;
+            var argList = new List<string>();
+            {
+                var i = 0;
+                for (; i < argsNotParsed.Length; i++)
+                {
+                    if (Separators.Contains(argsNotParsed[header]))
+                    {
+                        header++;
+                        continue;
+                    }
+
+                    var c = argsNotParsed[i];
+                    switch (c)
+                    {
+                        case '"':
+                        {
+                            isInString = !isInString;
+                            break;
+                        }
+                        case var space when Separators.Contains(space) && !isInString:
+                        {
+                            //      h   i
+                            // 0   4    9
+                            // hoge fuga piyo
+                            argList.Add(argsNotParsed.Substring(header, i - header));
+                            header = i + 1;
+                            break;
+                        }
+                    }
+                }
+
+                if (header < i) argList.Add(argsNotParsed.Substring(header));
+            }
+            var args = argList.ToArray();
 
             var j = 0;
             for (var i = 0; i < args.Length; i++)
