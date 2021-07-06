@@ -14,7 +14,7 @@ namespace RUtil.Debug.Shell
 
         public override (UnishCommandArgType type, string name, string defVal, string info)[] Params { get; } =
         {
-            (UnishCommandArgType.String, "pattern", null, "フィルタ"),
+            (UnishCommandArgType.String, "pattern", "", "フィルタ"),
         };
 
         public override (UnishCommandArgType type, string name, string defVal, string info)[] Options { get; } =
