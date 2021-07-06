@@ -48,12 +48,12 @@ namespace RUtil.Debug.Shell
                         log += childs[i].filename.PadRight(maxCharCountPerChild);
                     if (i % childNumPerLine == childNumPerLine - 1)
                     {
-                        shell.SubmitTextIndented(log);
+                        shell.SubmitText(log);
                         log = "";
                     }
                 }
 
-                shell.SubmitTextIndented(log);
+                shell.SubmitText(log);
             }
 
             return default;
