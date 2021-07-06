@@ -411,7 +411,7 @@ namespace RUtil.Debug.Shell
             mIsRunningCommand = true;
 
             var cmd = mInput;
-            this.SubmitText("> " + mInput);
+            this.SubmitText(Prompt + mInput);
             mInput = "";
             mDisplayLineOffset = 0;
             mReferenceIndex = 0;
