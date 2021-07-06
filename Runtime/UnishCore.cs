@@ -18,7 +18,6 @@ namespace RUtil.Debug.Shell
         private bool mIsRunningUpdate;
         private bool mIsRunningCommand;
         private bool mIsClosing;
-        private bool mIsBackgroundMode;
 
         // 入力履歴
         private readonly List<string> mSubmittedInputs = new List<string>();
@@ -82,7 +81,6 @@ namespace RUtil.Debug.Shell
             InputHandler.OnTextInput += OnCharInput;
             await OnPostOpenAsync();
             mIsInitialized = true;
-            mIsBackgroundMode = true;
             try
             {
                 if (!mIsUprofileExecuted)
@@ -96,13 +94,8 @@ namespace RUtil.Debug.Shell
             }
             catch (Exception e)
             {
-                mIsBackgroundMode = false;
                 this.SubmitError(e.Message);
                 this.SubmitError(e.StackTrace);
-            }
-            finally
-            {
-                mIsBackgroundMode = false;
             }
 
             StartUpdate().Forget();
@@ -165,13 +158,11 @@ namespace RUtil.Debug.Shell
 
         public void WriteLine(string line)
         {
-            if (!mIsBackgroundMode)
-                mSubmittedLines.Add(line ?? "");
+            mSubmittedLines.Add(line ?? "");
         }
 
         public async UniTask<string> ReadLineAsync()
         {
-            if (mIsBackgroundMode) throw new Exception("ReadLine when background mode is not allowed.");
             mIsWaitingNewSubmission = true;
             mAdditionalSubmittedInput = null;
             while (string.IsNullOrEmpty(mAdditionalSubmittedInput))
