@@ -17,14 +17,14 @@ namespace RUtil.Debug.Shell
         {
             var path = Application.persistentDataPath + "/.unishrc";
             if (!File.Exists(path)) File.WriteAllText(path, "");
-            return UnishIOUtility.ReadSourceFile(path);
+            return UnishIOUtility.ReadSourceFileLines(path);
         }
         
         public IAsyncEnumerable<string> ReadUProfile()
         {
             var path = Application.persistentDataPath + "/.uprofile";
             if (!File.Exists(path)) File.WriteAllText(path, "");
-            return UnishIOUtility.ReadSourceFile(path);
+            return UnishIOUtility.ReadSourceFileLines(path);
         }
     }
 }

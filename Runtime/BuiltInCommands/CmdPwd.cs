@@ -16,13 +16,13 @@ namespace RUtil.Debug.Shell
         protected override UniTask Run(IUnish shell, string op, Dictionary<string, UnishCommandArg> args,
             Dictionary<string, UnishCommandArg> options)
         {
-            shell.SubmitTextIndented(Application.persistentDataPath);
+            shell.SubmitTextIndented(shell.Directory.GetCurrentFullPath());
             return default;
         }
 
         public override string Usage(string op)
         {
-            return "Show the full path of your current directory (= PersistentDataPath).";
+            return "Show the full path of your current directory";
         }
     }
 }

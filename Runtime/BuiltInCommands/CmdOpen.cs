@@ -27,12 +27,13 @@ namespace RUtil.Debug.Shell
                 return default;
             }
 
-            if (UnishIOUtility.Exists(path, out var realPath))
+            if (shell.Directory is IUnishFileSystem fileSystem 
+                && shell.Directory.TryFindEntry(path, out var foundPath, out _))
             {
-                Application.OpenURL(realPath);
+                Application.OpenURL(fileSystem.RealHomePath + foundPath);
                 return default;
             }
-
+            
             if (UnishIOUtility.IsValidUrlPath("https://" + path))
             {
                 Application.OpenURL("https://" + path);

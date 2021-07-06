@@ -12,5 +12,7 @@
         public override ITimeProvider TimeProvider { get; } = DefaultTimeProvider.Instance;
 
         public override IUnishRcRepository RcRepository { get; } = DefaultUnishRcRepository.Instance;
+
+        public override IUnishDirectory Directory { get; set; } = PersistentDataDirectory.Instance;
     }
 }

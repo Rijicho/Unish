@@ -1,4 +1,5 @@
-﻿using Cysharp.Threading.Tasks;
+﻿using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 
 namespace RUtil.Debug.Shell
 {
@@ -15,6 +16,8 @@ namespace RUtil.Debug.Shell
         ITimeProvider TimeProvider { get; }
 
         IUnishRcRepository RcRepository { get; }
+        
+        IUnishDirectory Directory { get; set; }
         
         string Prompt { get; set; }
 

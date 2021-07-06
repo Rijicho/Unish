@@ -61,6 +61,7 @@ namespace RUtil.Debug.Shell
         public abstract IUnishInputHandler InputHandler { get; }
         public abstract ITimeProvider TimeProvider { get; }
         public abstract IUnishRcRepository RcRepository { get; }
+        public abstract IUnishDirectory Directory { get; set; }
         public string Prompt { get; set; } = "> ";
 
         // ----------------------------------
@@ -70,11 +71,12 @@ namespace RUtil.Debug.Shell
         {
             mIsRunningUpdate = false;
             mIsInitialized = false;
-            await OnPreOpenAsync();
             mIsClosing = false;
             mIsRunningCommand = false;
             mSubmittedLines.Clear();
             mSubmittedInputs.Clear();
+            
+            await OnPreOpenAsync();
             await View.InitializeAsync();
             InputHandler.Initialize();
             CommandRepository.Initialize();

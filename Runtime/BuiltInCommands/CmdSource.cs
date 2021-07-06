@@ -19,17 +19,20 @@ namespace RUtil.Debug.Shell
         protected override async UniTask Run(IUnish shell, string op, Dictionary<string, UnishCommandArg> args,
             Dictionary<string, UnishCommandArg> options)
         {
-            if (UnishIOUtility.Exists(args["path"].s, out var realPath))
+            if (!(shell.Directory is IUnishFileSystem fileSystem))
             {
-                await foreach (var cmd in UnishIOUtility.ReadSourceFile(realPath))
-                {
+                shell.SubmitError("Current directory system is not a file system");
+                return;
+            }
+
+            if (shell.Directory.TryFindEntry(args["path"].s, out var foundPath, out var hasChild) && !hasChild)
+            {
+                var realPath = fileSystem.RealHomePath + foundPath;
+                await foreach (var cmd in UnishIOUtility.ReadSourceFileLines(realPath))
                     await shell.RunCommandAsync(cmd);
-                }
             }
             else
-            {
                 shell.SubmitError($"The file \"{args["path"].s}\" is not found.");
-            }
         }
 
         public override string Usage(string op)

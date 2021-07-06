@@ -1,6 +1,4 @@
 ﻿using System;
-using MoreLinq;
-using MoreLinq.Extensions;
 using UnityEngine;
 
 namespace RUtil.Debug.Shell
@@ -51,13 +49,13 @@ namespace RUtil.Debug.Shell
                     }
                     else
                         Type = UnishCommandArgType.Error;
+
                     break;
                 case UnishCommandArgType.String:
                 {
-                    if (s.StartsWith("\"") && s.EndsWith("\""))
-                    {
-                        s = s.Substring(1, s.Length - 2);
-                    }   
+                    if (string.IsNullOrEmpty(s))
+                        break;
+                    if (s.StartsWith("\"") && s.EndsWith("\"")) s = s.Substring(1, s.Length - 2);
                     break;
                 }
             }
