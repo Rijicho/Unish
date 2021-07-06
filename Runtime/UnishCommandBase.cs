@@ -19,7 +19,7 @@ namespace RUtil.Debug.Shell
 
         public virtual bool RequiresPreParseArguments => true;
 
-        public virtual bool AllowTrailingNullParams => true;
+        public virtual bool AllowTrailingNullParams => false;
 
         protected abstract UniTask Run(IUnish shell, string op, Dictionary<string, UnishCommandArg> args,
             Dictionary<string, UnishCommandArg> options);
