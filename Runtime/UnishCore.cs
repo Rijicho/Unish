@@ -85,12 +85,12 @@ namespace RUtil.Debug.Shell
             {
                 if (!mIsUprofileExecuted)
                 {
-                    await foreach (var c in RcRepository.LoadUProfile()) await RunCommandAsync(c);
+                    await foreach (var c in RcRepository.ReadUProfile()) await RunCommandAsync(c);
 
                     mIsUprofileExecuted = true;
                 }
 
-                await foreach (var c in RcRepository.LoadUnishRc()) await RunCommandAsync(c);
+                await foreach (var c in RcRepository.ReadUnishRc()) await RunCommandAsync(c);
             }
             catch (Exception e)
             {
