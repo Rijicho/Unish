@@ -11,7 +11,7 @@ namespace RUtil.Debug.Shell
         public string Home => "PersistentDatapath";
         public string Current { get; private set; }
 
-        public string CurrentParent => Current.Substring(0, Current.LastIndexOf('/'));
+        public string CurrentParent => string.IsNullOrWhiteSpace(Current) ? Current : Current.Substring(0, Current.LastIndexOf('/'));
 
         public string RealHomePath { get; }
 
