@@ -9,8 +9,6 @@ namespace RUtil.Debug.Shell
 
         IDictionary<string, string> Aliases { get; }
 
-        void SaveAlias();
-
         void Initialize();
     }
 }

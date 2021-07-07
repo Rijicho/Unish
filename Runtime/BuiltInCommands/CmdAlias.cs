@@ -13,8 +13,12 @@ namespace RUtil.Debug.Shell
 
         public override (UnishCommandArgType type, string name, string defVal, string info)[] Params { get; } =
         {
-            (UnishCommandArgType.String, "alias", default, "設定するエイリアス"),
-            (UnishCommandArgType.String, "command", "", "元のコマンド文（空欄でエイリアス削除）"),
+            (UnishCommandArgType.String, "alias", default, "設定するエイリアス e.g. hoge=\"fuga piyo\""),
+        };
+
+        public override (UnishCommandArgType type, string name, string defVal, string info)[] Options { get; } =
+        {
+            (UnishCommandArgType.None, "l", null, "定義済みのエイリアス一覧を表示します"),
         };
 
         public override string Usage(string op)
@@ -22,20 +26,38 @@ namespace RUtil.Debug.Shell
             return "コマンドのエイリアスを作成します。";
         }
 
-        public override bool RequiresPreParseArguments => false;
+        public override bool AllowTrailingNullParams => true;
 
         protected override UniTask Run(IUnish shell, string op, Dictionary<string, UnishCommandArg> args,
             Dictionary<string, UnishCommandArg> options)
         {
-            var words = args[""].s.Split(' ').Where(x => !string.IsNullOrWhiteSpace(x));
-
-            var alias = words.ElementAt(0);
-
-            var command = words.Count() == 1 ? "" : args[""].s.Substring(alias.Length).Trim();
-
-            if (string.IsNullOrWhiteSpace(alias))
+            if (options.ContainsKey("l"))
             {
-                shell.SubmitError("Invalid alias.");
+                foreach (var a in shell.CommandRepository.Aliases)
+                    shell.SubmitTextIndented($"\"{a.Key}\" = \"{a.Value}\"");
+
+                return default;
+            }
+
+
+            var input = args["alias"].s.Trim();
+            var firstEqual = input.IndexOf('=');
+            if (firstEqual < 0)
+            {
+                SubmitUsage(shell.SubmitTextIndented);
+                return default;
+            }
+            
+
+            var alias = input.Substring(0, firstEqual).Trim();
+            var command = input.Substring(firstEqual+1).Trim();
+            if (command[0] == '"' && command[command.Length - 1] == '"')
+            {
+                command = command.Substring(1, command.Length - 2);
+            }
+            if (string.IsNullOrEmpty(command) || string.IsNullOrEmpty(alias))
+            {
+                SubmitUsage(shell.SubmitTextIndented);
                 return default;
             }
 
@@ -55,23 +77,10 @@ namespace RUtil.Debug.Shell
                 }
 
                 aliases.Remove(alias);
-                shell.SubmitSuccess($"Delete alias: {alias}");
             }
             else
-            {
-                if (aliases.ContainsKey(alias))
-                {
-                    shell.CommandRepository.Aliases[alias] = command;
-                    shell.SubmitSuccess($"Update alias: {alias} = {command}");
-                }
-                else
-                {
-                    shell.CommandRepository.Aliases[alias] = command;
-                    shell.SubmitSuccess($"Set alias: {alias} = {command}");
-                }
-            }
+                shell.CommandRepository.Aliases[alias] = command;
 
-            shell.CommandRepository.SaveAlias();
             return default;
         }
     }
