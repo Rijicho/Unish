@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using UnityEngine;
+using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks.Linq;
 
 namespace RUtil.Debug.Shell
 {
@@ -15,32 +15,43 @@ namespace RUtil.Debug.Shell
             return File.ReadAllText(path);
         }
         
-        public static async IAsyncEnumerable<string> ReadTextFileLines(string path)
+        public static IUniTaskAsyncEnumerable<string> ReadTextFileLines(string path)
         {
-            if (!File.Exists(path)) yield break;
-
-            using var reader = new StreamReader(path);
-            string line;
-            while ((line = await reader.ReadLineAsync()) != null)
+            return UniTaskAsyncEnumerable.Create<string>(async (writer, token) =>
             {
-                yield return line;
-            }
+                if (!File.Exists(path))
+                    return;
+
+                using var reader = new StreamReader(path);
+                string line;
+                while ((line = await reader.ReadLineAsync()) != null)
+                {
+                    await writer.YieldAsync(line);
+                }
+
+            });
+            
         }
-        public static async IAsyncEnumerable<string> ReadSourceFileLines(string path)
+        public static IUniTaskAsyncEnumerable<string> ReadSourceFileLines(string path)
         {
-            if (!File.Exists(path)) yield break;
-
-            using var reader = new StreamReader(path);
-            string line;
-            while ((line = await reader.ReadLineAsync()) != null)
+            return UniTaskAsyncEnumerable.Create<string>(async (writer, token) =>
             {
-                line = line.Trim();
-                if (string.IsNullOrWhiteSpace(line))
-                    continue;
-                if (line.StartsWith("#"))
-                    continue;
-                yield return line;
-            }
+                if (!File.Exists(path))
+                    return;
+
+                using var reader = new StreamReader(path);
+                string line;
+                while ((line = await reader.ReadLineAsync()) != null)
+                {
+                    line = line.Trim();
+                    if (string.IsNullOrWhiteSpace(line))
+                        continue;
+                    if (line.StartsWith("#"))
+                        continue;
+                    await writer.YieldAsync(line);
+                }
+
+            });
         }
 
         public static bool IsValidUrlPath(string path)

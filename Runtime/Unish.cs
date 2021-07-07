@@ -6,6 +6,8 @@ namespace RUtil.Debug.Shell
     {
         private static IUnish mShell;
 
+        public static bool IsRunning { get; private set; }
+
         public static async UniTask StartAsync<T>()
             where T : IUnish, new()
         {
@@ -14,6 +16,8 @@ namespace RUtil.Debug.Shell
                 UnityEngine.Debug.LogError("Unish already exists.");
                 return;
             }
+
+            IsRunning = true;
 
             mShell = new T();
             await mShell.OpenAsync();
@@ -29,6 +33,7 @@ namespace RUtil.Debug.Shell
 
             await mShell.CloseAsync();
             mShell = null;
+            IsRunning = false;
         }
     }
 }

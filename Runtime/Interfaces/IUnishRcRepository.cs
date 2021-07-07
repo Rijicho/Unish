@@ -5,7 +5,7 @@ namespace RUtil.Debug.Shell
 {
     public interface IUnishRcRepository
     {
-        IAsyncEnumerable<string> ReadUnishRc();
-        IAsyncEnumerable<string> ReadUProfile();
+        IUniTaskAsyncEnumerable<string> ReadUnishRc();
+        IUniTaskAsyncEnumerable<string> ReadUProfile();
     }
 }
