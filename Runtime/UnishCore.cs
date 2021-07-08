@@ -358,16 +358,21 @@ namespace RUtil.Debug.Shell
 
         private void UpdateDisplay()
         {
+            static string TagEscape(string str)
+            {
+                return str.Replace("<", "<\b").Replace(">", "\b>");
+            }
+
             var now = TimeProvider.Now;
             var inputWithCursor = mCursorIndex == 0
-                ? mInput + (Mathf.RoundToInt((now - mCursorBrinkStartTime) * 60) % 60 > 30
+                ? TagEscape(mInput) + (Mathf.RoundToInt((now - mCursorBrinkStartTime) * 60) % 60 > 30
                     ? "<color=yellow>_</color>"
                     : " ")
-                : mInput.Substring(0, mInput.Length - mCursorIndex)
+                : TagEscape(mInput.Substring(0, mInput.Length - mCursorIndex))
                   + (Mathf.RoundToInt((now - mCursorBrinkStartTime) * 60) % 60 > 30
                       ? "<color=yellow>_</color>"
-                      : $"<color=orange>{mInput.Substring(mInput.Length - mCursorIndex, 1)}</color>")
-                  + mInput.Substring(mInput.Length - mCursorIndex + 1);
+                      : $"<color=orange>{TagEscape(mInput.Substring(mInput.Length - mCursorIndex, 1))}</color>")
+                  + TagEscape(mInput.Substring(mInput.Length - mCursorIndex + 1));
 
             var currentWithCursor = mIsWaitingNewSubmission
                 ? $"<color=orange>|> {inputWithCursor}</color>"
