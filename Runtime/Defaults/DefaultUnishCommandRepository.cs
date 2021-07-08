@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using UnityEngine;
 
 namespace RUtil.Debug.Shell
 {
@@ -14,7 +13,7 @@ namespace RUtil.Debug.Shell
 
         private static DefaultUnishCommandRepository mInstance;
         public static DefaultUnishCommandRepository Instance => mInstance ??= new DefaultUnishCommandRepository();
-        
+
         public IReadOnlyList<UnishCommandBase> Commands => mCommands;
         private readonly List<UnishCommandBase> mCommands = new List<UnishCommandBase>();
         public IReadOnlyDictionary<string, UnishCommandBase> Map => mMap;
@@ -52,6 +51,79 @@ namespace RUtil.Debug.Shell
                 foreach (var op in instance.Ops) mMap[op] = instance;
                 foreach (var alias in instance.Aliases) mMap["@" + alias] = instance;
             }
+        }
+    }
+
+    public class CharNode
+    {
+        public char C;
+        public List<CharNode> Childs;
+        public UnishCommandBase Command;
+
+        public CharNode(char c)
+        {
+            C = c;
+        }
+    }
+
+    public class CharTree
+    {
+        public CharNode Root;
+
+        public CharTree()
+        {
+            Root = new CharNode(default);
+        }
+
+        public bool TryAdd(ReadOnlySpan<char> key, UnishCommandBase cmd)
+        {
+            var current = Root;
+            foreach (var c in key)
+            {
+                current.Childs ??= new List<CharNode>();
+                foreach (var child in current.Childs)
+                {
+                    if (c == child.C)
+                    {
+                        current = child;
+                        goto FOUND;
+                    }
+                }
+
+                current.Childs.Add(new CharNode(c));
+                current = current.Childs[current.Childs.Count - 1];
+                FOUND: ;
+            }
+
+            if (current.Command != null)
+                return false;
+            current.Command = cmd;
+            return true;
+        }
+
+        public bool TryGet(ReadOnlySpan<char> key, out UnishCommandBase cmd)
+        {
+            cmd = null;
+            var current = Root;
+            foreach (var c in key)
+            {
+                if (current.Childs == null)
+                    return false;
+                foreach (var child in current.Childs)
+                {
+                    if (c == child.C)
+                    {
+                        current = child;
+                        goto FOUND;
+                    }
+                }
+
+                return false;
+                FOUND: ;
+            }
+
+            cmd = current.Command;
+            return cmd != null;
         }
     }
 }

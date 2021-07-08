@@ -134,5 +134,16 @@ namespace RUtil.Debug.Shell
 
             return ("", -1, SelectionState.Failed);
         }
+
+        public static void ChangeDirectorySystem(this IUnish shell,  string home)
+        {
+            foreach (var dir in shell.DirectorySystems)
+            {
+                if (dir.Home == home)
+                {
+                    shell.CurrentDirectorySystem = dir;
+                }
+            }
+        }
     }
 }

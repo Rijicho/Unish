@@ -8,9 +8,14 @@
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
-    "allowUnsafeCode": false,
-    "overrideReferences": false,
-    "precompiledReferences": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "System.Runtime.CompilerServices.Unsafe.dll",
+        "System.Threading.Tasks.Extensions.dll",
+        "System.Buffers.dll",
+        "System.Memory.dll"
+    ],
     "autoReferenced": true,
     "defineConstraints": [],
     "versionDefines": [

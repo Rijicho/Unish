@@ -25,27 +25,28 @@ namespace RUtil.Debug.Shell
             Dictionary<string, UnishCommandArg> options)
         {
             var maxDepth = options.TryGetValue("R", out var value) ? value.i : 0;
-            if (maxDepth != 0)
+            if (shell.CurrentDirectorySystem != null && maxDepth != 0)
             {
-                foreach (var (filePath, depth, hasChild) in shell.Directory.GetCurrentChilds(maxDepth))
+                foreach (var (filePath, depth, hasChild) in shell.CurrentDirectorySystem.GetCurrentChilds(maxDepth))
                     shell.SubmitTextIndented(new string(' ', depth * 2) + Path.GetFileName(filePath));
             }
             else
             {
-                var childs = shell.Directory.GetCurrentChilds()
-                    .Select(child => (filename: Path.GetFileName(child.path), isDirectory: child.hasChild))
-                    .ToList();
-                var maxCharCountPerChild = childs.Max(x => x.filename.Length) + 1;
+                var childsEnumerable = 
+                    shell.CurrentDirectorySystem?.GetCurrentChilds() 
+                    ?? shell.DirectorySystems.Select(x => (path: x.Home, hasChild: true));
+                var childs = childsEnumerable.ToList();
+                var maxCharCountPerChild = childs.Max(x => x.path.Length) + 1;
                 var maxCharCountPerLine = shell.View.HorizontalCharCount;
                 var childNumPerLine = maxCharCountPerLine / maxCharCountPerChild;
                 var log = "";
                 for (var i = 0; i < childs.Count; i++)
                 {
                     var c = childs[i];
-                    if (c.isDirectory)
-                        log += $"<color=cyan>{childs[i].filename.PadRight(maxCharCountPerChild)}</color>";
+                    if (c.hasChild)
+                        log += $"<color=cyan>{childs[i].path.PadRight(maxCharCountPerChild)}</color>";
                     else
-                        log += childs[i].filename.PadRight(maxCharCountPerChild);
+                        log += childs[i].path.PadRight(maxCharCountPerChild);
                     if (i % childNumPerLine == childNumPerLine - 1)
                     {
                         shell.SubmitText(log, allowOverflow: true);

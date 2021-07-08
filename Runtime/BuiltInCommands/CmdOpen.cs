@@ -27,8 +27,8 @@ namespace RUtil.Debug.Shell
                 return default;
             }
 
-            if (shell.Directory is IUnishFileSystem fileSystem 
-                && shell.Directory.TryFindEntry(path, out var foundPath, out _))
+            if (shell.CurrentDirectorySystem is IUnishRealFileSystem fileSystem 
+                && shell.CurrentDirectorySystem.TryFindEntry(path, out var foundPath, out _))
             {
                 Application.OpenURL(fileSystem.RealHomePath + foundPath);
                 return default;

@@ -17,7 +17,9 @@ namespace RUtil.Debug.Shell
 
         IUnishRcRepository RcRepository { get; }
         
-        IUnishDirectory Directory { get; set; }
+        IEnumerable<IUnishDirectorySystem> DirectorySystems { get; }
+        
+        IUnishDirectorySystem CurrentDirectorySystem { get; set; }
         
         string Prompt { get; set; }
 

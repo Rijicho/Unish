@@ -19,13 +19,13 @@ namespace RUtil.Debug.Shell
         protected override async UniTask Run(IUnish shell, string op, Dictionary<string, UnishCommandArg> args,
             Dictionary<string, UnishCommandArg> options)
         {
-            if (!(shell.Directory is IUnishFileSystem fileSystem))
+            if (!(shell.CurrentDirectorySystem is IUnishRealFileSystem fileSystem))
             {
                 shell.SubmitError("Current directory system is not a file system");
                 return;
             }
 
-            if (shell.Directory.TryFindEntry(args["path"].s, out var foundPath, out var hasChild) && !hasChild)
+            if (shell.CurrentDirectorySystem.TryFindEntry(args["path"].s, out var foundPath, out var hasChild) && !hasChild)
             {
                 var realPath = fileSystem.RealHomePath + foundPath;
                 await foreach (var cmd in UnishIOUtility.ReadSourceFileLines(realPath))

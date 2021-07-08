@@ -1,4 +1,7 @@
-﻿namespace RUtil.Debug.Shell
+﻿using System.Collections.Generic;
+using UnityEngine;
+
+namespace RUtil.Debug.Shell
 {
     public class DefaultShell : UnishCore
     {
@@ -13,6 +16,11 @@
 
         public override IUnishRcRepository RcRepository { get; } = DefaultUnishRcRepository.Instance;
 
-        public override IUnishDirectory Directory { get; set; } = PersistentDataDirectory.Instance;
+        private static readonly IUnishDirectorySystem[] mDirectorySystems =
+        {
+            new RealFileSystem("pdp", Application.persistentDataPath),
+            new RealFileSystem("dp", Application.dataPath),
+        };
+        public override IEnumerable<IUnishDirectorySystem> DirectorySystems => mDirectorySystems;
     }
 }

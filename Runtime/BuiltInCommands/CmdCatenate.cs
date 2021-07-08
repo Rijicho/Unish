@@ -22,7 +22,7 @@ namespace RUtil.Debug.Shell
         protected override async UniTask Run(IUnish shell, string op, Dictionary<string, UnishCommandArg> args,
             Dictionary<string, UnishCommandArg> options)
         {
-            if (!(shell.Directory is IUnishFileSystem fileSystem))
+            if (!(shell.CurrentDirectorySystem is IUnishRealFileSystem fileSystem))
             {
                 shell.SubmitError("current directory system is not a file system.");
                 return;
@@ -38,7 +38,7 @@ namespace RUtil.Debug.Shell
             }
 
             var sb = new StringBuilder();
-            if (shell.Directory.TryFindEntry(path1, out var foundPath, out var hasChild) && !hasChild)
+            if (shell.CurrentDirectorySystem.TryFindEntry(path1, out var foundPath, out var hasChild) && !hasChild)
                 sb.Append(UnishIOUtility.ReadTextFile(fileSystem.RealHomePath + foundPath));
             else
             {
@@ -48,7 +48,7 @@ namespace RUtil.Debug.Shell
 
             if (!string.IsNullOrEmpty(path2))
             {
-                if (shell.Directory.TryFindEntry(path2, out foundPath, out hasChild) && !hasChild)
+                if (shell.CurrentDirectorySystem.TryFindEntry(path2, out foundPath, out hasChild) && !hasChild)
                     sb.Append(UnishIOUtility.ReadTextFile(fileSystem.RealHomePath + foundPath));
                 else
                 {

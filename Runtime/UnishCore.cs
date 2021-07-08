@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.Linq;
@@ -61,7 +62,8 @@ namespace RUtil.Debug.Shell
         public abstract IUnishInputHandler InputHandler { get; }
         public abstract ITimeProvider TimeProvider { get; }
         public abstract IUnishRcRepository RcRepository { get; }
-        public abstract IUnishDirectory Directory { get; set; }
+        public abstract IEnumerable<IUnishDirectorySystem> DirectorySystems { get; }
+        public IUnishDirectorySystem CurrentDirectorySystem { get; set; }
         public string Prompt { get; set; } = "> ";
 
         // ----------------------------------
@@ -75,7 +77,7 @@ namespace RUtil.Debug.Shell
             mIsRunningCommand = false;
             mSubmittedLines.Clear();
             mSubmittedInputs.Clear();
-            
+
             await OnPreOpenAsync();
             await View.InitializeAsync();
             InputHandler.Initialize();
@@ -369,7 +371,7 @@ namespace RUtil.Debug.Shell
 
             var currentWithCursor = mIsWaitingNewSubmission
                 ? $"<color=orange>|> {inputWithCursor}</color>"
-                : Prompt + inputWithCursor;
+                : ParsedPrompt + inputWithCursor;
 
             View.DisplayText = mSubmittedLines.Count > 0
                 ? mSubmittedLines
@@ -381,6 +383,10 @@ namespace RUtil.Debug.Shell
                     ? currentWithCursor
                     : "";
         }
+
+        private string ParsedPrompt => Prompt.Replace("%d", CurrentDirectorySystem == null ? "/"
+            : string.IsNullOrEmpty(CurrentDirectorySystem.Current) ? "~"
+            : Path.GetFileName(CurrentDirectorySystem.Current));
 
         private void OnCharInput(char c)
         {
@@ -404,7 +410,7 @@ namespace RUtil.Debug.Shell
             mIsRunningCommand = true;
 
             var cmd = mInput;
-            this.SubmitText(Prompt + mInput);
+            this.SubmitText(ParsedPrompt + mInput);
             mInput = "";
             mDisplayLineOffset = 0;
             mReferenceIndex = 0;
