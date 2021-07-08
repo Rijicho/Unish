@@ -19,11 +19,18 @@ namespace RUtil.Debug.Shell
             Dictionary<string, UnishCommandArg> options)
         {
             if (shell.CommandRepository.Map.TryGetValue(args["op"].s, out var c))
+            {
                 c.SubmitUsage(args["op"].s, shell.SubmitTextIndented);
+            }
             else if (shell.CommandRepository.Map.TryGetValue("@" + args["op"].s, out c))
+            {
                 c.SubmitUsage(args["op"].s, shell.SubmitTextIndented);
+            }
             else
+            {
                 shell.SubmitError("Undefined Command.");
+            }
+
             return UniTask.CompletedTask;
         }
 

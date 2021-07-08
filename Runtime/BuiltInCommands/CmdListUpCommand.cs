@@ -32,20 +32,31 @@ namespace RUtil.Debug.Shell
         protected override async UniTask Run(IUnish shell, string op, Dictionary<string, UnishCommandArg> args,
             Dictionary<string, UnishCommandArg> options)
         {
-            var filter = new Regex(options.ContainsKey("r") ? args["pattern"].s : $".*{args["pattern"].s}.*");
+            var filter  = new Regex(options.ContainsKey("r") ? args["pattern"].s : $".*{args["pattern"].s}.*");
             var isFirst = true;
 
             IEnumerable<KeyValuePair<string, UnishCommandBase>> ls;
 
             if (options.ContainsKey("s") && options["s"].s == "name")
+            {
                 ls = shell.CommandRepository.Map.OrderBy(x => x.Key);
+            }
             else
+            {
                 ls = shell.CommandRepository.Map;
+            }
 
             foreach (var c in ls)
             {
-                if (string.IsNullOrWhiteSpace(c.Key)) continue;
-                if (c.Key.StartsWith("@")) continue;
+                if (string.IsNullOrWhiteSpace(c.Key))
+                {
+                    continue;
+                }
+
+                if (c.Key.StartsWith("@"))
+                {
+                    continue;
+                }
 
                 var m = filter.Match(c.Key);
                 if (m.Success && m.Value == c.Key)
@@ -56,7 +67,9 @@ namespace RUtil.Debug.Shell
                         isFirst = false;
                     }
                     else
+                    {
                         shell.SubmitTextIndented(c.Key, "white", true);
+                    }
 
                     await UniTask.Yield();
                 }

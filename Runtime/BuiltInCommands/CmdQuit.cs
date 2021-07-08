@@ -12,7 +12,8 @@ namespace RUtil.Debug.Shell
 
         public override string[] Aliases { get; } =
         {
-            "quit", "exit",
+            "quit",
+            "exit",
         };
 
         public override (UnishCommandArgType type, string name, string defVal, string info)[] Params { get; } =

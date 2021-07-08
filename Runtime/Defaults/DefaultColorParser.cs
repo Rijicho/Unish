@@ -9,12 +9,16 @@ namespace RUtil.Debug.Shell
         }
 
         private static DefaultColorParser mInstance;
+
         public static DefaultColorParser Instance => mInstance ??= new DefaultColorParser();
 
         public Color Parse(string str)
         {
             str = str.Replace(" ", "");
-            if (ColorUtility.TryParseHtmlString(str, out var tmp)) return tmp;
+            if (ColorUtility.TryParseHtmlString(str, out var tmp))
+            {
+                return tmp;
+            }
 
             switch (str.ToLower())
             {
@@ -28,7 +32,10 @@ namespace RUtil.Debug.Shell
                 {
                     var c = new float[4];
                     for (var i = 0; i < 4; i++)
+                    {
                         c[i] = float.Parse(args[i]);
+                    }
+
                     return new Color(c[0], c[1], c[2], c[3]);
                 }
 
@@ -36,7 +43,10 @@ namespace RUtil.Debug.Shell
                 {
                     var c = new float[3];
                     for (var i = 0; i < 3; i++)
+                    {
                         c[i] = float.Parse(args[i]);
+                    }
+
                     return new Color(c[0], c[1], c[2], 1);
                 }
 

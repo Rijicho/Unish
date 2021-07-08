@@ -16,11 +16,11 @@ namespace RUtil.Debug.Shell
         ITimeProvider TimeProvider { get; }
 
         IUnishRcRepository RcRepository { get; }
-        
+
         IEnumerable<IUnishDirectorySystem> DirectorySystems { get; }
-        
+
         IUnishDirectorySystem CurrentDirectorySystem { get; set; }
-        
+
         string Prompt { get; set; }
 
         UniTask RunCommandAsync(string cmd);

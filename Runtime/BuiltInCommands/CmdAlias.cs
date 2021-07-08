@@ -34,27 +34,30 @@ namespace RUtil.Debug.Shell
             if (options.ContainsKey("l"))
             {
                 foreach (var a in shell.CommandRepository.Aliases)
+                {
                     shell.SubmitTextIndented($"\"{a.Key}\" = \"{a.Value}\"");
+                }
 
                 return default;
             }
 
 
-            var input = args["alias"].s.Trim();
+            var input      = args["alias"].s.Trim();
             var firstEqual = input.IndexOf('=');
             if (firstEqual < 0)
             {
                 SubmitUsage(shell.SubmitTextIndented);
                 return default;
             }
-            
 
-            var alias = input.Substring(0, firstEqual).Trim();
-            var command = input.Substring(firstEqual+1).Trim();
+
+            var alias   = input.Substring(0, firstEqual).Trim();
+            var command = input.Substring(firstEqual + 1).Trim();
             if (command[0] == '"' && command[command.Length - 1] == '"')
             {
                 command = command.Substring(1, command.Length - 2);
             }
+
             if (string.IsNullOrEmpty(command) || string.IsNullOrEmpty(alias))
             {
                 SubmitUsage(shell.SubmitTextIndented);
@@ -79,7 +82,9 @@ namespace RUtil.Debug.Shell
                 aliases.Remove(alias);
             }
             else
+            {
                 shell.CommandRepository.Aliases[alias] = command;
+            }
 
             return default;
         }

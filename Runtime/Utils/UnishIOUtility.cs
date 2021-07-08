@@ -10,47 +10,57 @@ namespace RUtil.Debug.Shell
         public static string ReadTextFile(string path)
         {
             if (!File.Exists(path))
+            {
                 return null;
+            }
 
             return File.ReadAllText(path);
         }
-        
+
         public static IUniTaskAsyncEnumerable<string> ReadTextFileLines(string path)
         {
             return UniTaskAsyncEnumerable.Create<string>(async (writer, token) =>
             {
                 if (!File.Exists(path))
+                {
                     return;
+                }
 
                 using var reader = new StreamReader(path);
-                string line;
+                string    line;
                 while ((line = await reader.ReadLineAsync()) != null)
                 {
                     await writer.YieldAsync(line);
                 }
-
             });
-            
         }
+
         public static IUniTaskAsyncEnumerable<string> ReadSourceFileLines(string path)
         {
             return UniTaskAsyncEnumerable.Create<string>(async (writer, token) =>
             {
                 if (!File.Exists(path))
+                {
                     return;
+                }
 
                 using var reader = new StreamReader(path);
-                string line;
+                string    line;
                 while ((line = await reader.ReadLineAsync()) != null)
                 {
                     line = line.Trim();
                     if (string.IsNullOrWhiteSpace(line))
+                    {
                         continue;
+                    }
+
                     if (line.StartsWith("#"))
+                    {
                         continue;
+                    }
+
                     await writer.YieldAsync(line);
                 }
-
             });
         }
 

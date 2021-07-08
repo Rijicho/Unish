@@ -28,25 +28,32 @@ namespace RUtil.Debug.Shell
             if (shell.CurrentDirectorySystem != null && maxDepth != 0)
             {
                 foreach (var (filePath, depth, hasChild) in shell.CurrentDirectorySystem.GetCurrentChilds(maxDepth))
+                {
                     shell.SubmitTextIndented(new string(' ', depth * 2) + Path.GetFileName(filePath));
+                }
             }
             else
             {
-                var childsEnumerable = 
-                    shell.CurrentDirectorySystem?.GetCurrentChilds() 
+                var childsEnumerable =
+                    shell.CurrentDirectorySystem?.GetCurrentChilds()
                     ?? shell.DirectorySystems.Select(x => (path: x.Home, hasChild: true));
-                var childs = childsEnumerable.ToList();
+                var childs               = childsEnumerable.ToList();
                 var maxCharCountPerChild = childs.Max(x => x.path.Length) + 1;
-                var maxCharCountPerLine = shell.View.HorizontalCharCount;
-                var childNumPerLine = maxCharCountPerLine / maxCharCountPerChild;
-                var log = "";
+                var maxCharCountPerLine  = shell.View.HorizontalCharCount;
+                var childNumPerLine      = maxCharCountPerLine / maxCharCountPerChild;
+                var log                  = "";
                 for (var i = 0; i < childs.Count; i++)
                 {
                     var c = childs[i];
                     if (c.hasChild)
+                    {
                         log += $"<color=cyan>{childs[i].path.PadRight(maxCharCountPerChild)}</color>";
+                    }
                     else
+                    {
                         log += childs[i].path.PadRight(maxCharCountPerChild);
+                    }
+
                     if (i % childNumPerLine == childNumPerLine - 1)
                     {
                         shell.SubmitText(log, allowOverflow: true);
@@ -55,7 +62,9 @@ namespace RUtil.Debug.Shell
                 }
 
                 if (!string.IsNullOrEmpty(log))
+                {
                     shell.SubmitText(log, allowOverflow: true);
+                }
             }
 
             return default;

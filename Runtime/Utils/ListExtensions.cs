@@ -9,7 +9,7 @@ namespace RUtil.Debug.Shell
         public static string ToSingleString<T>(this IEnumerable<T> list, string separator = ", ",
             bool putSeparatorOnEnd = false, Func<T, string> toString = default)
         {
-            var sb = new StringBuilder();
+            var sb    = new StringBuilder();
             var first = true;
             foreach (var elem in list)
             {
@@ -25,7 +25,11 @@ namespace RUtil.Debug.Shell
                 sb.Append(s);
             }
 
-            if (putSeparatorOnEnd) sb.Append(separator);
+            if (putSeparatorOnEnd)
+            {
+                sb.Append(separator);
+            }
+
             return sb.ToString();
         }
     }

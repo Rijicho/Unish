@@ -29,10 +29,14 @@ namespace RUtil.Debug.Shell
             {
                 var realPath = fileSystem.RealHomePath + foundPath;
                 await foreach (var cmd in UnishIOUtility.ReadSourceFileLines(realPath))
+                {
                     await shell.RunCommandAsync(cmd);
+                }
             }
             else
+            {
                 shell.SubmitError($"The file \"{args["path"].s}\" is not found.");
+            }
         }
 
         public override string Usage(string op)

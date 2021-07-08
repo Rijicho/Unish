@@ -10,7 +10,9 @@ namespace RUtil.Debug.Shell
             "pwd",
         };
 
-        public override (UnishCommandArgType type, string name, string defVal, string info)[] Params { get; } = { };
+        public override (UnishCommandArgType type, string name, string defVal, string info)[] Params { get; } =
+        {
+        };
 
         public override (UnishCommandArgType type, string name, string defVal, string info)[] Options { get; } =
         {
@@ -22,13 +24,22 @@ namespace RUtil.Debug.Shell
             Dictionary<string, UnishCommandArg> options)
         {
             if (shell.CurrentDirectorySystem == null)
+            {
                 shell.WriteLine(PathConstants.Root);
+            }
             else if (options.ContainsKey("r") && shell.CurrentDirectorySystem is IUnishRealFileSystem fileSystem)
+            {
                 shell.WriteLine(fileSystem.RealHomePath + shell.CurrentDirectorySystem.Current);
+            }
             else if (options.ContainsKey("a"))
+            {
                 shell.WriteLine(shell.CurrentDirectorySystem.GetCurrentFullPath());
+            }
             else
+            {
                 shell.WriteLine(shell.CurrentDirectorySystem.Current);
+            }
+
             return default;
         }
 

@@ -32,7 +32,7 @@ namespace RUtil.Debug.Shell
             }
 
             await mShell.CloseAsync();
-            mShell = null;
+            mShell    = null;
             IsRunning = false;
         }
     }

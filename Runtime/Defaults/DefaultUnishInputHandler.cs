@@ -39,11 +39,11 @@ namespace RUtil.Debug.Shell
 
         public void Initialize()
         {
-            inputs = Enum.GetValues(typeof(UnishInputType)).Cast<UnishInputType>().ToArray();
-            longPushStartTimes = inputs.ToDictionary(x => x, x => 0f);
+            inputs                 = Enum.GetValues(typeof(UnishInputType)).Cast<UnishInputType>().ToArray();
+            longPushStartTimes     = inputs.ToDictionary(x => x, x => 0f);
             longPushLastInputTimes = inputs.ToDictionary(x => x, x => 0f);
-            longPushFlag = inputs.ToDictionary(x => x, x => false);
-            mIsInitialized = true;
+            longPushFlag           = inputs.ToDictionary(x => x, x => false);
+            mIsInitialized         = true;
         }
 
 
@@ -70,25 +70,28 @@ namespace RUtil.Debug.Shell
                         if (longPushLastInputTimes[key] == 0 && now > longPushStartTimes[key] + 0.5f)
                         {
                             longPushLastInputTimes[key] = now;
-                            longPushFlag[key] = true;
+                            longPushFlag[key]           = true;
                         }
                         else if (longPushLastInputTimes[key] > 0 &&
                                  now > longPushLastInputTimes[key] + 0.03f)
                         {
                             longPushLastInputTimes[key] = now;
-                            longPushFlag[key] = true;
+                            longPushFlag[key]           = true;
                         }
                     }
                     else
                     {
-                        longPushStartTimes[key] = 0;
-                        longPushFlag[key] = false;
+                        longPushStartTimes[key]     = 0;
+                        longPushFlag[key]           = false;
                         longPushLastInputTimes[key] = 0;
                     }
                 }
                 else
                 {
-                    if (CheckInputOnThisFramePure(key)) longPushStartTimes[key] = now;
+                    if (CheckInputOnThisFramePure(key))
+                    {
+                        longPushStartTimes[key] = now;
+                    }
                 }
             }
         }
@@ -103,7 +106,7 @@ namespace RUtil.Debug.Shell
         {
 #if UNISH_INPUT_SYSTEM_SUPPORT
 
-            var kb = Keyboard.current;
+            var kb      = Keyboard.current;
             var ctrlcmd = kb.ctrlKey.isPressed || kb.leftCommandKey.isPressed || kb.rightCommandKey.isPressed;
             return input switch
             {
@@ -118,8 +121,8 @@ namespace RUtil.Debug.Shell
                 UnishInputType.BackSpace => !ctrlcmd && kb.backspaceKey.wasPressedThisFrame,
                 UnishInputType.Delete => !ctrlcmd && kb.deleteKey.wasPressedThisFrame,
                 UnishInputType.Submit => !ctrlcmd && kb.enterKey.wasPressedThisFrame,
-                UnishInputType.Quit => !ctrlcmd && kb.escapeKey.wasPressedThisFrame ||
-                                       ctrlcmd && kb.enterKey.wasPressedThisFrame,
+                UnishInputType.Quit => (!ctrlcmd && kb.escapeKey.wasPressedThisFrame) ||
+                                       (ctrlcmd && kb.enterKey.wasPressedThisFrame),
                 _ => false,
             };
 
@@ -150,7 +153,7 @@ namespace RUtil.Debug.Shell
         private static bool CheckInput(UnishInputType input)
         {
 #if UNISH_INPUT_SYSTEM_SUPPORT
-            var kb = Keyboard.current;
+            var kb      = Keyboard.current;
             var ctrlcmd = kb.ctrlKey.isPressed || kb.leftCommandKey.isPressed || kb.rightCommandKey.isPressed;
             return input switch
             {

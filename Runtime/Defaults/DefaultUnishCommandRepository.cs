@@ -12,13 +12,19 @@ namespace RUtil.Debug.Shell
         }
 
         private static DefaultUnishCommandRepository mInstance;
+
         public static DefaultUnishCommandRepository Instance => mInstance ??= new DefaultUnishCommandRepository();
 
         public IReadOnlyList<UnishCommandBase> Commands => mCommands;
+
         private readonly List<UnishCommandBase> mCommands = new List<UnishCommandBase>();
+
         public IReadOnlyDictionary<string, UnishCommandBase> Map => mMap;
+
         private readonly Dictionary<string, UnishCommandBase> mMap = new Dictionary<string, UnishCommandBase>();
+
         public IDictionary<string, string> Aliases => mAliases;
+
         private readonly Dictionary<string, string> mAliases = new Dictionary<string, string>();
 
 
@@ -48,16 +54,23 @@ namespace RUtil.Debug.Shell
             {
                 var instance = Activator.CreateInstance(t) as UnishCommandBase;
                 mCommands.Add(instance);
-                foreach (var op in instance.Ops) mMap[op] = instance;
-                foreach (var alias in instance.Aliases) mMap["@" + alias] = instance;
+                foreach (var op in instance.Ops)
+                {
+                    mMap[op] = instance;
+                }
+
+                foreach (var alias in instance.Aliases)
+                {
+                    mMap["@" + alias] = instance;
+                }
             }
         }
     }
 
     public class CharNode
     {
-        public char C;
-        public List<CharNode> Childs;
+        public char             C;
+        public List<CharNode>   Childs;
         public UnishCommandBase Command;
 
         public CharNode(char c)
@@ -96,7 +109,10 @@ namespace RUtil.Debug.Shell
             }
 
             if (current.Command != null)
+            {
                 return false;
+            }
+
             current.Command = cmd;
             return true;
         }
@@ -108,7 +124,10 @@ namespace RUtil.Debug.Shell
             foreach (var c in key)
             {
                 if (current.Childs == null)
+                {
                     return false;
+                }
+
                 foreach (var child in current.Childs)
                 {
                     if (c == child.C)

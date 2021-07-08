@@ -5,9 +5,9 @@ namespace RUtil.Debug.Shell
 {
     public class DefaultShell : UnishCore
     {
-        public override IUnishView View { get; } = DefaultUnishView.Instance;
+        public override IUnishView              View              { get; } = DefaultUnishView.Instance;
         public override IUnishCommandRepository CommandRepository { get; } = DefaultUnishCommandRepository.Instance;
-        public override IColorParser ColorParser { get; } = DefaultColorParser.Instance;
+        public override IColorParser            ColorParser       { get; } = DefaultColorParser.Instance;
 
         public override IUnishInputHandler InputHandler { get; } =
             new DefaultUnishInputHandler(DefaultTimeProvider.Instance);
@@ -21,6 +21,7 @@ namespace RUtil.Debug.Shell
             new RealFileSystem("pdp", Application.persistentDataPath),
             new RealFileSystem("dp", Application.dataPath),
         };
+
         public override IEnumerable<IUnishDirectorySystem> DirectorySystems => mDirectorySystems;
     }
 }

@@ -14,7 +14,11 @@ namespace RUtil.Debug.Shell
         {
             if (line.Contains('\n'))
             {
-                foreach (var l in line.Split('\n')) shell.SubmitText(l, leading, colorCode, allowOverflow);
+                foreach (var l in line.Split('\n'))
+                {
+                    shell.SubmitText(l, leading, colorCode, allowOverflow);
+                }
+
                 return;
             }
 
@@ -71,14 +75,18 @@ namespace RUtil.Debug.Shell
             bool enableRegex = true,
             Func<string, string> entryFormatter = default)
         {
-            var list = candidates.ToList();
+            var list  = candidates.ToList();
             var index = list.FindIndex(x => x == searchWord);
             if (index >= 0)
+            {
                 return (searchWord, index, SelectionState.Succeeded);
+            }
 
             List<string> suggestion;
-            if (searchWord == "*" || enableRegex && searchWord == ".*")
+            if (searchWord == "*" || (enableRegex && searchWord == ".*"))
+            {
                 suggestion = list.ToList();
+            }
             else
             {
                 suggestion = new List<string>();
@@ -86,13 +94,20 @@ namespace RUtil.Debug.Shell
                 {
                     var sLower = s.ToLower();
                     if (sLower.Contains(searchWord.ToLower()))
+                    {
                         suggestion.Add(s);
+                    }
                     else if (enableRegex && new Regex(searchWord, RegexOptions.IgnoreCase).Match(sLower).Success)
+                    {
                         suggestion.Add(s);
+                    }
                     else if (searchWord.Length >= 3)
                     {
                         var dist = sLower.DamerauLevenshteinDistance(searchWord, 3);
-                        if (dist >= 0) suggestion.Add(s);
+                        if (dist >= 0)
+                        {
+                            suggestion.Add(s);
+                        }
                     }
                 }
             }
@@ -104,10 +119,10 @@ namespace RUtil.Debug.Shell
                 var i = 0;
                 foreach (var s in suggestion)
                 {
-                    var iStr = i.ToString().PadRight(suggestion.Count.ToString().Length);
-                    var iColor = i % 2 == 0 ? "#ffff55" : "#55ff55";
+                    var iStr    = i.ToString().PadRight(suggestion.Count.ToString().Length);
+                    var iColor  = i % 2 == 0 ? "#ffff55" : "#55ff55";
                     var content = (entryFormatter?.Invoke(s) ?? s).PadRight(longest);
-                    var color = i % 2 == 0 ? "#ffffaa" : "#aaffaa";
+                    var color   = i % 2 == 0 ? "#ffffaa" : "#aaffaa";
                     shell.SubmitTextIndented($"<color={iColor}>|{iStr}></color> <color={color}>{content}</color>",
                         "orange");
                     await UniTask.Yield();
@@ -119,7 +134,10 @@ namespace RUtil.Debug.Shell
                 var newInput = await shell.ReadLineAsync();
 
                 if (string.IsNullOrWhiteSpace(newInput))
+                {
                     return ("", -1, SelectionState.Canceled);
+                }
+
                 if (int.TryParse(newInput, out index) && 0 <= index && index < suggestion.Count)
                 {
                     var key = suggestion.ElementAt(index);
@@ -128,14 +146,17 @@ namespace RUtil.Debug.Shell
                 }
 
                 if ((index = list.FindIndex(x => x == newInput)) >= 0)
+                {
                     return (newInput, index, SelectionState.Succeeded);
+                }
+
                 return ("", -1, SelectionState.Failed);
             }
 
             return ("", -1, SelectionState.Failed);
         }
 
-        public static void ChangeDirectorySystem(this IUnish shell,  string home)
+        public static void ChangeDirectorySystem(this IUnish shell, string home)
         {
             foreach (var dir in shell.DirectorySystems)
             {

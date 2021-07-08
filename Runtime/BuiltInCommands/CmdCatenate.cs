@@ -39,7 +39,9 @@ namespace RUtil.Debug.Shell
 
             var sb = new StringBuilder();
             if (shell.CurrentDirectorySystem.TryFindEntry(path1, out var foundPath, out var hasChild) && !hasChild)
+            {
                 sb.Append(UnishIOUtility.ReadTextFile(fileSystem.RealHomePath + foundPath));
+            }
             else
             {
                 shell.SubmitError($"file {path1} not found.");
@@ -49,7 +51,9 @@ namespace RUtil.Debug.Shell
             if (!string.IsNullOrEmpty(path2))
             {
                 if (shell.CurrentDirectorySystem.TryFindEntry(path2, out foundPath, out hasChild) && !hasChild)
+                {
                     sb.Append(UnishIOUtility.ReadTextFile(fileSystem.RealHomePath + foundPath));
+                }
                 else
                 {
                     shell.SubmitError("$file {path2} not found.");

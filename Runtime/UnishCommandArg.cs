@@ -6,26 +6,29 @@ namespace RUtil.Debug.Shell
     public readonly struct UnishCommandArg
     {
         public readonly UnishCommandArgType Type;
-        public readonly string s;
-        public readonly bool b;
-        public readonly int i;
-        public readonly float f;
-        public readonly Vector2 v;
+        public readonly string              s;
+        public readonly bool                b;
+        public readonly int                 i;
+        public readonly float               f;
+        public readonly Vector2             v;
 
         public UnishCommandArg(UnishCommandArgType type, string input) : this()
         {
             Type = type;
-            s = input;
+            s    = input;
             switch (type)
             {
                 case UnishCommandArgType.Bool:
                     if (!TryStrToBool(input, out b))
+                    {
                         b = false;
+                    }
+
                     break;
                 case UnishCommandArgType.Int:
                     if (!int.TryParse(input, out i))
                     {
-                        i = 0;
+                        i    = 0;
                         Type = UnishCommandArgType.Error;
                     }
 
@@ -33,7 +36,7 @@ namespace RUtil.Debug.Shell
                 case UnishCommandArgType.Float:
                     if (!float.TryParse(input, out f))
                     {
-                        f = float.NaN;
+                        f    = float.NaN;
                         Type = UnishCommandArgType.Error;
                     }
 
@@ -43,21 +46,34 @@ namespace RUtil.Debug.Shell
                     if (values.Length == 2)
                     {
                         if (float.TryParse(values[0], out var x) && float.TryParse(values[1], out var y))
+                        {
                             v = new Vector2(x, y);
+                        }
                         else
+                        {
                             Type = UnishCommandArgType.Error;
+                        }
                     }
                     else
+                    {
                         Type = UnishCommandArgType.Error;
+                    }
 
                     break;
                 case UnishCommandArgType.String:
-                {
-                    if (string.IsNullOrEmpty(s))
+                    {
+                        if (string.IsNullOrEmpty(s))
+                        {
+                            break;
+                        }
+
+                        if (s.StartsWith("\"") && s.EndsWith("\""))
+                        {
+                            s = s.Substring(1, s.Length - 2);
+                        }
+
                         break;
-                    if (s.StartsWith("\"") && s.EndsWith("\"")) s = s.Substring(1, s.Length - 2);
-                    break;
-                }
+                    }
             }
         }
 
@@ -66,12 +82,30 @@ namespace RUtil.Debug.Shell
 
         private static readonly string[] TrueStrings =
         {
-            "true", "t", "y", "yes", "1", "o", "on", "enabled", "active",
+            "true",
+            "t",
+            "y",
+            "yes",
+            "1",
+            "o",
+            "on",
+            "enabled",
+            "active",
         };
 
         private static readonly string[] FalseStrings =
         {
-            "false", "f", "n", "no", "0", "x", "off", "disabled", "passive", "inactive", "",
+            "false",
+            "f",
+            "n",
+            "no",
+            "0",
+            "x",
+            "off",
+            "disabled",
+            "passive",
+            "inactive",
+            "",
         };
 
         private static bool TryStrToBool(string str, out bool b)

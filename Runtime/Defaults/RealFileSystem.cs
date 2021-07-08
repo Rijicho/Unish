@@ -1,50 +1,53 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using UnityEngine;
 
 namespace RUtil.Debug.Shell
 {
     public class RealFileSystem : IUnishRealFileSystem
     {
-        public string Home { get; }
-        public string Current { get; private set; }
+        public string Home         { get; }
+        public string Current      { get; private set; }
         public string RealHomePath { get; }
 
         public RealFileSystem(string virtualHomeName, string realHomePath)
         {
-            Home = virtualHomeName;
+            Home         = virtualHomeName;
             RealHomePath = realHomePath;
-            Current = "";
+            Current      = "";
         }
 
         public bool TryFindEntry(string path, out string foundPath, out bool hasChild)
         {
             var homeRelative = this.ConvertPathToHomeRelativeForm(path);
-            var realPath = RealHomePath + homeRelative;
+            var realPath     = RealHomePath + homeRelative;
             if (Directory.Exists(realPath))
             {
                 foundPath = homeRelative;
-                hasChild = true;
+                hasChild  = true;
                 return true;
             }
 
             if (File.Exists(realPath))
             {
                 foundPath = homeRelative;
-                hasChild = false;
+                hasChild  = false;
                 return true;
             }
 
             foundPath = null;
-            hasChild = false;
+            hasChild  = false;
             return false;
         }
 
         public bool TryChangeDirectoryTo(string path)
         {
             var homeRelative = this.ConvertPathToHomeRelativeForm(path);
-            var realPath = RealHomePath + homeRelative;
-            if (!Directory.Exists(realPath)) return false;
+            var realPath     = RealHomePath + homeRelative;
+            if (!Directory.Exists(realPath))
+            {
+                return false;
+            }
+
             Current = homeRelative;
             return true;
         }
@@ -72,7 +75,9 @@ namespace RUtil.Debug.Shell
                 if (remainDepth != 0)
                 {
                     foreach (var elem in GetChildsInternal(dirPathWithoutHome, maxDepth, remainDepth - 1))
+                    {
                         yield return elem;
+                    }
                 }
             }
         }

@@ -24,19 +24,23 @@ namespace RUtil.Debug.Shell
         protected override UniTask Run(IUnish shell, string op, Dictionary<string, UnishCommandArg> args,
             Dictionary<string, UnishCommandArg> options)
         {
-            if (string.IsNullOrEmpty(args["key"].s)) return shell.RunCommandAsync("man shpref");
+            if (string.IsNullOrEmpty(args["key"].s))
+            {
+                return shell.RunCommandAsync("man shpref");
+            }
+
             switch (args["key"].s)
             {
                 case "bgcolor":
-                {
-                    shell.View.BackgroundColor = shell.ColorParser.Parse(args["value"].s ?? "#000000AA");
-                    return default;
-                }
+                    {
+                        shell.View.BackgroundColor = shell.ColorParser.Parse(args["value"].s ?? "#000000AA");
+                        return default;
+                    }
                 case "prompt":
-                {
-                    shell.Prompt = args["value"].s ?? "> ";
-                    return default;
-                }
+                    {
+                        shell.Prompt = args["value"].s ?? "> ";
+                        return default;
+                    }
                 default:
                     return shell.RunCommandAsync("man shpref");
             }

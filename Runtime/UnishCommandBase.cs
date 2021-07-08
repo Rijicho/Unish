@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
 
@@ -8,9 +7,16 @@ namespace RUtil.Debug.Shell
     public abstract class UnishCommandBase
     {
         public abstract string[] Ops { get; }
-        public virtual string[] Aliases { get; } = { };
+
+        public virtual string[] Aliases { get; } =
+        {
+        };
+
         public abstract (UnishCommandArgType type, string name, string defVal, string info)[] Params { get; }
-        public virtual (UnishCommandArgType type, string name, string defVal, string info)[] Options { get; } = { };
+
+        public virtual (UnishCommandArgType type, string name, string defVal, string info)[] Options { get; } =
+        {
+        };
 
         public virtual string Usage(string op)
         {
@@ -24,7 +30,10 @@ namespace RUtil.Debug.Shell
         protected abstract UniTask Run(IUnish shell, string op, Dictionary<string, UnishCommandArg> args,
             Dictionary<string, UnishCommandArg> options);
 
-        private static readonly char[] Separators = {' '};
+        private static readonly char[] Separators =
+        {
+            ' ',
+        };
 
 
         public delegate void SubmitLineAction(string line, string colorCode, bool allowOverflow);
@@ -35,7 +44,7 @@ namespace RUtil.Debug.Shell
             SubmitErrorAction errorSubmitter)
         {
             var isError = false;
-            var dic = new Dictionary<string, UnishCommandArg>();
+            var dic     = new Dictionary<string, UnishCommandArg>();
             var options = new Dictionary<string, UnishCommandArg>();
 
             if (!RequiresPreParseArguments)
@@ -52,8 +61,8 @@ namespace RUtil.Debug.Shell
             }
 
             var isInString = false;
-            var header = 0;
-            var argList = new List<string>();
+            var header     = 0;
+            var argList    = new List<string>();
             {
                 var i = 0;
                 for (; i < argsNotParsed.Length; i++)
@@ -68,23 +77,26 @@ namespace RUtil.Debug.Shell
                     switch (c)
                     {
                         case '"':
-                        {
-                            isInString = !isInString;
-                            break;
-                        }
+                            {
+                                isInString = !isInString;
+                                break;
+                            }
                         case var space when Separators.Contains(space) && !isInString:
-                        {
-                            //      h   i
-                            // 0   4    9
-                            // hoge fuga piyo
-                            argList.Add(argsNotParsed.Substring(header, i - header));
-                            header = i + 1;
-                            break;
-                        }
+                            {
+                                //      h   i
+                                // 0   4    9
+                                // hoge fuga piyo
+                                argList.Add(argsNotParsed.Substring(header, i - header));
+                                header = i + 1;
+                                break;
+                            }
                     }
                 }
 
-                if (header < i) argList.Add(argsNotParsed.Substring(header));
+                if (header < i)
+                {
+                    argList.Add(argsNotParsed.Substring(header));
+                }
             }
             var args = argList.ToArray();
 
@@ -101,9 +113,11 @@ namespace RUtil.Debug.Shell
                             var optionArg = UnishCommandArg.None;
                             if (Options[k].type != UnishCommandArgType.None)
                             {
-                                if (i == args.Length - 1 || args[i + 1].StartsWith("-") &&
-                                    !float.TryParse(args[i + 1], out var _))
+                                if (i == args.Length - 1 || (args[i + 1].StartsWith("-") &&
+                                                             !float.TryParse(args[i + 1], out var _)))
+                                {
                                     optionArg = new UnishCommandArg(Options[k].type, Options[k].defVal);
+                                }
                                 else
                                 {
                                     optionArg = new UnishCommandArg(Options[k].type, args[i + 1]);
@@ -112,7 +126,7 @@ namespace RUtil.Debug.Shell
                             }
 
                             options[Options[k].name] = optionArg;
-                            found = true;
+                            found                    = true;
                             break;
                         }
                     }
@@ -135,7 +149,9 @@ namespace RUtil.Debug.Shell
                     if (string.IsNullOrEmpty(Params[j].defVal))
                     {
                         if (AllowTrailingNullParams)
+                        {
                             dic[Params[j].name] = new UnishCommandArg(Params[j].type, Params[j].defVal);
+                        }
                         else
                         {
                             errorSubmitter($"Argument <{Params[j].name}> is required.");
@@ -172,7 +188,9 @@ namespace RUtil.Debug.Shell
                 if (Params[j].defVal == null)
                 {
                     if (AllowTrailingNullParams)
+                    {
                         dic[Params[j].name] = new UnishCommandArg(Params[j].type, Params[j].defVal);
+                    }
                     else
                     {
                         errorSubmitter($"Argument <{Params[j].name}> is required.");
@@ -208,7 +226,10 @@ namespace RUtil.Debug.Shell
             bool drawBottomLine = true)
         {
             if (drawTopLine)
+            {
                 submitter("+-----------------------------+", "#aaaaaa", false);
+            }
+
             var i = 0;
 
             var optionString = Options?.Length > 0 ? "[<color=#ff7777>options</color>] " : "";
@@ -259,9 +280,14 @@ namespace RUtil.Debug.Shell
 
             var usage = Usage(op);
             if (!string.IsNullOrEmpty(usage))
+            {
                 submitter(usage, "#aaaaaa", false);
+            }
+
             if (drawBottomLine)
+            {
                 submitter("+-----------------------------+", "#aaaaaa", false);
+            }
         }
     }
 }

@@ -3,7 +3,7 @@
     public enum UnishCommandArgType
     {
         Error = -1,
-        None = 0,
+        None  = 0,
         String,
         Bool,
         Int,

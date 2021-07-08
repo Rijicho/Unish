@@ -24,7 +24,9 @@ namespace RUtil.Debug.Shell
             if (shell.CurrentDirectorySystem == null)
             {
                 if (target.StartsWith(PathConstants.CurrentRelativePrefix))
+                {
                     target = target.Substring(PathConstants.CurrentRelativePrefix.Length);
+                }
 
                 shell.CurrentDirectorySystem = shell.DirectorySystems.FirstOrDefault(x => x.Home == target);
 
@@ -32,16 +34,20 @@ namespace RUtil.Debug.Shell
                 {
                     shell.SubmitError($"The directory system {target} does not exist.");
                 }
+
                 return default;
             }
-            
+
             if (shell.CurrentDirectorySystem.IsRoot(target))
             {
                 shell.CurrentDirectorySystem = null;
                 return default;
             }
-            
-            if (!shell.CurrentDirectorySystem.TryChangeDirectoryTo(target)) shell.SubmitError("directory not found.");
+
+            if (!shell.CurrentDirectorySystem.TryChangeDirectoryTo(target))
+            {
+                shell.SubmitError("directory not found.");
+            }
 
             return default;
         }
