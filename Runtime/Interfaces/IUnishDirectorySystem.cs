@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 
 namespace RUtil.Debug.Shell
 {
@@ -16,5 +17,17 @@ namespace RUtil.Debug.Shell
         bool TryChangeDirectoryTo(string path);
 
         IEnumerable<(string path, int depth, bool hasChild)> GetChilds(string searchRoot, int depth = 0);
+
+        void Open(string path);
+
+        string Read(string path);
+
+        void Write(string path, string data);
+
+        void Append(string path, string data);
+
+        void Create(string path, bool isDirectory);
+
+        void Delete(string path);
     }
 }

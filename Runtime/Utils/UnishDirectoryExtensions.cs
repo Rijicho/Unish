@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using Cysharp.Threading.Tasks;
 using static RUtil.Debug.Shell.PathConstants;
 
 namespace RUtil.Debug.Shell
@@ -33,47 +35,52 @@ namespace RUtil.Debug.Shell
         }
 
 
-        public static string ConvertPathToHomeRelativeForm(this IUnishDirectorySystem directorySystem, string fullPath)
+        public static string ConvertToHomeRelativePath(this IUnishDirectorySystem directorySystem, string input)
         {
-            if (fullPath == CurrentDir)
+            if (input == CurrentDir)
             {
                 return directorySystem.Current;
             }
 
-            if (fullPath == ParentDir)
+            if (input == ParentDir)
             {
                 return directorySystem.CurrentParent();
             }
 
-            if (fullPath.StartsWith(CurrentRelativePrefix))
+            if (input.StartsWith(CurrentRelativePrefix))
             {
-                return directorySystem.Current + fullPath.Substring(1);
+                return directorySystem.Current + input.Substring(1);
             }
 
-            if (fullPath.StartsWith(ParentRelativePrefix))
+            if (input.StartsWith(ParentRelativePrefix))
             {
-                return directorySystem.CurrentParent() + fullPath.Substring(2);
+                return directorySystem.CurrentParent() + input.Substring(2);
             }
 
-            if (fullPath.StartsWith(directorySystem.Home))
+            if (input.StartsWith(directorySystem.Home))
             {
-                return fullPath.Substring(directorySystem.Home.Length);
+                return input.Substring(directorySystem.Home.Length);
             }
 
             if (directorySystem is IUnishRealFileSystem fileSystem)
             {
-                if (fullPath.StartsWith(fileSystem.RealHomePath))
+                if (input.StartsWith(fileSystem.RealHomePath))
                 {
-                    return fullPath.Substring(fileSystem.RealHomePath.Length);
+                    return input.Substring(fileSystem.RealHomePath.Length);
                 }
             }
 
-            if (fullPath.StartsWith($"{Root}{directorySystem.Home}"))
+            if (input.StartsWith($"{Root}{directorySystem.Home}"))
             {
-                return fullPath.Substring(directorySystem.Home.Length + 2);
+                return input.Substring(directorySystem.Home.Length + 2);
             }
 
-            return directorySystem.Current + Separator + fullPath;
+            return directorySystem.Current + Separator + input;
+        }
+
+        public static string ConvertToRealPath(this IUnishRealFileSystem fileSystem, string input)
+        {
+            return fileSystem.RealHomePath + fileSystem.ConvertToHomeRelativePath(input);
         }
 
         public static bool IsRoot(this IUnishDirectorySystem directorySystem, string path)

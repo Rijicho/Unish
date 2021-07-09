@@ -218,7 +218,6 @@ namespace RUtil.Debug.Shell
         }
 
 
-
         private string HandleSubmissionInput()
         {
             if (isInputEventUsed)
@@ -323,7 +322,7 @@ namespace RUtil.Debug.Shell
 
             if (mInputHandler.CurrentCharInput != default)
             {
-                mInput     = mInput.Insert(mInput.Length - mCursorIndex, mInputHandler.CurrentCharInput.ToString());
+                mInput = mInput.Insert(mInput.Length - mCursorIndex, mInputHandler.CurrentCharInput.ToString());
             }
 
 
@@ -388,15 +387,31 @@ namespace RUtil.Debug.Shell
                       : $"<color=orange>{TagEscape(mInput.Substring(mInput.Length - mCursorIndex, 1))}</color>")
                   + TagEscape(mInput.Substring(mInput.Length - mCursorIndex + 1));
 
-            text.text = mSubmittedLines.Count > 0
-                ? mSubmittedLines
-                      .Skip(mSubmittedLines.Count - MaxLineCount - mDisplayLineOffset)
-                      .Take(Mathf.Min(MaxLineCount, mSubmittedLines.Count))
-                      .ToSingleString("\n") +
-                  (mIsReading ? inputWithCursor : "")
-                : mIsReading
-                    ? inputWithCursor
-                    : "";
+            if (!text)
+            {
+                return;
+            }
+
+            if (mSubmittedLines.Count == 0)
+            {
+                text.text = mIsReading ? inputWithCursor : "";
+                return;
+            }
+
+            if (mDisplayLineOffset == 0)
+            {
+                text.text = mSubmittedLines
+                                .Skip(mSubmittedLines.Count - MaxLineCount)
+                                .ToSingleString("\n") +
+                            (mIsReading ? inputWithCursor : "");
+                return;
+            }
+
+            text.text = mSubmittedLines
+                            .Skip(mSubmittedLines.Count - MaxLineCount - mDisplayLineOffset)
+                            .Take(Mathf.Min(MaxLineCount, mSubmittedLines.Count) - 1)
+                            .ToSingleString("\n") + "\n" + mSubmittedLines.Last() +
+                        (mIsReading ? inputWithCursor : "");
         }
     }
 }

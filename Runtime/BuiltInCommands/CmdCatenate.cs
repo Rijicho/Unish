@@ -17,17 +17,16 @@ namespace RUtil.Debug.Shell
             (UnishCommandArgType.String, "path2", null, "接続したいファイル２"),
         };
 
+        public override string Usage(string op)
+        {
+            return "ファイルを連結して出力します。";
+        }
+
         public override bool AllowTrailingNullParams => true;
 
         protected override async UniTask Run(IUnishPresenter shell, string op, Dictionary<string, UnishCommandArg> args,
             Dictionary<string, UnishCommandArg> options)
         {
-            if (!(shell.CurrentDirectorySystem is IUnishRealFileSystem fileSystem))
-            {
-                shell.SubmitError("current directory system is not a file system.");
-                return;
-            }
-
             var path1 = args["path1"].s;
             var path2 = args["path2"].s;
 
@@ -40,7 +39,7 @@ namespace RUtil.Debug.Shell
             var sb = new StringBuilder();
             if (shell.CurrentDirectorySystem.TryFindEntry(path1, out var foundPath, out var hasChild) && !hasChild)
             {
-                sb.Append(UnishIOUtility.ReadTextFile(fileSystem.RealHomePath + foundPath));
+                sb.Append(shell.CurrentDirectorySystem.Read(foundPath));
             }
             else
             {
@@ -52,7 +51,7 @@ namespace RUtil.Debug.Shell
             {
                 if (shell.CurrentDirectorySystem.TryFindEntry(path2, out foundPath, out hasChild) && !hasChild)
                 {
-                    sb.Append(UnishIOUtility.ReadTextFile(fileSystem.RealHomePath + foundPath));
+                    sb.Append(shell.CurrentDirectorySystem.Read(foundPath));
                 }
                 else
                 {

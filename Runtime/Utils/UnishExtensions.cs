@@ -156,16 +156,6 @@ namespace RUtil.Debug.Shell
             return ("", -1, SelectionState.Failed);
         }
 
-        public static void ChangeDirectorySystem(this IUnishPresenter shell, string home)
-        {
-            foreach (var dir in shell.DirectorySystems)
-            {
-                if (dir.Home == home)
-                {
-                    shell.CurrentDirectorySystem = dir;
-                }
-            }
-        }
 
         public static void Run(this IUnishPresenter shell)
         {

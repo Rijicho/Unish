@@ -13,7 +13,7 @@ namespace RUtil.Debug.Shell
 
         public override (UnishCommandArgType type, string name, string defVal, string info)[] Params { get; } =
         {
-            (UnishCommandArgType.String, "path", null, "URL or file path to open (CurrentDir: PersistentDataPath)"),
+            (UnishCommandArgType.String, "path", null, "URL or file path to open"),
         };
 
         protected override UniTask Run(IUnishPresenter shell, string op, Dictionary<string, UnishCommandArg> args,
@@ -27,10 +27,9 @@ namespace RUtil.Debug.Shell
                 return default;
             }
 
-            if (shell.CurrentDirectorySystem is IUnishRealFileSystem fileSystem
-                && shell.CurrentDirectorySystem.TryFindEntry(path, out var foundPath, out _))
+            if (shell.CurrentDirectorySystem.TryFindEntry(path, out var foundPath, out _))
             {
-                Application.OpenURL(fileSystem.RealHomePath + foundPath);
+                shell.CurrentDirectorySystem.Open(foundPath);
                 return default;
             }
 
@@ -45,7 +44,7 @@ namespace RUtil.Debug.Shell
 
         public override string Usage(string op)
         {
-            return "指定したURLまたはファイルを開きます。\nファイルは絶対パスか、PersistentDataPathをカレントディレクトリとする相対パスで指定してください。";
+            return "指定したURLまたはファイルを開きます。";
         }
     }
 }
