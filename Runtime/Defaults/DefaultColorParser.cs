@@ -2,7 +2,7 @@
 
 namespace RUtil.Debug.Shell
 {
-    public class DefaultColorParser : IColorParser
+    public class DefaultColorParser : IUnishColorParser
     {
         private DefaultColorParser()
         {

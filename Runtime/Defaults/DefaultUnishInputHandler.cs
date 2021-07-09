@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks.Linq;
 #if UNISH_INPUT_SYSTEM_SUPPORT
 using UnityEngine.InputSystem;
 
@@ -19,9 +21,9 @@ namespace RUtil.Debug.Shell
 
         private UnishInputType[] inputs;
 
-        private bool mIsInitialized;
+        private bool mIsRunning;
 
-        private readonly ITimeProvider mTimeProvider;
+        private readonly IUnishTimeProvider mTimeProvider;
 #if UNISH_INPUT_SYSTEM_SUPPORT
         public event Action<char> OnTextInput
         {
@@ -31,25 +33,75 @@ namespace RUtil.Debug.Shell
 #else
         public event Action<char> OnTextInput;
 #endif
+        private static char mCurrentCharInput;
+        private static bool hasBackSpaceInput;
+        public         char CurrentCharInput => mCurrentCharInput;
 
-        public DefaultUnishInputHandler(ITimeProvider timeProvider)
+        private void UpdateCurrentCharInput(char c)
+        {
+            switch (c)
+            {
+                case var bs when bs == 8:
+                    hasBackSpaceInput = true;
+                    return;
+                default:
+                    mCurrentCharInput = c;
+                    return;
+            }
+        }
+
+        public DefaultUnishInputHandler(IUnishTimeProvider timeProvider)
         {
             mTimeProvider = timeProvider;
         }
 
         public void Initialize()
         {
-            inputs                 = Enum.GetValues(typeof(UnishInputType)).Cast<UnishInputType>().ToArray();
-            longPushStartTimes     = inputs.ToDictionary(x => x, x => 0f);
-            longPushLastInputTimes = inputs.ToDictionary(x => x, x => 0f);
-            longPushFlag           = inputs.ToDictionary(x => x, x => false);
-            mIsInitialized         = true;
+            inputs                 =  Enum.GetValues(typeof(UnishInputType)).Cast<UnishInputType>().ToArray();
+            longPushStartTimes     =  inputs.ToDictionary(x => x, x => 0f);
+            longPushLastInputTimes =  inputs.ToDictionary(x => x, x => 0f);
+            longPushFlag           =  inputs.ToDictionary(x => x, x => false);
+            OnTextInput            += UpdateCurrentCharInput;
+            mIsRunning             =  true;
+            StartPreUpdate().Forget();
+            StartPreLateUpdate().Forget();
         }
 
 
-        public void Update()
+        private async UniTaskVoid StartPreUpdate()
         {
-            UnityEngine.Debug.Assert(mIsInitialized, "Not Initialized");
+            await foreach (var _ in UniTaskAsyncEnumerable.EveryUpdate(PlayerLoopTiming.PreUpdate))
+            {
+                if (!mIsRunning)
+                {
+                    return;
+                }
+
+                EarlyUpdate();
+            }
+        }
+
+        private async UniTaskVoid StartPreLateUpdate()
+        {
+            await foreach (var _ in UniTaskAsyncEnumerable.EveryUpdate(PlayerLoopTiming.PreLateUpdate))
+            {
+                if (!mIsRunning)
+                {
+                    return;
+                }
+
+                LateUpdate();
+            }
+        }
+
+        public void Quit()
+        {
+            OnTextInput -= UpdateCurrentCharInput;
+            mIsRunning  =  false;
+        }
+
+        public void EarlyUpdate()
+        {
             var now = mTimeProvider.Now;
 
 
@@ -96,9 +148,15 @@ namespace RUtil.Debug.Shell
             }
         }
 
+        public void LateUpdate()
+        {
+            hasBackSpaceInput = false;
+            mCurrentCharInput = default;
+        }
+
+
         public bool CheckInputOnThisFrame(UnishInputType input)
         {
-            UnityEngine.Debug.Assert(mIsInitialized, "Not Initialized");
             return CheckInputOnThisFramePure(input) || longPushFlag[input];
         }
 
@@ -118,7 +176,7 @@ namespace RUtil.Debug.Shell
                 UnishInputType.ScrollDown => ctrlcmd && kb.downArrowKey.wasPressedThisFrame,
                 UnishInputType.PageUp => ctrlcmd && kb.leftArrowKey.wasPressedThisFrame,
                 UnishInputType.PageDown => ctrlcmd && kb.rightArrowKey.wasPressedThisFrame,
-                UnishInputType.BackSpace => !ctrlcmd && kb.backspaceKey.wasPressedThisFrame,
+                UnishInputType.BackSpace => !ctrlcmd && (kb.backspaceKey.wasPressedThisFrame || hasBackSpaceInput),
                 UnishInputType.Delete => !ctrlcmd && kb.deleteKey.wasPressedThisFrame,
                 UnishInputType.Submit => !ctrlcmd && kb.enterKey.wasPressedThisFrame,
                 UnishInputType.Quit => (!ctrlcmd && kb.escapeKey.wasPressedThisFrame) ||

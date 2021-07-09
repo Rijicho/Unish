@@ -21,7 +21,7 @@ namespace RUtil.Debug.Shell
             (UnishCommandArgType.Int, "R", "0", "list up recursively (DFS)"),
         };
 
-        protected override UniTask Run(IUnish shell, string op, Dictionary<string, UnishCommandArg> args,
+        protected override UniTask Run(IUnishPresenter shell, string op, Dictionary<string, UnishCommandArg> args,
             Dictionary<string, UnishCommandArg> options)
         {
             var maxDepth = options.TryGetValue("R", out var value) ? value.i : 0;

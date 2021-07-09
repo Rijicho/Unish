@@ -29,7 +29,7 @@ namespace RUtil.Debug.Shell
             return "コマンドリストを表示します。";
         }
 
-        protected override async UniTask Run(IUnish shell, string op, Dictionary<string, UnishCommandArg> args,
+        protected override async UniTask Run(IUnishPresenter shell, string op, Dictionary<string, UnishCommandArg> args,
             Dictionary<string, UnishCommandArg> options)
         {
             var filter  = new Regex(options.ContainsKey("r") ? args["pattern"].s : $".*{args["pattern"].s}.*");

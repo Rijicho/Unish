@@ -1,66 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using Cysharp.Threading.Tasks;
-using Cysharp.Threading.Tasks.Linq;
-using UnityEngine;
 
 namespace RUtil.Debug.Shell
 {
-    public abstract class UnishCore : IUnish
+    public abstract class UnishCore : IUnishPresenter
     {
         // ----------------------------------
         // non-serialized fields
         // ----------------------------------
 
         private static bool mIsUprofileExecuted;
-        private        bool mIsInitialized;
-        private        bool mIsRunningUpdate;
-        private        bool mIsRunningCommand;
-        private        bool mIsClosing;
-
-        // 入力履歴
-        private readonly List<string> mSubmittedInputs = new List<string>();
-
-        // 表示履歴
-        private readonly List<string> mSubmittedLines = new List<string>();
-
-        // 入力中文字列
-        private string mInput = "";
-
-        // このフレームに入力された文字
-        private char mCharInput;
-
-        // コマンド実行中の追加入力受付中かどうか
-        private bool mIsWaitingNewSubmission;
-
-        // コマンド実行中の追加入力で最後にSubmitされた文字列
-        private string mAdditionalSubmittedInput;
-
-        // 入力履歴参照先インデックス
-        private int mReferenceIndex;
-
-        // 入力履歴を参照中にもともとの履歴を保持しておくキャッシュ
-        private string mReferenceCache = "";
-
-        // 表示履歴のオフセット
-        private int mDisplayLineOffset;
-
-        // カーソル位置　終端にある状態が0, 始端にある状態がinput.Length
-        private int mCursorIndex;
-
-        // カーソルの点滅開始時刻
-        private float mCursorBrinkStartTime;
 
         // ----------------------------------
         // properties
         // ----------------------------------
+        public          UnishState                         State                  { get; private set; }
         public abstract IUnishView                         View                   { get; }
         public abstract IUnishCommandRepository            CommandRepository      { get; }
-        public abstract IColorParser                       ColorParser            { get; }
-        public abstract IUnishInputHandler                 InputHandler           { get; }
-        public abstract ITimeProvider                      TimeProvider           { get; }
+        public abstract IUnishColorParser                  ColorParser            { get; }
+        public abstract IUnishTimeProvider                 TimeProvider           { get; }
         public abstract IUnishRcRepository                 RcRepository           { get; }
         public abstract IEnumerable<IUnishDirectorySystem> DirectorySystems       { get; }
         public          IUnishDirectorySystem              CurrentDirectorySystem { get; set; }
@@ -69,61 +29,17 @@ namespace RUtil.Debug.Shell
         // ----------------------------------
         // public methods
         // ----------------------------------
-        public async UniTask OpenAsync()
+
+        public async UniTask RunAsync()
         {
-            mIsRunningUpdate  = false;
-            mIsInitialized    = false;
-            mIsClosing        = false;
-            mIsRunningCommand = false;
-            mSubmittedLines.Clear();
-            mSubmittedInputs.Clear();
-
-            await OnPreOpenAsync();
-            await View.InitializeAsync();
-            InputHandler.Initialize();
-            CommandRepository.Initialize();
-            InputHandler.OnTextInput += OnCharInput;
-            await OnPostOpenAsync();
-            mIsInitialized = true;
-            try
-            {
-                if (!mIsUprofileExecuted)
-                {
-                    await foreach (var c in RcRepository.ReadUProfile())
-                    {
-                        await RunCommandAsync(c);
-                    }
-
-                    mIsUprofileExecuted = true;
-                }
-
-                await foreach (var c in RcRepository.ReadUnishRc())
-                {
-                    await RunCommandAsync(c);
-                }
-            }
-            catch (Exception e)
-            {
-                this.SubmitError(e.Message);
-                this.SubmitError(e.StackTrace);
-            }
-
-            StartUpdate().Forget();
+            await Init();
+            await Loop();
+            await Quit();
         }
 
-        public async UniTask CloseAsync()
+        public void Halt()
         {
-            mIsClosing = true;
-            while (mIsRunningUpdate)
-            {
-                await UniTask.Yield();
-            }
-
-            await OnPreCloseAsync();
-            InputHandler.OnTextInput -= OnCharInput;
-            await View.DestroyAsync();
-            await OnPostCloseAsync();
-            mIsClosing = false;
+            State = UnishState.Quit;
         }
 
         public async UniTask RunCommandAsync(string cmd)
@@ -173,24 +89,6 @@ namespace RUtil.Debug.Shell
             await UniTask.Yield();
         }
 
-        public void WriteLine(string line)
-        {
-            mSubmittedLines.Add(line ?? "");
-        }
-
-        public async UniTask<string> ReadLineAsync()
-        {
-            mIsWaitingNewSubmission   = true;
-            mAdditionalSubmittedInput = null;
-            while (string.IsNullOrEmpty(mAdditionalSubmittedInput))
-            {
-                await UniTask.Yield();
-            }
-
-            mIsWaitingNewSubmission = false;
-            return mAdditionalSubmittedInput;
-        }
-
 
         // ----------------------------------
         // protected methods
@@ -225,258 +123,49 @@ namespace RUtil.Debug.Shell
         // private methods
         // ----------------------------------
 
-        private async UniTaskVoid StartUpdate()
+
+        private async UniTask Init()
         {
-            mIsRunningUpdate = true;
-            await foreach (var _ in UniTaskAsyncEnumerable.EveryUpdate())
-            {
-                if (mIsClosing)
-                {
-                    break;
-                }
+            State = UnishState.Init;
 
-                Update();
-            }
-
-            mIsRunningUpdate = false;
+            await OnPreOpenAsync();
+            await View.InitializeAsync();
+            CommandRepository.Initialize();
+            await OnPostOpenAsync();
+            await RunRcAndProfile();
         }
 
-        private void Update()
+        private async UniTask Loop()
         {
-            if (mIsClosing || !mIsInitialized)
+            while (State != UnishState.Quit)
             {
-                return;
-            }
-
-            InputHandler.Update();
-
-            var isInputEventUsed = HandleScrollInput();
-
-            if (!isInputEventUsed && (!mIsRunningCommand || mIsWaitingNewSubmission))
-            {
-                if (InputHandler.CheckInputOnThisFrame(UnishInputType.Quit))
+                State = UnishState.Wait;
+                View.Write(ParsedPrompt);
+                var input = await View.ReadLine();
+                if (string.IsNullOrWhiteSpace(input))
                 {
-                    CloseAsync().Forget();
-                    return;
+                    continue;
                 }
 
-                HandleSubmissionInput();
+                State = UnishState.Run;
+                await RunCommandAsync(input);
             }
 
-            mCharInput = default;
-
-            UpdateDisplay();
+            UnityEngine.Debug.Log("loopend");
         }
 
-        private void HandleSubmissionInput()
+        private async UniTask Quit()
         {
-            if (InputHandler.CheckInputOnThisFrame(UnishInputType.Up))
-            {
-                if (mReferenceIndex < mSubmittedInputs.Count)
-                {
-                    if (mReferenceIndex == 0)
-                    {
-                        mReferenceCache = mInput;
-                    }
-
-                    mReferenceIndex++;
-                    mInput = mSubmittedInputs[mSubmittedInputs.Count - mReferenceIndex];
-                }
-            }
-            else if (InputHandler.CheckInputOnThisFrame(UnishInputType.Down))
-            {
-                if (mReferenceIndex > 0)
-                {
-                    mReferenceIndex--;
-                }
-
-                mInput = mReferenceIndex > 0
-                    ? mSubmittedInputs[mSubmittedInputs.Count - mReferenceIndex]
-                    : mReferenceCache;
-            }
-            else if (InputHandler.CheckInputOnThisFrame(UnishInputType.Left))
-            {
-                if (mCursorIndex < mInput.Length)
-                {
-                    mCursorIndex++;
-                    mCursorBrinkStartTime = TimeProvider.Now;
-                }
-            }
-            else if (InputHandler.CheckInputOnThisFrame(UnishInputType.Right))
-            {
-                if (mCursorIndex > 0)
-                {
-                    mCursorIndex--;
-                    mCursorBrinkStartTime = TimeProvider.Now;
-                }
-            }
-            else if (InputHandler.CheckInputOnThisFrame(UnishInputType.BackSpace))
-            {
-                if (mInput.Length > 0)
-                {
-                    if (mCursorIndex == 0)
-                    {
-                        mInput = mInput.Substring(0, mInput.Length - 1);
-                    }
-                    else if (mCursorIndex < mInput.Length)
-                    {
-                        mInput = mInput.Substring(0, mInput.Length - mCursorIndex - 1) +
-                                 mInput.Substring(mInput.Length - mCursorIndex);
-                    }
-                }
-            }
-            else if (InputHandler.CheckInputOnThisFrame(UnishInputType.Delete))
-            {
-                if (mInput.Length > 0 && mCursorIndex > 0)
-                {
-                    //3210   
-                    //abc
-                    if (mCursorIndex == 1)
-                    {
-                        mInput = mInput.Substring(0, mInput.Length - 1);
-                    }
-                    else if (mCursorIndex == mInput.Length)
-                    {
-                        mInput = mInput.Substring(1);
-                    }
-                    else
-                    {
-                        mInput = mInput.Substring(0, mInput.Length - mCursorIndex) +
-                                 mInput.Substring(mInput.Length - mCursorIndex + 1);
-                    }
-
-                    mCursorIndex--;
-                }
-            }
-            else if (InputHandler.CheckInputOnThisFrame(UnishInputType.Submit))
-            {
-                if (!mIsRunningCommand && !string.IsNullOrWhiteSpace(mInput))
-                {
-                    mSubmittedInputs.Add(mInput);
-                }
-
-                Submit().Forget();
-            }
-            else if (mCharInput != default)
-            {
-                mInput = mInput.Insert(mInput.Length - mCursorIndex, mCharInput.ToString());
-            }
-        }
-
-        private bool HandleScrollInput()
-        {
-            if (InputHandler.CheckInputOnThisFrame(UnishInputType.ScrollUp))
-            {
-                if (mDisplayLineOffset < mSubmittedLines.Count - View.MaxLineCount)
-                {
-                    mDisplayLineOffset++;
-                }
-
-                return true;
-            }
-
-            if (InputHandler.CheckInputOnThisFrame(UnishInputType.ScrollDown))
-            {
-                if (mDisplayLineOffset > 0)
-                {
-                    mDisplayLineOffset--;
-                }
-
-                return true;
-            }
-
-            if (InputHandler.CheckInputOnThisFrame(UnishInputType.PageUp))
-            {
-                mDisplayLineOffset = Mathf.Min(mDisplayLineOffset + View.MaxLineCount,
-                    mSubmittedLines.Count - View.MaxLineCount);
-                return true;
-            }
-
-            if (InputHandler.CheckInputOnThisFrame(UnishInputType.PageDown))
-            {
-                mDisplayLineOffset = Mathf.Max(mDisplayLineOffset - View.MaxLineCount, 0);
-                return true;
-            }
-
-            return false;
-        }
-
-        private void UpdateDisplay()
-        {
-            static string TagEscape(string str)
-            {
-                return str.Replace("<", "<\b").Replace(">", "\b>");
-            }
-
-            var now = TimeProvider.Now;
-            var inputWithCursor = mCursorIndex == 0
-                ? TagEscape(mInput) + (Mathf.RoundToInt((now - mCursorBrinkStartTime) * 60) % 60 > 30
-                    ? "<color=yellow>_</color>"
-                    : " ")
-                : TagEscape(mInput.Substring(0, mInput.Length - mCursorIndex))
-                  + (Mathf.RoundToInt((now - mCursorBrinkStartTime) * 60) % 60 > 30
-                      ? "<color=yellow>_</color>"
-                      : $"<color=orange>{TagEscape(mInput.Substring(mInput.Length - mCursorIndex, 1))}</color>")
-                  + TagEscape(mInput.Substring(mInput.Length - mCursorIndex + 1));
-
-            var currentWithCursor = mIsWaitingNewSubmission
-                ? $"<color=orange>|> {inputWithCursor}</color>"
-                : ParsedPrompt + inputWithCursor;
-
-            View.DisplayText = mSubmittedLines.Count > 0
-                ? mSubmittedLines
-                      .Skip(mSubmittedLines.Count - View.MaxLineCount - mDisplayLineOffset)
-                      .Take(Mathf.Min(View.MaxLineCount, mSubmittedLines.Count))
-                      .ToSingleString("\n", true) +
-                  (!mIsRunningCommand || mIsWaitingNewSubmission ? currentWithCursor : "")
-                : !mIsRunningCommand || mIsWaitingNewSubmission
-                    ? currentWithCursor
-                    : "";
+            await OnPreCloseAsync();
+            await View.DestroyAsync();
+            await OnPostCloseAsync();
+            State = UnishState.None;
         }
 
         private string ParsedPrompt =>
-            Prompt.Replace("%d", CurrentDirectorySystem == null ? "/"
-                : string.IsNullOrEmpty(CurrentDirectorySystem.Current) ? "~"
+            Prompt.Replace("%d", CurrentDirectorySystem == null ? PathConstants.Root
+                : string.IsNullOrEmpty(CurrentDirectorySystem.Current) ? PathConstants.Home
                 : Path.GetFileName(CurrentDirectorySystem.Current));
-
-        private void OnCharInput(char c)
-        {
-            mCharInput = c;
-        }
-
-
-        private async UniTask Submit()
-        {
-            if (mIsWaitingNewSubmission)
-            {
-                mAdditionalSubmittedInput = mInput;
-                this.SubmitText($"<color=orange>|> {mInput}</color>");
-                mInput             = "";
-                mDisplayLineOffset = 0;
-                mCursorIndex       = 0;
-                return;
-            }
-
-            if (mIsRunningCommand)
-            {
-                return;
-            }
-
-            mIsRunningCommand = true;
-
-            var cmd = mInput;
-            this.SubmitText(ParsedPrompt + mInput);
-            mInput             = "";
-            mDisplayLineOffset = 0;
-            mReferenceIndex    = 0;
-            mCursorIndex       = 0;
-
-            await UniTask.Yield();
-
-            await RunCommandAsync(cmd);
-
-            mIsRunningCommand = false;
-        }
 
 
         private bool TryPreParseCommand(string cmd, out UnishCommandBase op, out string leading, out string trailing)
@@ -495,6 +184,32 @@ namespace RUtil.Debug.Shell
 
             return CommandRepository.Map.TryGetValue(leading, out op)
                    || CommandRepository.Map.TryGetValue("@" + leading, out op);
+        }
+
+        private async UniTask RunRcAndProfile()
+        {
+            try
+            {
+                if (!mIsUprofileExecuted)
+                {
+                    await foreach (var c in RcRepository.ReadUProfile())
+                    {
+                        await RunCommandAsync(c);
+                    }
+
+                    mIsUprofileExecuted = true;
+                }
+
+                await foreach (var c in RcRepository.ReadUnishRc())
+                {
+                    await RunCommandAsync(c);
+                }
+            }
+            catch (Exception e)
+            {
+                this.SubmitError(e.Message);
+                this.SubmitError(e.StackTrace);
+            }
         }
     }
 }

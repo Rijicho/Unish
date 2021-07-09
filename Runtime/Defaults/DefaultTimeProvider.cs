@@ -2,7 +2,7 @@
 
 namespace RUtil.Debug.Shell
 {
-    public class DefaultTimeProvider : ITimeProvider
+    public class DefaultTimeProvider : IUnishTimeProvider
     {
         private DefaultTimeProvider()
         {

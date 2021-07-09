@@ -16,7 +16,7 @@ namespace RUtil.Debug.Shell
                 "Source-file's path to execute (CurrentDir: PersistentDataPath)"),
         };
 
-        protected override async UniTask Run(IUnish shell, string op, Dictionary<string, UnishCommandArg> args,
+        protected override async UniTask Run(IUnishPresenter shell, string op, Dictionary<string, UnishCommandArg> args,
             Dictionary<string, UnishCommandArg> options)
         {
             if (!(shell.CurrentDirectorySystem is IUnishRealFileSystem fileSystem))

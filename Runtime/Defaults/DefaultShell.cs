@@ -3,25 +3,28 @@ using UnityEngine;
 
 namespace RUtil.Debug.Shell
 {
-    public class DefaultShell : UnishCore
+    public sealed class DefaultShell : UnishCore
     {
-        public override IUnishView              View              { get; } = DefaultUnishView.Instance;
-        public override IUnishCommandRepository CommandRepository { get; } = DefaultUnishCommandRepository.Instance;
-        public override IColorParser            ColorParser       { get; } = DefaultColorParser.Instance;
+        public override IUnishView                         View              { get; }
+        public override IUnishCommandRepository            CommandRepository { get; }
+        public override IUnishColorParser                  ColorParser       { get; }
+        public override IUnishTimeProvider                 TimeProvider      { get; }
+        public override IUnishRcRepository                 RcRepository      { get; }
+        public override IEnumerable<IUnishDirectorySystem> DirectorySystems  { get; }
 
-        public override IUnishInputHandler InputHandler { get; } =
-            new DefaultUnishInputHandler(DefaultTimeProvider.Instance);
-
-        public override ITimeProvider TimeProvider { get; } = DefaultTimeProvider.Instance;
-
-        public override IUnishRcRepository RcRepository { get; } = DefaultUnishRcRepository.Instance;
-
-        private static readonly IUnishDirectorySystem[] mDirectorySystems =
+        public DefaultShell()
         {
-            new RealFileSystem("pdp", Application.persistentDataPath),
-            new RealFileSystem("dp", Application.dataPath),
-        };
-
-        public override IEnumerable<IUnishDirectorySystem> DirectorySystems => mDirectorySystems;
+            CommandRepository = DefaultUnishCommandRepository.Instance;
+            ColorParser       = DefaultColorParser.Instance;
+            TimeProvider      = DefaultTimeProvider.Instance;
+            RcRepository      = DefaultUnishRcRepository.Instance;
+            var inputHandler      = new DefaultUnishInputHandler(DefaultTimeProvider.Instance);
+            View              = new DefaultUnishView(inputHandler, TimeProvider);
+            DirectorySystems = new[]
+            {
+                new RealFileSystem("pdp", Application.persistentDataPath),
+                new RealFileSystem("dp", Application.dataPath),
+            };
+        }
     }
 }

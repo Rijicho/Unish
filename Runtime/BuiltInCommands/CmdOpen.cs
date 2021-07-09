@@ -16,7 +16,7 @@ namespace RUtil.Debug.Shell
             (UnishCommandArgType.String, "path", null, "URL or file path to open (CurrentDir: PersistentDataPath)"),
         };
 
-        protected override UniTask Run(IUnish shell, string op, Dictionary<string, UnishCommandArg> args,
+        protected override UniTask Run(IUnishPresenter shell, string op, Dictionary<string, UnishCommandArg> args,
             Dictionary<string, UnishCommandArg> options)
         {
             var path = args["path"].s;

@@ -2,7 +2,7 @@
 
 namespace RUtil.Debug.Shell
 {
-    public interface IColorParser
+    public interface IUnishColorParser
     {
         Color Parse(string str);
     }

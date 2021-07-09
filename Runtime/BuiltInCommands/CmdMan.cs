@@ -15,7 +15,7 @@ namespace RUtil.Debug.Shell
             (UnishCommandArgType.String, "op", null, ""),
         };
 
-        protected override UniTask Run(IUnish shell, string op, Dictionary<string, UnishCommandArg> args,
+        protected override UniTask Run(IUnishPresenter shell, string op, Dictionary<string, UnishCommandArg> args,
             Dictionary<string, UnishCommandArg> options)
         {
             if (shell.CommandRepository.Map.TryGetValue(args["op"].s, out var c))

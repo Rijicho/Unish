@@ -20,10 +20,11 @@ namespace RUtil.Debug.Shell
         {
         };
 
-        protected override UniTask Run(IUnish shell, string op, Dictionary<string, UnishCommandArg> args,
+        protected override UniTask Run(IUnishPresenter shell, string op, Dictionary<string, UnishCommandArg> args,
             Dictionary<string, UnishCommandArg> options)
         {
-            return Unish.StopAsync();
+            shell.Halt();
+            return default;
         }
 
         public override string Usage(string op)

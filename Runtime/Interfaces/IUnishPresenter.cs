@@ -3,17 +3,15 @@ using Cysharp.Threading.Tasks;
 
 namespace RUtil.Debug.Shell
 {
-    public interface IUnish
+    public interface IUnishPresenter
     {
         IUnishView View { get; }
 
         IUnishCommandRepository CommandRepository { get; }
 
-        IColorParser ColorParser { get; }
+        IUnishColorParser ColorParser { get; }
 
-        IUnishInputHandler InputHandler { get; }
-
-        ITimeProvider TimeProvider { get; }
+        IUnishTimeProvider TimeProvider { get; }
 
         IUnishRcRepository RcRepository { get; }
 
@@ -25,12 +23,7 @@ namespace RUtil.Debug.Shell
 
         UniTask RunCommandAsync(string cmd);
 
-        void WriteLine(string line);
-
-        UniTask<string> ReadLineAsync();
-
-        UniTask OpenAsync();
-
-        UniTask CloseAsync();
+        UniTask RunAsync();
+        void Halt();
     }
 }

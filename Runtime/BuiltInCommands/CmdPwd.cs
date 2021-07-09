@@ -20,24 +20,24 @@ namespace RUtil.Debug.Shell
             (UnishCommandArgType.None, "r", null, "show real full path (real file-system only)"),
         };
 
-        protected override UniTask Run(IUnish shell, string op, Dictionary<string, UnishCommandArg> args,
+        protected override UniTask Run(IUnishPresenter shell, string op, Dictionary<string, UnishCommandArg> args,
             Dictionary<string, UnishCommandArg> options)
         {
             if (shell.CurrentDirectorySystem == null)
             {
-                shell.WriteLine(PathConstants.Root);
+                shell.View.WriteLine(PathConstants.Root);
             }
             else if (options.ContainsKey("r") && shell.CurrentDirectorySystem is IUnishRealFileSystem fileSystem)
             {
-                shell.WriteLine(fileSystem.RealHomePath + shell.CurrentDirectorySystem.Current);
+                shell.View.WriteLine(fileSystem.RealHomePath + shell.CurrentDirectorySystem.Current);
             }
             else if (options.ContainsKey("a"))
             {
-                shell.WriteLine(shell.CurrentDirectorySystem.GetCurrentFullPath());
+                shell.View.WriteLine(shell.CurrentDirectorySystem.GetCurrentFullPath());
             }
             else
             {
-                shell.WriteLine(shell.CurrentDirectorySystem.Current);
+                shell.View.WriteLine(shell.CurrentDirectorySystem.Current);
             }
 
             return default;

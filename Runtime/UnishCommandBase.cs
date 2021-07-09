@@ -27,7 +27,7 @@ namespace RUtil.Debug.Shell
 
         public virtual bool AllowTrailingNullParams => false;
 
-        protected abstract UniTask Run(IUnish shell, string op, Dictionary<string, UnishCommandArg> args,
+        protected abstract UniTask Run(IUnishPresenter shell, string op, Dictionary<string, UnishCommandArg> args,
             Dictionary<string, UnishCommandArg> options);
 
         private static readonly char[] Separators =
@@ -40,7 +40,7 @@ namespace RUtil.Debug.Shell
 
         public delegate void SubmitErrorAction(string message);
 
-        public async UniTask Run(IUnish shell, string op, string argsNotParsed, SubmitLineAction submitter,
+        public async UniTask Run(IUnishPresenter shell, string op, string argsNotParsed, SubmitLineAction submitter,
             SubmitErrorAction errorSubmitter)
         {
             var isError = false;

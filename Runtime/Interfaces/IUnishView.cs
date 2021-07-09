@@ -12,5 +12,7 @@ namespace RUtil.Debug.Shell
         Color  BackgroundColor     { get; set; }
         UniTask InitializeAsync();
         UniTask DestroyAsync();
+        void Write(string text);
+        UniTask<string> ReadLine();
     }
 }

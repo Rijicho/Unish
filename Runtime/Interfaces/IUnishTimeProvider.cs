@@ -1,6 +1,6 @@
 ﻿namespace RUtil.Debug.Shell
 {
-    public interface ITimeProvider
+    public interface IUnishTimeProvider
     {
         float Now { get; }
     }

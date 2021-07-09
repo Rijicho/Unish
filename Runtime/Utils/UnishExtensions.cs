@@ -9,7 +9,7 @@ namespace RUtil.Debug.Shell
 {
     public static class UnishExtensions
     {
-        public static void SubmitText(this IUnish shell, string line, string leading = "", string colorCode = "",
+        public static void SubmitText(this IUnishPresenter shell, string line, string leading = "", string colorCode = "",
             bool allowOverflow = false)
         {
             if (line.Contains('\n'))
@@ -29,47 +29,47 @@ namespace RUtil.Debug.Shell
             {
                 while (line.Length > hCount)
                 {
-                    shell.WriteLine(string.IsNullOrWhiteSpace(colorCode)
+                    shell.View.WriteLine(string.IsNullOrWhiteSpace(colorCode)
                         ? line.Substring(0, shell.View.HorizontalCharCount)
                         : $"<color={colorCode}>{line.Substring(0, hCount)}</color>");
                     line = line.Substring(hCount, line.Length - hCount);
                 }
             }
 
-            shell.WriteLine(string.IsNullOrWhiteSpace(colorCode) ? line : $"<color={colorCode}>{line}</color>");
+            shell.View.WriteLine(string.IsNullOrWhiteSpace(colorCode) ? line : $"<color={colorCode}>{line}</color>");
         }
 
-        public static void SubmitNewLineIndented(this IUnish shell)
+        public static void SubmitNewLineIndented(this IUnishPresenter shell)
         {
             shell.SubmitTextIndented("", allowOverflow: true);
         }
 
-        public static void SubmitNewLine(this IUnish shell)
+        public static void SubmitNewLine(this IUnishPresenter shell)
         {
-            shell.WriteLine("");
+            shell.View.WriteLine("");
         }
 
-        public static void SubmitTextIndented(this IUnish shell, string line, string colorCode = "",
+        public static void SubmitTextIndented(this IUnishPresenter shell, string line, string colorCode = "",
             bool allowOverflow = false)
         {
             shell.SubmitText(line, "| ", colorCode, allowOverflow);
         }
 
 
-        public static void SubmitSuccess(this IUnish shell, string message)
+        public static void SubmitSuccess(this IUnishPresenter shell, string message)
         {
             shell.SubmitTextIndented(message, "lime");
         }
 
 
-        public static void SubmitError(this IUnish shell, string message)
+        public static void SubmitError(this IUnishPresenter shell, string message)
         {
             shell.SubmitTextIndented($"[Error] {message}", "#ff7777");
         }
 
 
         public static async UniTask<(string selected, int index, SelectionState state)> SuggestAndSelectAsync(
-            this IUnish shell,
+            this IUnishPresenter shell,
             string searchWord,
             IEnumerable<string> candidates,
             bool enableRegex = true,
@@ -131,7 +131,7 @@ namespace RUtil.Debug.Shell
 
                 shell.SubmitTextIndented("Select index: ", "orange");
 
-                var newInput = await shell.ReadLineAsync();
+                var newInput = await shell.View.ReadLine();
 
                 if (string.IsNullOrWhiteSpace(newInput))
                 {
@@ -156,7 +156,7 @@ namespace RUtil.Debug.Shell
             return ("", -1, SelectionState.Failed);
         }
 
-        public static void ChangeDirectorySystem(this IUnish shell, string home)
+        public static void ChangeDirectorySystem(this IUnishPresenter shell, string home)
         {
             foreach (var dir in shell.DirectorySystems)
             {
@@ -165,6 +165,11 @@ namespace RUtil.Debug.Shell
                     shell.CurrentDirectorySystem = dir;
                 }
             }
+        }
+
+        public static void Run(this IUnishPresenter shell)
+        {
+            shell.RunAsync().Forget();
         }
     }
 }

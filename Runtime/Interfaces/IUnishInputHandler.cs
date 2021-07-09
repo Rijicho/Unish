@@ -7,7 +7,9 @@ namespace RUtil.Debug.Shell
         event Action<char> OnTextInput;
 
         void Initialize();
-        void Update();
+        void Quit();
         bool CheckInputOnThisFrame(UnishInputType input);
+
+        char CurrentCharInput { get; }
     }
 }
