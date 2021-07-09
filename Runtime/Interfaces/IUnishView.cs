@@ -7,7 +7,6 @@ namespace RUtil.Debug.Shell
     {
         int    HorizontalCharCount { get; }
         int    MaxLineCount        { get; }
-        string DisplayText         { get; set; }
         Color  DisplayTextColor    { get; set; }
         Color  BackgroundColor     { get; set; }
         UniTask InitializeAsync();

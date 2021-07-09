@@ -7,6 +7,7 @@ namespace RUtil.Debug.Shell
     {
         public override IUnishView                         View              { get; }
         public override IUnishCommandRepository            CommandRepository { get; }
+        public override IUnishCommandRunner                CommandRunner     { get; }
         public override IUnishColorParser                  ColorParser       { get; }
         public override IUnishTimeProvider                 TimeProvider      { get; }
         public override IUnishRcRepository                 RcRepository      { get; }
@@ -15,6 +16,7 @@ namespace RUtil.Debug.Shell
         public DefaultShell()
         {
             CommandRepository = DefaultUnishCommandRepository.Instance;
+            CommandRunner     = new DefaultCommandRunner();
             ColorParser       = DefaultColorParser.Instance;
             TimeProvider      = DefaultTimeProvider.Instance;
             RcRepository      = DefaultUnishRcRepository.Instance;

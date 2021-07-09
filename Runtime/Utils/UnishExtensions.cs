@@ -171,5 +171,10 @@ namespace RUtil.Debug.Shell
         {
             shell.RunAsync().Forget();
         }
+
+        public static UniTask RunCommandAsync(this IUnishPresenter shell, string cmd)
+        {
+            return shell.CommandRunner.RunCommandAsync(shell, cmd);
+        }
     }
 }

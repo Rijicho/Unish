@@ -46,19 +46,6 @@ namespace RUtil.Debug.Shell
         // カーソルの点滅開始時刻
         private float mCursorBrinkStartTime;
 
-
-        public string DisplayText
-        {
-            get => text ? text.text : "";
-            set
-            {
-                if (text)
-                {
-                    text.text = value;
-                }
-            }
-        }
-
         public Color DisplayTextColor
         {
             get => text ? text.color : Color.white;
@@ -142,7 +129,7 @@ namespace RUtil.Debug.Shell
 
         private bool isInputEventUsed;
 
-        public bool OnUpdate()
+        private bool OnUpdate()
         {
             isInputEventUsed = HandleScrollInput();
             if (mInputHandler.CheckInputOnThisFrame(UnishInputType.Quit))
@@ -282,13 +269,11 @@ namespace RUtil.Debug.Shell
             }
             else if (mInputHandler.CheckInputOnThisFrame(UnishInputType.BackSpace))
             {
-                UnityEngine.Debug.Log("bs");
                 if (mInput.Length > 0)
                 {
                     if (mCursorIndex == 0)
                     {
                         mInput = mInput.Substring(0, mInput.Length - 1);
-                        UnityEngine.Debug.Log(mInput);
                     }
                     else if (mCursorIndex < mInput.Length)
                     {
@@ -403,7 +388,7 @@ namespace RUtil.Debug.Shell
                       : $"<color=orange>{TagEscape(mInput.Substring(mInput.Length - mCursorIndex, 1))}</color>")
                   + TagEscape(mInput.Substring(mInput.Length - mCursorIndex + 1));
 
-            DisplayText = mSubmittedLines.Count > 0
+            text.text = mSubmittedLines.Count > 0
                 ? mSubmittedLines
                       .Skip(mSubmittedLines.Count - MaxLineCount - mDisplayLineOffset)
                       .Take(Mathf.Min(MaxLineCount, mSubmittedLines.Count))

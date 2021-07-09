@@ -19,6 +19,7 @@ namespace RUtil.Debug.Shell
         public          UnishState                         State                  { get; private set; }
         public abstract IUnishView                         View                   { get; }
         public abstract IUnishCommandRepository            CommandRepository      { get; }
+        public abstract IUnishCommandRunner                CommandRunner          { get; }
         public abstract IUnishColorParser                  ColorParser            { get; }
         public abstract IUnishTimeProvider                 TimeProvider           { get; }
         public abstract IUnishRcRepository                 RcRepository           { get; }
@@ -40,53 +41,6 @@ namespace RUtil.Debug.Shell
         public void Halt()
         {
             State = UnishState.Quit;
-        }
-
-        public async UniTask RunCommandAsync(string cmd)
-        {
-            if (string.IsNullOrWhiteSpace(cmd))
-            {
-                return;
-            }
-
-            cmd = cmd.TrimStart();
-
-            // エイリアス解決
-            foreach (var kv in CommandRepository.Aliases)
-            {
-                if (cmd.TrimEnd() == kv.Key)
-                {
-                    cmd = kv.Value;
-                    break;
-                }
-
-                if (cmd.StartsWith(kv.Key + " "))
-                {
-                    cmd = kv.Value + cmd.Substring(kv.Key.Length);
-                    break;
-                }
-            }
-
-            // オペランドのみパースし、コマンドが存在すれば実行
-            if (TryPreParseCommand(cmd, out var c, out var op, out var argsNotParsed))
-            {
-                try
-                {
-                    await c.Run(this, op, argsNotParsed, this.SubmitTextIndented, this.SubmitError);
-                }
-                catch (Exception e)
-                {
-                    this.SubmitError(e.Message ?? "");
-                    this.SubmitTextIndented(e.StackTrace, "#ff7777");
-                }
-            }
-            // 失敗時の追加評価処理が定義されていれば実行
-            else if (!await TryRunInvalidCommand(cmd))
-            {
-                this.SubmitError("Unknown Command/Expr. Enter 'h' to show help.");
-            }
-
-            await UniTask.Yield();
         }
 
 
@@ -148,7 +102,7 @@ namespace RUtil.Debug.Shell
                 }
 
                 State = UnishState.Run;
-                await RunCommandAsync(input);
+                await this.RunCommandAsync(input);
             }
 
             UnityEngine.Debug.Log("loopend");
@@ -168,23 +122,6 @@ namespace RUtil.Debug.Shell
                 : Path.GetFileName(CurrentDirectorySystem.Current));
 
 
-        private bool TryPreParseCommand(string cmd, out UnishCommandBase op, out string leading, out string trailing)
-        {
-            leading  = cmd;
-            trailing = "";
-            for (var i = 0; i < cmd.Length; i++)
-            {
-                if (cmd[i] == ' ')
-                {
-                    leading  = cmd.Substring(0, i);
-                    trailing = cmd.Substring(i + 1);
-                    break;
-                }
-            }
-
-            return CommandRepository.Map.TryGetValue(leading, out op)
-                   || CommandRepository.Map.TryGetValue("@" + leading, out op);
-        }
 
         private async UniTask RunRcAndProfile()
         {
@@ -194,7 +131,7 @@ namespace RUtil.Debug.Shell
                 {
                     await foreach (var c in RcRepository.ReadUProfile())
                     {
-                        await RunCommandAsync(c);
+                        await this.RunCommandAsync(c);
                     }
 
                     mIsUprofileExecuted = true;
@@ -202,7 +139,7 @@ namespace RUtil.Debug.Shell
 
                 await foreach (var c in RcRepository.ReadUnishRc())
                 {
-                    await RunCommandAsync(c);
+                    await this.RunCommandAsync(c);
                 }
             }
             catch (Exception e)
