@@ -10,7 +10,7 @@ namespace RUtil.Debug.Shell
     {
         public static string GetCurrentFullPath(this IUnishDirectorySystem directorySystem)
         {
-            return $"/{directorySystem.Home}{directorySystem.Current}";
+            return $"{Root}{directorySystem.Home}{directorySystem.Current}";
         }
 
         public static IEnumerable<(string path, int depth, bool hasChild)> GetCurrentChilds(
@@ -95,12 +95,14 @@ namespace RUtil.Debug.Shell
             for (int i = 0, j = 0; i < input.Length; i++)
             {
                 var c = input[i];
-                if (c != '/' && i != input.Length - 1)
+                if (c != Separator && c != AltSeparator && i != input.Length - 1)
                 {
                     continue;
                 }
 
-                var node = c == '/' ? input.Substring(j, i - j) : input.Substring(j);
+                var node = c == Separator || c == AltSeparator
+                    ? input.Substring(j, i - j)
+                    : input.Substring(j);
                 switch (node)
                 {
                     case CurrentDir:
