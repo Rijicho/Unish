@@ -14,8 +14,8 @@ namespace RUtil.Debug.Shell
 
         bool TryFindEntry(string path, out string fullPath, out bool hasChild);
 
-        bool TryChangeDirectoryTo(string path);
-
+        bool TryChangeDirectory(string homeRelativePath);
+        
         IEnumerable<(string path, int depth, bool hasChild)> GetChilds(string searchRoot, int depth = 0);
 
         void Open(string path);

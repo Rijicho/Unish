@@ -41,20 +41,18 @@ namespace RUtil.Debug.Shell
             return false;
         }
 
-        public bool TryChangeDirectoryTo(string path)
+        public bool TryChangeDirectory(string homeRelativePath)
         {
-            var homeRelative = this.ConvertToHomeRelativePath(path);
-            var realPath     = RealHomePath + homeRelative;
+            var realPath = RealHomePath + homeRelativePath;
             if (!Directory.Exists(realPath))
             {
                 return false;
             }
 
-            Current = homeRelative;
+            Current = homeRelativePath;
             return true;
         }
-
-
+        
         public IEnumerable<(string path, int depth, bool hasChild)> GetChilds(string searchRoot, int depth = 0)
         {
             return GetChildsInternal(searchRoot, depth, depth);

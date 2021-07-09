@@ -7,7 +7,8 @@
         public const string CurrentDir            = ".";
         public const string ParentDir             = "..";
         public const char   Separator             = '/';
-        public const string CurrentRelativePrefix = "./";
-        public const string ParentRelativePrefix  = "../";
+        public static readonly string CurrentRelativePrefix = CurrentDir + Separator;
+        public static readonly string ParentRelativePrefix  = ParentDir + Separator;
+        public static readonly string HomeRelativePrefix    = Home + Separator;
     }
 }

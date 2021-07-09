@@ -20,17 +20,18 @@ namespace RUtil.Debug.Shell
             Dictionary<string, UnishCommandArg> options)
         {
             var target = args["path"].s;
+            var d      = shell.CurrentDirectorySystem;
 
-            if (shell.CurrentDirectorySystem == null)
+            if (d == null)
             {
                 if (target.StartsWith(PathConstants.CurrentRelativePrefix))
                 {
                     target = target.Substring(PathConstants.CurrentRelativePrefix.Length);
                 }
 
-                shell.CurrentDirectorySystem = shell.DirectorySystems.FirstOrDefault(x => x.Home == target);
+                d = shell.CurrentDirectorySystem = shell.DirectorySystems.FirstOrDefault(x => x.Home == target);
 
-                if (shell.CurrentDirectorySystem == null)
+                if (d == null)
                 {
                     shell.SubmitError($"The directory system {target} does not exist.");
                 }
@@ -38,13 +39,13 @@ namespace RUtil.Debug.Shell
                 return default;
             }
 
-            if (shell.CurrentDirectorySystem.IsRoot(target))
+            if (d.IsRoot(target))
             {
                 shell.CurrentDirectorySystem = null;
                 return default;
             }
 
-            if (!shell.CurrentDirectorySystem.TryChangeDirectoryTo(target))
+            if (!d.TryChangeDirectory(d.ConvertToHomeRelativePath(target)))
             {
                 shell.SubmitError("directory not found.");
             }

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Cysharp.Threading.Tasks;
 using static RUtil.Debug.Shell.PathConstants;
 
 namespace RUtil.Debug.Shell
@@ -30,13 +29,23 @@ namespace RUtil.Debug.Shell
         public static string CurrentParent(this IUnishDirectorySystem directorySystem)
         {
             return string.IsNullOrWhiteSpace(directorySystem.Current)
-                ? directorySystem.Current
+                ? null
                 : directorySystem.Current.Substring(0, directorySystem.Current.LastIndexOf(Separator));
         }
 
 
         public static string ConvertToHomeRelativePath(this IUnishDirectorySystem directorySystem, string input)
         {
+            if (input == Root)
+            {
+                return null;
+            }
+
+            if (input[input.Length - 1] == Separator)
+            {
+                input = input.Substring(0, input.Length - 1);
+            }
+
             if (input == CurrentDir)
             {
                 return directorySystem.Current;
@@ -47,35 +56,80 @@ namespace RUtil.Debug.Shell
                 return directorySystem.CurrentParent();
             }
 
-            if (input.StartsWith(CurrentRelativePrefix))
+            if (input == Home)
             {
-                return directorySystem.Current + input.Substring(1);
+                return "";
             }
 
-            if (input.StartsWith(ParentRelativePrefix))
+            //Rootから見たパスに変換
+            if (input.StartsWith(Root))
             {
-                return directorySystem.CurrentParent() + input.Substring(2);
+                input = input.Substring(Root.Length);
             }
-
-            if (input.StartsWith(directorySystem.Home))
+            else if (directorySystem is IUnishRealFileSystem fileSystem && input.StartsWith(fileSystem.RealHomePath))
             {
-                return input.Substring(directorySystem.Home.Length);
+                input = directorySystem.Home + input.Substring(fileSystem.RealHomePath.Length);
             }
-
-            if (directorySystem is IUnishRealFileSystem fileSystem)
+            else
             {
-                if (input.StartsWith(fileSystem.RealHomePath))
+                if (input.StartsWith(HomeRelativePrefix))
                 {
-                    return input.Substring(fileSystem.RealHomePath.Length);
+                    input = directorySystem.Home + input.Substring(Home.Length);
+                }
+                else if (input.StartsWith(CurrentRelativePrefix))
+                {
+                    input = directorySystem.Home + directorySystem.Current + input.Substring(CurrentDir.Length);
+                }
+                else if (input.StartsWith(ParentRelativePrefix))
+                {
+                    input = directorySystem.Home + directorySystem.CurrentParent() + input.Substring(ParentDir.Length);
+                }
+                else
+                {
+                    input = directorySystem.Home + directorySystem.Current + Separator + input;
                 }
             }
 
-            if (input.StartsWith($"{Root}{directorySystem.Home}"))
+            var pathStack = new Stack<string>();
+
+            for (int i = 0, j = 0; i < input.Length; i++)
             {
-                return input.Substring(directorySystem.Home.Length + 2);
+                var c = input[i];
+                if (c != '/' && i != input.Length - 1)
+                {
+                    continue;
+                }
+
+                var node = c == '/' ? input.Substring(j, i - j) : input.Substring(j);
+                switch (node)
+                {
+                    case CurrentDir:
+                        break;
+                    case ParentDir when pathStack.Count > 0:
+                        pathStack.Pop();
+                        break;
+                    case ParentDir:
+                        break;
+                    case Home:
+                        pathStack.Clear();
+                        pathStack.Push(directorySystem.Home);
+                        break;
+                    default:
+                        pathStack.Push(node);
+                        break;
+                }
+
+                j = i + 1;
             }
 
-            return directorySystem.Current + Separator + input;
+            var sb = new StringBuilder();
+            while (pathStack.Count > 1)
+            {
+                sb.Insert(0, pathStack.Pop());
+                sb.Insert(0, Separator);
+            }
+
+            return sb.ToString();
         }
 
         public static string ConvertToRealPath(this IUnishRealFileSystem fileSystem, string input)
