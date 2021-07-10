@@ -2,13 +2,12 @@
 
 namespace RUtil.Debug.Shell
 {
-    public interface IUnishCommandRepository
+    public interface IUnishCommandRepository : IUnishResource
     {
         IReadOnlyList<UnishCommandBase>               Commands { get; }
         IReadOnlyDictionary<string, UnishCommandBase> Map      { get; }
 
         IDictionary<string, string> Aliases { get; }
 
-        void Initialize();
     }
 }

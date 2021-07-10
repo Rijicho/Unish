@@ -10,14 +10,24 @@ namespace RUtil.Debug.Shell
     public class RealFileSystem : IUnishRealFileSystem
     {
         public string HomeName                { get; }
-        public string CurrentHomeRelativePath { get; private set; }
         public string RealHomePath            { get; }
+        public string CurrentHomeRelativePath { get; private set; }
 
         public RealFileSystem(string virtualHomeName, string realHomePath)
         {
             HomeName                = virtualHomeName;
             RealHomePath            = realHomePath;
+        }
+
+        public UniTask InitializeAsync()
+        {
             CurrentHomeRelativePath = "";
+            return default;
+        }
+
+        public UniTask FinalizeAsync()
+        {
+            return default;
         }
 
         public bool TryFindEntry(string homeReativePath, out bool isDirectory)

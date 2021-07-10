@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 
 namespace RUtil.Debug.Shell
 {
-    public interface IUnishDirectoryRoot
+    public interface IUnishDirectoryRoot : IUnishResource
     {
         UnishDirectoryEntry Current     { get; }
         IUnishDirectoryHome CurrentHome { get; }

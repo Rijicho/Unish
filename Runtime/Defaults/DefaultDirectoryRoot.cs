@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Cysharp.Threading.Tasks;
+using UnityEngine;
 
 namespace RUtil.Debug.Shell
 {
     public class DefaultDirectoryRoot : IUnishDirectoryRoot
     {
-        private readonly IUnishDirectoryHome[] mDirectories;
+        private IUnishDirectoryHome[] mDirectories;
         public           IUnishDirectoryHome   CurrentHome { get; private set; }
 
         public UnishDirectoryEntry Current => UnishDirectoryEntry.Create(
@@ -16,9 +17,22 @@ namespace RUtil.Debug.Shell
             CurrentHome == null ? "" : CurrentHome.CurrentHomeRelativePath,
             true);
 
-        public DefaultDirectoryRoot(IEnumerable<IUnishDirectoryHome> directories)
+        public UniTask InitializeAsync()
         {
-            mDirectories = directories.ToArray();
+            mDirectories = new[]
+            {
+                new RealFileSystem("PersistentData", Application.persistentDataPath),
+            };
+            CurrentHome = mDirectories[0];
+
+            return UniTask.WhenAll(mDirectories.Select(d => d.InitializeAsync()));
+        }
+
+        public UniTask FinalizeAsync()
+        {
+            CurrentHome  = null;
+            mDirectories = null;
+            return UniTask.WhenAll(mDirectories.Select(d => d.FinalizeAsync()));;
         }
 
         public bool TryFindEntry(string path, out UnishDirectoryEntry entry)

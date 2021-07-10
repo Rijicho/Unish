@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Cysharp.Threading.Tasks;
 
 namespace RUtil.Debug.Shell
 {
@@ -35,7 +36,7 @@ namespace RUtil.Debug.Shell
 
         private Type[] mCommandTypesCache;
 
-        public void Initialize()
+        public UniTask InitializeAsync()
         {
             mMap.Clear();
             mCommands.Clear();
@@ -64,6 +65,14 @@ namespace RUtil.Debug.Shell
                     mMap["@" + alias] = instance;
                 }
             }
+
+            return default;
+        }
+
+        public UniTask FinalizeAsync()
+        {
+            mInstance = null;
+            return default;
         }
     }
 }

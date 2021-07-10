@@ -19,8 +19,6 @@ namespace RUtil.Debug.Shell
         public abstract IUnishCommandRepository CommandRepository { get; }
         public abstract IUnishCommandRunner     CommandRunner     { get; }
         public abstract IUnishColorParser       ColorParser       { get; }
-        public abstract IUnishTimeProvider      TimeProvider      { get; }
-        public abstract IUnishRcRepository      RcRepository      { get; }
         public abstract IUnishDirectoryRoot     Directory         { get; }
         public          string                  Prompt            { get; set; } = "> ";
 
@@ -44,11 +42,6 @@ namespace RUtil.Debug.Shell
         // ----------------------------------
         // protected methods
         // ----------------------------------
-
-        protected virtual UniTask<bool> TryRunInvalidCommand(string cmd)
-        {
-            return UniTask.FromResult(false);
-        }
 
         protected virtual UniTask OnPreOpenAsync()
         {
@@ -81,7 +74,9 @@ namespace RUtil.Debug.Shell
 
             await OnPreOpenAsync();
             await IO.InitializeAsync();
-            CommandRepository.Initialize();
+            await Directory.InitializeAsync();
+            await CommandRepository.InitializeAsync();
+            await CommandRunner.InitializeAsync();
             await OnPostOpenAsync();
             await RunRcAndProfile();
         }
@@ -106,7 +101,10 @@ namespace RUtil.Debug.Shell
         private async UniTask Quit()
         {
             await OnPreCloseAsync();
-            await IO.DestroyAsync();
+            await CommandRunner.FinalizeAsync();
+            await CommandRepository.FinalizeAsync();
+            await Directory.FinalizeAsync();
+            await IO.FinalizeAsync();
             await OnPostCloseAsync();
             State = UnishState.None;
         }
@@ -141,17 +139,23 @@ namespace RUtil.Debug.Shell
             {
                 if (!mIsUprofileExecuted)
                 {
-                    await foreach (var c in RcRepository.ReadUProfile())
+                    if (Directory.TryFindEntry("~/.uprofile", out _))
                     {
-                        await this.RunCommandAsync(c);
+                        await foreach (var c in Directory.ReadLines("~/.uprofile"))
+                        {
+                            await CommandRunner.RunCommandAsync(this, c);
+                        }
                     }
 
                     mIsUprofileExecuted = true;
                 }
 
-                await foreach (var c in RcRepository.ReadUnishRc())
+                if (Directory.TryFindEntry("~/.unishrc", out _))
                 {
-                    await this.RunCommandAsync(c);
+                    await foreach (var c in Directory.ReadLines("~/.unishrc"))
+                    {
+                        await this.RunCommandAsync(c);
+                    }
                 }
             }
             catch (Exception e)

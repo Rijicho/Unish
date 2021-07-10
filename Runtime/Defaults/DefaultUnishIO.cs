@@ -111,7 +111,7 @@ namespace RUtil.Debug.Shell
             text.rectTransform.sizeDelta       = new Vector2(text.preferredWidth, text.preferredHeight);
             background.rectTransform.sizeDelta = new Vector2(text.preferredWidth + 20, text.preferredHeight + 20);
             text.text                          = "";
-            mInputHandler.Initialize();
+            await mInputHandler.InitializeAsync();
 
             StartUpdate().Forget();
         }
@@ -144,14 +144,14 @@ namespace RUtil.Debug.Shell
 
         public event Action OnHaltInput;
 
-        public async UniTask DestroyAsync()
+        public async UniTask FinalizeAsync()
         {
             if (!loadedScene.IsValid())
             {
                 throw new Exception("Unish scene has not been loaded.");
             }
 
-            mInputHandler.Quit();
+            await mInputHandler.FinalizeAsync();
             await SceneManager.UnloadSceneAsync(loadedScene);
             text        = null;
             background  = null;

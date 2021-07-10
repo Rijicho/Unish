@@ -8,10 +8,8 @@ namespace RUtil.Debug.Shell
         IUnishCommandRepository CommandRepository { get; }
         IUnishCommandRunner     CommandRunner     { get; }
         IUnishColorParser       ColorParser       { get; }
-        IUnishTimeProvider      TimeProvider      { get; }
-        IUnishRcRepository      RcRepository      { get; }
         IUnishDirectoryRoot     Directory         { get; }
-        string                  Prompt            { get; set; }
+        string                  Prompt            { set; }
 
         UniTask RunAsync();
         void Halt();

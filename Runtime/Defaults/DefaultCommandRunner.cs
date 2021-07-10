@@ -8,6 +8,16 @@ namespace RUtil.Debug.Shell
         // ----------------------------------
         // public methods
         // ----------------------------------
+        public UniTask InitializeAsync()
+        {
+            return default;
+        }
+
+        public UniTask FinalizeAsync()
+        {
+            return default;
+        }
+
         public async UniTask RunCommandAsync(IUnishPresenter shell, string cmd)
         {
             if (string.IsNullOrWhiteSpace(cmd))
