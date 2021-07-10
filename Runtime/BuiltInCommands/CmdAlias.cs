@@ -67,7 +67,7 @@ namespace RUtil.Debug.Shell
                 return default;
             }
 
-            if (shell.CommandRepository.Commands.Count(x => x.Ops.Contains(alias)) > 0)
+            if (shell.CommandRunner.Repository.Commands.Count(x => x.Ops.Contains(alias)) > 0)
             {
                 shell.SubmitError($"The command {alias} already exists.");
                 return default;

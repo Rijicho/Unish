@@ -6,23 +6,24 @@ namespace RUtil.Debug.Shell
 {
     public class DefaultCommandRunner : IUnishCommandRunner
     {
-        public IDictionary<string, string> Aliases => mAliases;
-
-        private Dictionary<string, string> mAliases;
+        public IUnishCommandRepository     Repository { get; private set; }
+        public IDictionary<string, string> Aliases    { get; private set; }
 
         // ----------------------------------
         // public methods
         // ----------------------------------
         public UniTask InitializeAsync()
         {
-            mAliases = new Dictionary<string, string>();
-            return default;
+            Repository = DefaultUnishCommandRepository.Instance;
+            Aliases    = new Dictionary<string, string>();
+            return Repository.InitializeAsync();
         }
 
-        public UniTask FinalizeAsync()
+        public async UniTask FinalizeAsync()
         {
-            mAliases = null;
-            return default;
+            await Repository.FinalizeAsync();
+            Aliases    = null;
+            Repository = null;
         }
 
         public async UniTask RunCommandAsync(IUnishPresenter shell, string cmd)
@@ -51,7 +52,7 @@ namespace RUtil.Debug.Shell
             }
 
             // オペランドのみパースし、コマンドが存在すれば実行
-            if (TryPreParseCommand(shell.CommandRepository, cmd,
+            if (TryPreParseCommand(Repository, cmd,
                 out var c, out var op, out var argsNotParsed))
             {
                 try

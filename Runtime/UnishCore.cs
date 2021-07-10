@@ -14,13 +14,12 @@ namespace RUtil.Debug.Shell
         // ----------------------------------
         // properties
         // ----------------------------------
-        public          UnishState              State             { get; private set; }
-        public abstract IUnishIO                IO                { get; }
-        public abstract IUnishCommandRepository CommandRepository { get; }
-        public abstract IUnishCommandRunner     CommandRunner     { get; }
-        public abstract IUnishColorParser       ColorParser       { get; }
-        public abstract IUnishDirectoryRoot     Directory         { get; }
-        public          string                  Prompt            { get; set; } = "> ";
+        public          UnishState          State         { get; private set; }
+        public abstract IUnishIO            IO            { get; }
+        public abstract IUnishCommandRunner CommandRunner { get; }
+        public abstract IUnishColorParser   ColorParser   { get; }
+        public abstract IUnishDirectoryRoot Directory     { get; }
+        public          string              Prompt        { get; set; } = "> ";
 
         // ----------------------------------
         // public methods
@@ -75,7 +74,7 @@ namespace RUtil.Debug.Shell
             await OnPreOpenAsync();
             await IO.InitializeAsync();
             await Directory.InitializeAsync();
-            await CommandRepository.InitializeAsync();
+            //await CommandRepository.InitializeAsync();
             await CommandRunner.InitializeAsync();
             await OnPostOpenAsync();
             await RunRcAndProfile();
@@ -102,7 +101,7 @@ namespace RUtil.Debug.Shell
         {
             await OnPreCloseAsync();
             await CommandRunner.FinalizeAsync();
-            await CommandRepository.FinalizeAsync();
+            //await CommandRepository.FinalizeAsync();
             await Directory.FinalizeAsync();
             await IO.FinalizeAsync();
             await OnPostCloseAsync();
