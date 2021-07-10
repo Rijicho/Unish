@@ -4,7 +4,7 @@ namespace RUtil.Debug.Shell
 {
     public sealed class DefaultShell : UnishCore
     {
-        public override IUnishView              View              { get; }
+        public override IUnishIO                IO                { get; }
         public override IUnishCommandRepository CommandRepository { get; }
         public override IUnishCommandRunner     CommandRunner     { get; }
         public override IUnishColorParser       ColorParser       { get; }
@@ -20,7 +20,7 @@ namespace RUtil.Debug.Shell
             ColorParser       = DefaultColorParser.Instance;
             TimeProvider      = DefaultTimeProvider.Instance;
             RcRepository      = DefaultUnishRcRepository.Instance;
-            View              = new DefaultUnishView(inputHandler, TimeProvider);
+            IO                = new DefaultUnishIO(inputHandler, TimeProvider);
             Directory = new DefaultDirectoryRoot(new[]
             {
                 new RealFileSystem("pdp", Application.persistentDataPath),

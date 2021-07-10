@@ -42,7 +42,7 @@ namespace RUtil.Debug.Shell
                 }
 
                 var maxCharCountPerChild = childs.Max(x => x.Name.Length) + 1;
-                var maxCharCountPerLine  = shell.View.HorizontalCharCount;
+                var maxCharCountPerLine  = shell.IO.HorizontalCharCount;
                 var childNumPerLine      = maxCharCountPerLine / maxCharCountPerChild;
                 var log                  = "";
                 for (var i = 0; i < childs.Count; i++)

@@ -4,7 +4,7 @@ namespace RUtil.Debug.Shell
 {
     public interface IUnishPresenter
     {
-        IUnishView              View              { get; }
+        IUnishIO                IO                { get; }
         IUnishCommandRepository CommandRepository { get; }
         IUnishCommandRunner     CommandRunner     { get; }
         IUnishColorParser       ColorParser       { get; }

@@ -25,6 +25,7 @@ namespace RUtil.Debug.Shell
             {
                 throw new InvalidOperationException("Empty-named home cannot exist.");
             }
+
             return new UnishDirectoryEntry(homeName, "", true);
         }
 
@@ -34,6 +35,7 @@ namespace RUtil.Debug.Shell
             {
                 throw new InvalidOperationException("Empty-named home cannot exist.");
             }
+
             return new UnishDirectoryEntry(homeName, homeRelativePath, true);
         }
 
@@ -43,10 +45,12 @@ namespace RUtil.Debug.Shell
             {
                 throw new InvalidOperationException("Empty-named home cannot exist.");
             }
+
             if (string.IsNullOrWhiteSpace(homeRelativePath))
             {
                 throw new InvalidOperationException("Home directory is not a file.");
             }
+
             return new UnishDirectoryEntry(homeName, homeRelativePath, false);
         }
 

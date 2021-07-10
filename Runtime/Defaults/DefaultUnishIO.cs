@@ -10,7 +10,7 @@ using UnityEngine.UI;
 
 namespace RUtil.Debug.Shell
 {
-    public class DefaultUnishView : IUnishView
+    public class DefaultUnishIO : IUnishIO
     {
         private const    string             SceneName = "UnishDefault";
         private readonly IUnishInputHandler mInputHandler;
@@ -158,7 +158,7 @@ namespace RUtil.Debug.Shell
             loadedScene = default;
         }
 
-        public void Write(string input)
+        public UniTask WriteAsync(string input)
         {
             if (mSubmittedLines.Count == 0)
             {
@@ -181,11 +181,13 @@ namespace RUtil.Debug.Shell
             {
                 mSubmittedLines[mSubmittedLines.Count - 1] += input.Substring(j);
             }
+
+            return default;
         }
 
         private bool mIsReading;
 
-        public async UniTask<string> ReadLine()
+        public async UniTask<string> ReadAsync()
         {
             mIsReading = true;
             string ret = null;
@@ -199,13 +201,13 @@ namespace RUtil.Debug.Shell
             return ret;
         }
 
-        public DefaultUnishView()
+        public DefaultUnishIO()
         {
             mTimeProvider = DefaultTimeProvider.Instance;
             mInputHandler = new DefaultUnishInputHandler(mTimeProvider);
         }
 
-        public DefaultUnishView(IUnishInputHandler inputHandler, IUnishTimeProvider timeProvider)
+        public DefaultUnishIO(IUnishInputHandler inputHandler, IUnishTimeProvider timeProvider)
         {
             mInputHandler = inputHandler;
             mTimeProvider = timeProvider;

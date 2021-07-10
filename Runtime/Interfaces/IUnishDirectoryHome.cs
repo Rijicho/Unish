@@ -6,13 +6,13 @@ namespace RUtil.Debug.Shell
     public interface IUnishDirectoryHome
     {
         /// <summary>
-        /// $"/{HomeName}" = "~"
+        ///     $"/{HomeName}" = "~"
         /// </summary>
         string HomeName { get; }
 
         /// <summary>
-        /// <p>Virtual home-relative path of current directory.</p>
-        /// <p>Virtual absolute path will be: $"/{HomeName}{CurrentHomeRelativePath}"</p>
+        ///     <p>Virtual home-relative path of current directory.</p>
+        ///     <p>Virtual absolute path will be: $"/{HomeName}{CurrentHomeRelativePath}"</p>
         /// </summary>
         string CurrentHomeRelativePath { get; }
 

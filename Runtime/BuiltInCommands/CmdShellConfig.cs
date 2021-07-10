@@ -33,7 +33,7 @@ namespace RUtil.Debug.Shell
             {
                 case "bgcolor":
                     {
-                        shell.View.BackgroundColor = shell.ColorParser.Parse(args["value"].s ?? "#000000AA");
+                        shell.IO.BackgroundColor = shell.ColorParser.Parse(args["value"].s ?? "#000000AA");
                         return default;
                     }
                 case "prompt":

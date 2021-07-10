@@ -1,10 +1,12 @@
-﻿namespace RUtil.Debug.Shell
+﻿using Cysharp.Threading.Tasks;
+
+namespace RUtil.Debug.Shell
 {
     public static class UnishViewExtensions
     {
-        public static void WriteLine(this IUnishView view, string line)
+        public static UniTask WriteLine(this IUnishIO io, string line)
         {
-            view.Write(line+"\n");
+            return io.WriteAsync(line + "\n");
         }
     }
 }

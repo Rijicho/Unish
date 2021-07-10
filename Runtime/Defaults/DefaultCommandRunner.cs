@@ -56,16 +56,19 @@ namespace RUtil.Debug.Shell
             await UniTask.Yield();
         }
 
-        
+
         // ----------------------------------
         // protected methods
         // ----------------------------------
-        protected virtual UniTask<bool> TryRunInvalidCommand(string cmd) => UniTask.FromResult(false);
-        
+        protected virtual UniTask<bool> TryRunInvalidCommand(string cmd)
+        {
+            return UniTask.FromResult(false);
+        }
+
         // ----------------------------------
         // private methods
         // ----------------------------------
-        
+
         private bool TryPreParseCommand(IUnishCommandRepository repository, string cmd, out UnishCommandBase op, out string leading, out string trailing)
         {
             leading  = cmd;

@@ -1,5 +1,4 @@
 ﻿using Cysharp.Threading.Tasks;
-using Cysharp.Threading.Tasks.Linq;
 
 namespace RUtil.Debug.Shell
 {
@@ -8,7 +7,7 @@ namespace RUtil.Debug.Shell
         private static IUnishPresenter mShell;
 
         public static bool IsRunning { get; private set; }
-        
+
         public static void Start<T>()
             where T : IUnishPresenter, new()
         {
@@ -19,8 +18,8 @@ namespace RUtil.Debug.Shell
         {
             mShell?.Halt();
         }
-            
-        
+
+
         public static async UniTask StartAsync<T>()
             where T : IUnishPresenter, new()
         {
@@ -41,7 +40,9 @@ namespace RUtil.Debug.Shell
         {
             mShell?.Halt();
             while (IsRunning)
+            {
                 await UniTask.Yield();
+            }
         }
     }
 }

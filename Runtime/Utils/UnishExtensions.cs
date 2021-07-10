@@ -24,19 +24,19 @@ namespace RUtil.Debug.Shell
 
             line = leading + line;
 
-            var hCount = shell.View.HorizontalCharCount;
+            var hCount = shell.IO.HorizontalCharCount;
             if (!allowOverflow)
             {
                 while (line.Length > hCount)
                 {
-                    shell.View.WriteLine(string.IsNullOrWhiteSpace(colorCode)
-                        ? line.Substring(0, shell.View.HorizontalCharCount)
+                    shell.IO.WriteLine(string.IsNullOrWhiteSpace(colorCode)
+                        ? line.Substring(0, shell.IO.HorizontalCharCount)
                         : $"<color={colorCode}>{line.Substring(0, hCount)}</color>");
                     line = line.Substring(hCount, line.Length - hCount);
                 }
             }
 
-            shell.View.WriteLine(string.IsNullOrWhiteSpace(colorCode) ? line : $"<color={colorCode}>{line}</color>");
+            shell.IO.WriteLine(string.IsNullOrWhiteSpace(colorCode) ? line : $"<color={colorCode}>{line}</color>");
         }
 
         public static void SubmitNewLineIndented(this IUnishPresenter shell)
@@ -46,7 +46,7 @@ namespace RUtil.Debug.Shell
 
         public static void SubmitNewLine(this IUnishPresenter shell)
         {
-            shell.View.WriteLine("");
+            shell.IO.WriteLine("");
         }
 
         public static void SubmitTextIndented(this IUnishPresenter shell, string line, string colorCode = "",
@@ -115,7 +115,7 @@ namespace RUtil.Debug.Shell
             if (suggestion.Count > 0)
             {
                 var longest = suggestion.Max(x => (entryFormatter?.Invoke(x) ?? x).Length);
-                longest = Mathf.Min(longest, shell.View.HorizontalCharCount - 10);
+                longest = Mathf.Min(longest, shell.IO.HorizontalCharCount - 10);
                 var i = 0;
                 foreach (var s in suggestion)
                 {
@@ -131,7 +131,7 @@ namespace RUtil.Debug.Shell
 
                 shell.SubmitTextIndented("Select index: ", "orange");
 
-                var newInput = await shell.View.ReadLine();
+                var newInput = await shell.IO.ReadAsync();
 
                 if (string.IsNullOrWhiteSpace(newInput))
                 {

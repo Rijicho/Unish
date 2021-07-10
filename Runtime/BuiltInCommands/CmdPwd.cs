@@ -25,29 +25,29 @@ namespace RUtil.Debug.Shell
         {
             if (options.ContainsKey("r") && shell.Directory.CurrentHome is IUnishRealFileSystem fileSystem)
             {
-                shell.View.WriteLine(fileSystem.RealHomePath + shell.Directory.Current.HomeRelativePath);
+                shell.IO.WriteLine(fileSystem.RealHomePath + shell.Directory.Current.HomeRelativePath);
                 return default;
             }
 
             if (options.ContainsKey("a"))
             {
-                shell.View.WriteLine(shell.Directory.Current.FullPath);
+                shell.IO.WriteLine(shell.Directory.Current.FullPath);
                 return default;
             }
 
             if (shell.Directory.Current.IsRoot)
             {
-                shell.View.WriteLine(PathConstants.Root);
+                shell.IO.WriteLine(PathConstants.Root);
                 return default;
             }
 
             if (shell.Directory.Current.IsHome)
             {
-                shell.View.WriteLine(PathConstants.Home);
+                shell.IO.WriteLine(PathConstants.Home);
                 return default;
             }
 
-            shell.View.WriteLine(PathConstants.HomeRelativePrefix + shell.Directory.Current.HomeRelativePath);
+            shell.IO.WriteLine(PathConstants.HomeRelativePrefix + shell.Directory.Current.HomeRelativePath);
 
             return default;
         }

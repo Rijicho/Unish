@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using Cysharp.Threading.Tasks;
 
 namespace RUtil.Debug.Shell
@@ -15,16 +14,15 @@ namespace RUtil.Debug.Shell
         // ----------------------------------
         // properties
         // ----------------------------------
-        public          UnishState              State                  { get; private set; }
-        public abstract IUnishView              View                   { get; }
-        public abstract IUnishCommandRepository CommandRepository      { get; }
-        public abstract IUnishCommandRunner     CommandRunner          { get; }
-        public abstract IUnishColorParser       ColorParser            { get; }
-        public abstract IUnishTimeProvider      TimeProvider           { get; }
-        public abstract IUnishRcRepository      RcRepository           { get; }
-        public abstract IUnishDirectoryRoot     Directory              { get; }
-        public          IUnishDirectoryHome   CurrentDirectorySystem { get; set; }
-        public          string                  Prompt                 { get; set; } = "> ";
+        public          UnishState              State             { get; private set; }
+        public abstract IUnishIO                IO                { get; }
+        public abstract IUnishCommandRepository CommandRepository { get; }
+        public abstract IUnishCommandRunner     CommandRunner     { get; }
+        public abstract IUnishColorParser       ColorParser       { get; }
+        public abstract IUnishTimeProvider      TimeProvider      { get; }
+        public abstract IUnishRcRepository      RcRepository      { get; }
+        public abstract IUnishDirectoryRoot     Directory         { get; }
+        public          string                  Prompt            { get; set; } = "> ";
 
         // ----------------------------------
         // public methods
@@ -82,7 +80,7 @@ namespace RUtil.Debug.Shell
             State = UnishState.Init;
 
             await OnPreOpenAsync();
-            await View.InitializeAsync();
+            await IO.InitializeAsync();
             CommandRepository.Initialize();
             await OnPostOpenAsync();
             await RunRcAndProfile();
@@ -93,8 +91,8 @@ namespace RUtil.Debug.Shell
             while (State != UnishState.Quit)
             {
                 State = UnishState.Wait;
-                View.Write(ParsedPrompt);
-                var input = await View.ReadLine();
+                await IO.WriteAsync(ParsedPrompt);
+                var input = await IO.ReadAsync();
                 if (string.IsNullOrWhiteSpace(input))
                 {
                     continue;
@@ -108,7 +106,7 @@ namespace RUtil.Debug.Shell
         private async UniTask Quit()
         {
             await OnPreCloseAsync();
-            await View.DestroyAsync();
+            await IO.DestroyAsync();
             await OnPostCloseAsync();
             State = UnishState.None;
         }
@@ -131,6 +129,7 @@ namespace RUtil.Debug.Shell
                 {
                     return Prompt.Replace("%d", PathConstants.Home);
                 }
+
                 return Prompt.Replace("%d", Directory.Current.Name);
             }
         }
