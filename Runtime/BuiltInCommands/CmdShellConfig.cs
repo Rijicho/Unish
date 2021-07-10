@@ -26,7 +26,7 @@ namespace RUtil.Debug.Shell
         {
             if (string.IsNullOrEmpty(args["key"].s))
             {
-                return shell.RunCommandAsync("man shpref");
+                return shell.Interpreter.RunCommandAsync(shell, "man shpref");
             }
 
             switch (args["key"].s)
@@ -37,7 +37,7 @@ namespace RUtil.Debug.Shell
                         return default;
                     }
                 default:
-                    return shell.RunCommandAsync("man shpref");
+                    return shell.Interpreter.RunCommandAsync(shell, "man shpref");
             }
         }
     }

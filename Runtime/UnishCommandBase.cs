@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
 
@@ -40,8 +41,7 @@ namespace RUtil.Debug.Shell
 
         public delegate void SubmitErrorAction(string message);
 
-        public async UniTask Run(IUnishPresenter shell, string op, string argsNotParsed, SubmitLineAction submitter,
-            SubmitErrorAction errorSubmitter)
+        public async UniTask Run(IUnishPresenter shell, string op, string argsNotParsed)
         {
             var isError = false;
             var dic     = new Dictionary<string, UnishCommandArg>();
@@ -51,7 +51,7 @@ namespace RUtil.Debug.Shell
             {
                 if (!AllowTrailingNullParams && string.IsNullOrWhiteSpace(argsNotParsed))
                 {
-                    SubmitUsage(op, submitter);
+                    await SubmitUsage(op, shell.IO);
                     return;
                 }
 
@@ -133,15 +133,15 @@ namespace RUtil.Debug.Shell
 
                     if (!found)
                     {
-                        errorSubmitter("Invalid Option.");
-                        SubmitUsage(op, submitter);
+                        await shell.IO.WriteErrorAsync(new Exception("Invalid Option."));
+                        await SubmitUsage(op, shell.IO);
                         return;
                     }
                 }
                 else if (j >= Params.Length)
                 {
-                    errorSubmitter("Too many arguments.");
-                    SubmitUsage(op, submitter);
+                    await shell.IO.WriteErrorAsync(new Exception("Too many arguments."));
+                    await SubmitUsage(op, shell.IO);
                     return;
                 }
                 else if (args[i] == "_")
@@ -154,7 +154,7 @@ namespace RUtil.Debug.Shell
                         }
                         else
                         {
-                            errorSubmitter($"Argument <{Params[j].name}> is required.");
+                            await shell.IO.WriteErrorAsync(new Exception($"Argument <{Params[j].name}> is required."));
                             isError = true;
                         }
                     }
@@ -163,7 +163,7 @@ namespace RUtil.Debug.Shell
                         dic[Params[j].name] = new UnishCommandArg(Params[j].type, Params[j].defVal);
                         if (dic[Params[j].name].Type == UnishCommandArgType.Error)
                         {
-                            errorSubmitter($"Type mismatch: {Params[j]} is not {Params[j].type}.");
+                            await shell.IO.WriteErrorAsync(new Exception($"Type mismatch: {Params[j]} is not {Params[j].type}."));
                             isError = true;
                         }
                     }
@@ -175,7 +175,7 @@ namespace RUtil.Debug.Shell
                     dic[Params[j].name] = new UnishCommandArg(Params[j].type, args[i]);
                     if (dic[Params[j].name].Type == UnishCommandArgType.Error)
                     {
-                        errorSubmitter($"Type mismatch: {args[i]} is not {Params[j].type}.");
+                        await shell.IO.WriteErrorAsync(new Exception($"Type mismatch: {args[i]} is not {Params[j].type}."));
                         isError = true;
                     }
 
@@ -193,7 +193,7 @@ namespace RUtil.Debug.Shell
                     }
                     else
                     {
-                        errorSubmitter($"Argument <{Params[j].name}> is required.");
+                        await shell.IO.WriteErrorAsync(new Exception($"Argument <{Params[j].name}> is required."));
                         isError = true;
                     }
                 }
@@ -202,7 +202,7 @@ namespace RUtil.Debug.Shell
                     dic[Params[j].name] = new UnishCommandArg(Params[j].type, Params[j].defVal);
                     if (dic[Params[j].name].Type == UnishCommandArgType.Error)
                     {
-                        errorSubmitter($"Type mismatch: {Params[j]} is not {Params[j].type}.");
+                        await shell.IO.WriteErrorAsync(new Exception($"Type mismatch: {Params[j]} is not {Params[j].type}."));
                         isError = true;
                     }
                 }
@@ -210,24 +210,24 @@ namespace RUtil.Debug.Shell
 
             if (isError)
             {
-                SubmitUsage(op, submitter);
+                await SubmitUsage(op, shell.IO);
                 return;
             }
 
             await Run(shell, op, dic, options);
         }
 
-        public void SubmitUsage(SubmitLineAction submitter, bool drawTopLine = true, bool drawBottomLine = true)
+        public async UniTask SubmitUsage(IUnishIO io, bool drawTopLine = true, bool drawBottomLine = true)
         {
-            SubmitUsage(Ops[0], submitter, drawTopLine, drawBottomLine);
+            await SubmitUsage(Ops[0], io, drawTopLine, drawBottomLine);
         }
 
-        public void SubmitUsage(string op, SubmitLineAction submitter, bool drawTopLine = true,
+        public async UniTask SubmitUsage(string op, IUnishIO io, bool drawTopLine = true,
             bool drawBottomLine = true)
         {
             if (drawTopLine)
             {
-                submitter("+-----------------------------+", "#aaaaaa", false);
+                await io.WriteLineAsync("+-----------------------------+", "#aaaaaa");
             }
 
             var i = 0;
@@ -240,53 +240,51 @@ namespace RUtil.Debug.Shell
                         ? $"<<color=cyan>{x.type}</color> <color=#77ff77>{x.name}</color>>"
                         : $"<<color=cyan>{x.type}</color> <color=#77ff77>{x.name}</color>=<color=#aaaaaa>{(x.defVal == "" ? "\"\"" : x.defVal)}</color>>");
 
-            submitter($"<color=yellow>{op}</color> {optionString}{argString}", "orange",
-                true);
+            await io.WriteLineAsync($"<color=yellow>{op}</color> {optionString}{argString}");
 
             var labelWidth = 20;
             if (Params.Length > 0 && Params.Any(p => !string.IsNullOrEmpty(p.info)))
             {
-                submitter("params:", "#aaaaaa", false);
+                await io.WriteLineAsync("<color=#aaaaaa>params:</color>");
                 foreach (var p in Params)
                 {
-                    submitter(
-                        $" <color=#77ff77>{p.name.PadRight(labelWidth)}</color>{p.info}", "#aaaaaa",
-                        true);
+                    await io.WriteLineAsync(
+                        $" <color=#aaaaaa><color=#77ff77>{p.name.PadRight(labelWidth)}</color>{p.info}</color>");
                 }
             }
 
             if (Options?.Length > 0)
             {
-                submitter("options:", "#aaaaaa", false);
+                await io.WriteLineAsync("options", "#aaaaaa");
                 foreach (var option in Options)
                 {
                     if (option.type == UnishCommandArgType.None)
                     {
-                        submitter(
-                            $" <color=#ff7777>-{option.name.PadRight(labelWidth - 1)}</color>{option.info}", "#aaaaaa",
-                            true);
+                        await io.WriteColoredAsync(
+                            $" <color=#ff7777>-{option.name.PadRight(labelWidth - 1)}</color>{option.info}", "#aaaaaa"
+                            );
                     }
                     else
                     {
                         var padding = labelWidth - 1 - option.name.Length - 3 - option.type.ToString().Length;
-                        submitter(
+                        await io.WriteColoredAsync(
                             $" <color=#ff7777>-{option.name}</color> <<color=cyan>{option.type}</color>>" +
-                            new string(' ', padding) + option.info, "#aaaaaa", true);
+                            new string(' ', padding) + option.info, "#aaaaaa");
                     }
                 }
 
-                submitter("", "#aaaaaa", false);
+                await io.WriteColoredAsync("", "#aaaaaa");
             }
 
             var usage = Usage(op);
             if (!string.IsNullOrEmpty(usage))
             {
-                submitter(usage, "#aaaaaa", false);
+                await io.WriteLineAsync(usage, "#aaaaaa");
             }
 
             if (drawBottomLine)
             {
-                submitter("+-----------------------------+", "#aaaaaa", false);
+                await io.WriteLineAsync("+-----------------------------+", "#aaaaaa");
             }
         }
     }

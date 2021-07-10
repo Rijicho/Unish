@@ -20,7 +20,7 @@ namespace RUtil.Debug.Shell
             (UnishCommandArgType.Int, "R", "0", "list up recursively (DFS)"),
         };
 
-        protected override UniTask Run(IUnishPresenter shell, string op, Dictionary<string, UnishCommandArg> args,
+        protected override async UniTask Run(IUnishPresenter shell, string op, Dictionary<string, UnishCommandArg> args,
             Dictionary<string, UnishCommandArg> options)
         {
             var maxDepth = options.TryGetValue("R", out var value) ? value.i : 0;
@@ -29,7 +29,7 @@ namespace RUtil.Debug.Shell
             {
                 foreach (var (entry, depth) in shell.Directory.GetCurrentChilds(maxDepth))
                 {
-                    shell.SubmitTextIndented(new string(' ', depth * 2) + entry.Name);
+                    await shell.IO.WriteLineAsync("| "+new string(' ', depth * 2) + entry.Name);
                 }
             }
             else
@@ -38,7 +38,7 @@ namespace RUtil.Debug.Shell
                 var childs           = childsEnumerable.ToList();
                 if (childs.Count == 0)
                 {
-                    return default;
+                    return;
                 }
 
                 var maxCharCountPerChild = childs.Max(x => x.Name.Length) + 1;
@@ -59,18 +59,16 @@ namespace RUtil.Debug.Shell
 
                     if (i % childNumPerLine == childNumPerLine - 1)
                     {
-                        shell.SubmitText(log, allowOverflow: true);
+                        await shell.IO.WriteLineAsync(log);
                         log = "";
                     }
                 }
 
                 if (!string.IsNullOrEmpty(log))
                 {
-                    shell.SubmitText(log, allowOverflow: true);
+                    await shell.IO.WriteLineAsync(log);
                 }
             }
-
-            return default;
         }
     }
 }

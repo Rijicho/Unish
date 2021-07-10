@@ -91,7 +91,7 @@ namespace RUtil.Debug.Shell
                 }
 
                 mState = UnishState.Run;
-                await this.RunCommandAsync(input);
+                await Interpreter.RunCommandAsync(this, input);
             }
         }
 
@@ -133,33 +133,25 @@ namespace RUtil.Debug.Shell
         {
             const string profile = "~/.uprofile";
             const string rc      = "~/.unishrc";
-            try
+            if (!mIsUprofileExecuted)
             {
-                if (!mIsUprofileExecuted)
+                if (Directory.TryFindEntry(profile, out _))
                 {
-                    if (Directory.TryFindEntry(profile, out _))
+                    await foreach (var c in Directory.ReadLines(profile))
                     {
-                        await foreach (var c in Directory.ReadLines(profile))
-                        {
-                            await Interpreter.RunCommandAsync(this, c);
-                        }
-                    }
-
-                    mIsUprofileExecuted = true;
-                }
-
-                if (Directory.TryFindEntry(rc, out _))
-                {
-                    await foreach (var c in Directory.ReadLines(rc))
-                    {
-                        await this.RunCommandAsync(c);
+                        await Interpreter.RunCommandAsync(this, c);
                     }
                 }
+
+                mIsUprofileExecuted = true;
             }
-            catch (Exception e)
+
+            if (Directory.TryFindEntry(rc, out _))
             {
-                this.SubmitError(e.Message);
-                this.SubmitError(e.StackTrace);
+                await foreach (var c in Directory.ReadLines(rc))
+                {
+                    await Interpreter.RunCommandAsync(this, c);
+                }
             }
         }
     }

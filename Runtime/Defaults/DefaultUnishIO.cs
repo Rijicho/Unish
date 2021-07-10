@@ -185,6 +185,12 @@ namespace RUtil.Debug.Shell
             return default;
         }
 
+        public async UniTask WriteErrorAsync(Exception error)
+        {
+            await this.WriteLineAsync($"<color=#ff7777>error: {error.Message}</color>");
+            UnityEngine.Debug.LogError(error);
+        }
+
         private bool mIsReading;
 
         public async UniTask<string> ReadAsync()
@@ -193,7 +199,7 @@ namespace RUtil.Debug.Shell
             string ret = null;
             while (ret == null)
             {
-                ret = HandleSubmissionInput();
+                ret = await HandleSubmissionInput();
                 await UniTask.Yield();
             }
 
@@ -220,7 +226,7 @@ namespace RUtil.Debug.Shell
         }
 
 
-        private string HandleSubmissionInput()
+        private async UniTask<string> HandleSubmissionInput()
         {
             if (isInputEventUsed)
             {
@@ -314,7 +320,7 @@ namespace RUtil.Debug.Shell
                 }
 
                 var ret = mInput;
-                this.WriteLine(mInput);
+                await this.WriteLineAsync(mInput);
                 mInput             = "";
                 mDisplayLineOffset = 0;
                 mReferenceIndex    = 0;

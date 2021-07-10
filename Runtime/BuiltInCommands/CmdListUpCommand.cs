@@ -63,12 +63,12 @@ namespace RUtil.Debug.Shell
                 {
                     if (options.ContainsKey("d"))
                     {
-                        c.Value.SubmitUsage(c.Key, shell.SubmitTextIndented, isFirst);
+                        await c.Value.SubmitUsage(c.Key, shell.IO, isFirst);
                         isFirst = false;
                     }
                     else
                     {
-                        shell.SubmitTextIndented(c.Key, "white", true);
+                        await shell.IO.WriteLineAsync("| " + c.Key);
                     }
 
                     await UniTask.Yield();

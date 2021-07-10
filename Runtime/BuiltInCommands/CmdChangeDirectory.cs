@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 
 namespace RUtil.Debug.Shell
@@ -15,16 +16,14 @@ namespace RUtil.Debug.Shell
             (UnishCommandArgType.String, "path", null, "target path"),
         };
 
-        protected override UniTask Run(IUnishPresenter shell, string op, Dictionary<string, UnishCommandArg> args,
+        protected override async UniTask Run(IUnishPresenter shell, string op, Dictionary<string, UnishCommandArg> args,
             Dictionary<string, UnishCommandArg> options)
         {
             var target = args["path"].s;
             if (!shell.Directory.TryChangeDirectory(target))
             {
-                shell.SubmitError($"Directory {target} does not exist.");
+                await shell.IO.WriteErrorAsync(new Exception($"Directory {target} does not exist."));
             }
-
-            return default;
         }
     }
 }

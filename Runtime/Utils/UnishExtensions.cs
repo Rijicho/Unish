@@ -9,65 +9,6 @@ namespace RUtil.Debug.Shell
 {
     public static class UnishExtensions
     {
-        public static void SubmitText(this IUnishPresenter shell, string line, string leading = "", string colorCode = "",
-            bool allowOverflow = false)
-        {
-            if (line.Contains('\n'))
-            {
-                foreach (var l in line.Split('\n'))
-                {
-                    shell.SubmitText(l, leading, colorCode, allowOverflow);
-                }
-
-                return;
-            }
-
-            line = leading + line;
-
-            var hCount = shell.IO.HorizontalCharCount;
-            if (!allowOverflow)
-            {
-                while (line.Length > hCount)
-                {
-                    shell.IO.WriteLine(string.IsNullOrWhiteSpace(colorCode)
-                        ? line.Substring(0, shell.IO.HorizontalCharCount)
-                        : $"<color={colorCode}>{line.Substring(0, hCount)}</color>");
-                    line = line.Substring(hCount, line.Length - hCount);
-                }
-            }
-
-            shell.IO.WriteLine(string.IsNullOrWhiteSpace(colorCode) ? line : $"<color={colorCode}>{line}</color>");
-        }
-
-        public static void SubmitNewLineIndented(this IUnishPresenter shell)
-        {
-            shell.SubmitTextIndented("", allowOverflow: true);
-        }
-
-        public static void SubmitNewLine(this IUnishPresenter shell)
-        {
-            shell.IO.WriteLine("");
-        }
-
-        public static void SubmitTextIndented(this IUnishPresenter shell, string line, string colorCode = "",
-            bool allowOverflow = false)
-        {
-            shell.SubmitText(line, "| ", colorCode, allowOverflow);
-        }
-
-
-        public static void SubmitSuccess(this IUnishPresenter shell, string message)
-        {
-            shell.SubmitTextIndented(message, "lime");
-        }
-
-
-        public static void SubmitError(this IUnishPresenter shell, string message)
-        {
-            shell.SubmitTextIndented($"[Error] {message}", "#ff7777");
-        }
-
-
         public static async UniTask<(string selected, int index, SelectionState state)> SuggestAndSelectAsync(
             this IUnishPresenter shell,
             string searchWord,
@@ -123,13 +64,13 @@ namespace RUtil.Debug.Shell
                     var iColor  = i % 2 == 0 ? "#ffff55" : "#55ff55";
                     var content = (entryFormatter?.Invoke(s) ?? s).PadRight(longest);
                     var color   = i % 2 == 0 ? "#ffffaa" : "#aaffaa";
-                    shell.SubmitTextIndented($"<color={iColor}>|{iStr}></color> <color={color}>{content}</color>",
+                    await shell.IO.WriteLineAsync($"| <color={iColor}>|{iStr}></color> <color={color}>{content}</color>",
                         "orange");
                     await UniTask.Yield();
                     i++;
                 }
 
-                shell.SubmitTextIndented("Select index: ", "orange");
+                shell.IO.WriteLineAsync("| Select index: ", "orange");
 
                 var newInput = await shell.IO.ReadAsync();
 
@@ -154,17 +95,6 @@ namespace RUtil.Debug.Shell
             }
 
             return ("", -1, SelectionState.Failed);
-        }
-
-
-        public static void Run(this IUnishPresenter shell)
-        {
-            shell.RunAsync().Forget();
-        }
-
-        public static UniTask RunCommandAsync(this IUnishPresenter shell, string cmd)
-        {
-            return shell.Interpreter.RunCommandAsync(shell, cmd);
         }
     }
 }

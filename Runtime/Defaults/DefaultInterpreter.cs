@@ -57,18 +57,17 @@ namespace RUtil.Debug.Shell
             {
                 try
                 {
-                    await c.Run(shell, op, argsNotParsed, shell.SubmitTextIndented, shell.SubmitError);
+                    await c.Run(shell, op, argsNotParsed);
                 }
                 catch (Exception e)
                 {
-                    shell.SubmitError(e.Message ?? "");
-                    shell.SubmitTextIndented(e.StackTrace, "#ff7777");
+                    await shell.IO.WriteErrorAsync(e);
                 }
             }
             // 失敗時の追加評価処理が定義されていれば実行
             else if (!await TryRunInvalidCommand(cmd))
             {
-                shell.SubmitError("Unknown Command. Enter 'h' to show help.");
+                await shell.IO.WriteErrorAsync(new Exception("Unknown Command. Enter 'h' to show help."));
             }
 
             await UniTask.Yield();

@@ -23,7 +23,7 @@ namespace RUtil.Debug.Shell
         protected override UniTask Run(IUnishPresenter shell, string op, Dictionary<string, UnishCommandArg> args,
             Dictionary<string, UnishCommandArg> options)
         {
-            shell.Halt();
+            Unish.Stop();
             return default;
         }
 

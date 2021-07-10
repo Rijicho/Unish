@@ -1,4 +1,5 @@
-﻿using Cysharp.Threading.Tasks;
+﻿using System;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace RUtil.Debug.Shell
@@ -9,7 +10,8 @@ namespace RUtil.Debug.Shell
         int   MaxLineCount        { get; }
         Color DisplayTextColor    { get; set; }
         Color BackgroundColor     { get; set; }
-        UniTask WriteAsync(string text);
         UniTask<string> ReadAsync();
+        UniTask WriteAsync(string text);
+        UniTask WriteErrorAsync(Exception error);
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
 
@@ -26,22 +27,20 @@ namespace RUtil.Debug.Shell
             return "コマンドのエイリアスを作成します。";
         }
 
-        protected override UniTask Run(IUnishPresenter shell, string op, Dictionary<string, UnishCommandArg> args,
+        protected override async UniTask Run(IUnishPresenter shell, string op, Dictionary<string, UnishCommandArg> args,
             Dictionary<string, UnishCommandArg> options)
         {
             if (options.ContainsKey("l"))
             {
                 foreach (var a in shell.Interpreter.Aliases)
                 {
-                    shell.SubmitTextIndented($"\"{a.Key}\" = \"{a.Value}\"");
+                    await shell.IO.WriteLineAsync($"\"{a.Key}\" = \"{a.Value}\"");
                 }
-
-                return default;
             }
 
             if (string.IsNullOrEmpty(args["alias"].s))
             {
-                return default;
+                return;
             }
 
 
@@ -49,8 +48,8 @@ namespace RUtil.Debug.Shell
             var firstEqual = input.IndexOf('=');
             if (firstEqual < 0)
             {
-                SubmitUsage(shell.SubmitTextIndented);
-                return default;
+                await SubmitUsage(shell.IO);
+                return;
             }
 
 
@@ -63,14 +62,14 @@ namespace RUtil.Debug.Shell
 
             if (string.IsNullOrEmpty(command) || string.IsNullOrEmpty(alias))
             {
-                SubmitUsage(shell.SubmitTextIndented);
-                return default;
+                await SubmitUsage(shell.IO);
+                return;
             }
 
             if (shell.Interpreter.Repository.Commands.Count(x => x.Ops.Contains(alias)) > 0)
             {
-                shell.SubmitError($"The command {alias} already exists.");
-                return default;
+                await shell.IO.WriteErrorAsync(new Exception($"The command {alias} already exists."));
+                return;
             }
 
             var aliases = shell.Interpreter.Aliases;
@@ -78,8 +77,8 @@ namespace RUtil.Debug.Shell
             {
                 if (!aliases.ContainsKey(alias))
                 {
-                    shell.SubmitError($"Alias {alias} does not exist.");
-                    return default;
+                    await shell.IO.WriteErrorAsync(new Exception($"Alias {alias} does not exist."));
+                    return;
                 }
 
                 aliases.Remove(alias);
@@ -89,7 +88,7 @@ namespace RUtil.Debug.Shell
                 shell.Interpreter.Aliases[alias] = command;
             }
 
-            return default;
+            return;
         }
     }
 }

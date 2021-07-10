@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 
 namespace RUtil.Debug.Shell
@@ -15,23 +16,21 @@ namespace RUtil.Debug.Shell
             (UnishCommandArgType.String, "op", null, ""),
         };
 
-        protected override UniTask Run(IUnishPresenter shell, string op, Dictionary<string, UnishCommandArg> args,
+        protected override UniTask Run(IUnishPresenter shell, string op,
+            Dictionary<string, UnishCommandArg> args,
             Dictionary<string, UnishCommandArg> options)
         {
             if (shell.Interpreter.Repository.Map.TryGetValue(args["op"].s, out var c))
             {
-                c.SubmitUsage(args["op"].s, shell.SubmitTextIndented);
-            }
-            else if (shell.Interpreter.Repository.Map.TryGetValue("@" + args["op"].s, out c))
-            {
-                c.SubmitUsage(args["op"].s, shell.SubmitTextIndented);
-            }
-            else
-            {
-                shell.SubmitError("Undefined Command.");
+                return c.SubmitUsage(args["op"].s, shell.IO);
             }
 
-            return UniTask.CompletedTask;
+            if (shell.Interpreter.Repository.Map.TryGetValue("@" + args["op"].s, out c))
+            {
+                return c.SubmitUsage(args["op"].s, shell.IO);
+            }
+
+            return shell.IO.WriteErrorAsync(new Exception("Undefined Command."));
         }
 
         public override string Usage(string op)

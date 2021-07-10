@@ -35,7 +35,7 @@ namespace RUtil.Debug.Shell
 
             if (string.IsNullOrEmpty(path1))
             {
-                await shell.RunCommandAsync("man cat");
+                await shell.Interpreter.RunCommandAsync(shell, "man cat");
                 return;
             }
 
@@ -48,11 +48,11 @@ namespace RUtil.Debug.Shell
                     sb.Append(shell.Directory.Read(path2));
                 }
 
-                shell.SubmitText(sb.ToString());
+                await shell.IO.WriteLineAsync(sb.ToString());
             }
             catch (Exception e) when (e is FileNotFoundException || e is DirectoryNotFoundException || e is InvalidOperationException)
             {
-                shell.SubmitError(e.Message);
+                await shell.IO.WriteErrorAsync(new Exception(e.Message));
             }
         }
     }

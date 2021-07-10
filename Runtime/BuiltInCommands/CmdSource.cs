@@ -32,7 +32,7 @@ namespace RUtil.Debug.Shell
                     continue;
                 }
 
-                await shell.RunCommandAsync(cmd);
+                await shell.Interpreter.RunCommandAsync(shell, cmd);
             }
         }
 

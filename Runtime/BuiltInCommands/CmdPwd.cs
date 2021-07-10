@@ -25,31 +25,25 @@ namespace RUtil.Debug.Shell
         {
             if (options.ContainsKey("r") && shell.Directory.CurrentHome is IUnishRealFileSystem fileSystem)
             {
-                shell.IO.WriteLine(fileSystem.RealHomePath + shell.Directory.Current.HomeRelativePath);
-                return default;
+                return shell.IO.WriteLineAsync(fileSystem.RealHomePath + shell.Directory.Current.HomeRelativePath);
             }
 
             if (options.ContainsKey("a"))
             {
-                shell.IO.WriteLine(shell.Directory.Current.FullPath);
-                return default;
+                return shell.IO.WriteLineAsync(shell.Directory.Current.FullPath);
             }
 
             if (shell.Directory.Current.IsRoot)
             {
-                shell.IO.WriteLine(PathConstants.Root);
-                return default;
+                return shell.IO.WriteLineAsync(PathConstants.Root);
             }
 
             if (shell.Directory.Current.IsHome)
             {
-                shell.IO.WriteLine(PathConstants.Home);
-                return default;
+                return shell.IO.WriteLineAsync(PathConstants.Home);
             }
 
-            shell.IO.WriteLine(PathConstants.Home + shell.Directory.Current.HomeRelativePath);
-
-            return default;
+            return shell.IO.WriteLineAsync(PathConstants.Home + shell.Directory.Current.HomeRelativePath);
         }
 
         public override string Usage(string op)
