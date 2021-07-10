@@ -4,7 +4,7 @@ using Cysharp.Threading.Tasks;
 
 namespace RUtil.Debug.Shell
 {
-    public class DefaultCommandRunner : IUnishCommandRunner
+    public class DefaultInterpreter : IUnishInterpreter
     {
         public IUnishCommandRepository     Repository { get; private set; }
         public IDictionary<string, string> Aliases    { get; private set; }

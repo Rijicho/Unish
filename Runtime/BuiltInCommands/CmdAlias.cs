@@ -31,7 +31,7 @@ namespace RUtil.Debug.Shell
         {
             if (options.ContainsKey("l"))
             {
-                foreach (var a in shell.CommandRunner.Aliases)
+                foreach (var a in shell.Interpreter.Aliases)
                 {
                     shell.SubmitTextIndented($"\"{a.Key}\" = \"{a.Value}\"");
                 }
@@ -67,13 +67,13 @@ namespace RUtil.Debug.Shell
                 return default;
             }
 
-            if (shell.CommandRunner.Repository.Commands.Count(x => x.Ops.Contains(alias)) > 0)
+            if (shell.Interpreter.Repository.Commands.Count(x => x.Ops.Contains(alias)) > 0)
             {
                 shell.SubmitError($"The command {alias} already exists.");
                 return default;
             }
 
-            var aliases = shell.CommandRunner.Aliases;
+            var aliases = shell.Interpreter.Aliases;
             if (string.IsNullOrWhiteSpace(command))
             {
                 if (!aliases.ContainsKey(alias))
@@ -86,7 +86,7 @@ namespace RUtil.Debug.Shell
             }
             else
             {
-                shell.CommandRunner.Aliases[alias] = command;
+                shell.Interpreter.Aliases[alias] = command;
             }
 
             return default;

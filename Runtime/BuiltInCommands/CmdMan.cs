@@ -18,11 +18,11 @@ namespace RUtil.Debug.Shell
         protected override UniTask Run(IUnishPresenter shell, string op, Dictionary<string, UnishCommandArg> args,
             Dictionary<string, UnishCommandArg> options)
         {
-            if (shell.CommandRunner.Repository.Map.TryGetValue(args["op"].s, out var c))
+            if (shell.Interpreter.Repository.Map.TryGetValue(args["op"].s, out var c))
             {
                 c.SubmitUsage(args["op"].s, shell.SubmitTextIndented);
             }
-            else if (shell.CommandRunner.Repository.Map.TryGetValue("@" + args["op"].s, out c))
+            else if (shell.Interpreter.Repository.Map.TryGetValue("@" + args["op"].s, out c))
             {
                 c.SubmitUsage(args["op"].s, shell.SubmitTextIndented);
             }

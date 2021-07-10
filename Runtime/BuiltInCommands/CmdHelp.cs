@@ -28,11 +28,11 @@ namespace RUtil.Debug.Shell
             shell.SubmitNewLineIndented();
             shell.SubmitTextIndented("Important commands:", "orange");
             shell.SubmitTextIndented("----------------", "yellow");
-            shell.CommandRunner.Repository.Map["lc"].SubmitUsage(shell.SubmitTextIndented, false, false);
+            shell.Interpreter.Repository.Map["lc"].SubmitUsage(shell.SubmitTextIndented, false, false);
             shell.SubmitTextIndented("----------------", "yellow");
-            shell.CommandRunner.Repository.Map["man"].SubmitUsage(shell.SubmitTextIndented, false, false);
+            shell.Interpreter.Repository.Map["man"].SubmitUsage(shell.SubmitTextIndented, false, false);
             shell.SubmitTextIndented("----------------", "yellow");
-            shell.CommandRunner.Repository.Map["q"].SubmitUsage(shell.SubmitTextIndented, false, false);
+            shell.Interpreter.Repository.Map["q"].SubmitUsage(shell.SubmitTextIndented, false, false);
             shell.SubmitTextIndented("----------------", "yellow");
             shell.SubmitNewLineIndented();
             shell.SubmitTextIndented("This view can be scrolled by Ctrl(Cmd)+Arrow keys.", "orange");

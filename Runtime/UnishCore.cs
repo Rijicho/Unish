@@ -15,10 +15,10 @@ namespace RUtil.Debug.Shell
         // ----------------------------------
         // properties
         // ----------------------------------
-        public abstract IUnishIO            IO            { get; }
-        public abstract IUnishCommandRunner CommandRunner { get; }
-        public abstract IUnishDirectoryRoot Directory     { get; }
-        public          string              Prompt        { get; set; } = "> ";
+        public abstract IUnishIO            IO          { get; }
+        public abstract IUnishInterpreter   Interpreter { get; }
+        public abstract IUnishDirectoryRoot Directory   { get; }
+        public          string              Prompt      { get; set; } = "> ";
 
         // ----------------------------------
         // public methods
@@ -73,7 +73,7 @@ namespace RUtil.Debug.Shell
             await OnPreOpenAsync();
             await IO.InitializeAsync();
             await Directory.InitializeAsync();
-            await CommandRunner.InitializeAsync();
+            await Interpreter.InitializeAsync();
             await OnPostOpenAsync();
         }
 
@@ -98,7 +98,7 @@ namespace RUtil.Debug.Shell
         private async UniTask Quit()
         {
             await OnPreCloseAsync();
-            await CommandRunner.FinalizeAsync();
+            await Interpreter.FinalizeAsync();
             await Directory.FinalizeAsync();
             await IO.FinalizeAsync();
             await OnPostCloseAsync();
@@ -141,7 +141,7 @@ namespace RUtil.Debug.Shell
                     {
                         await foreach (var c in Directory.ReadLines(profile))
                         {
-                            await CommandRunner.RunCommandAsync(this, c);
+                            await Interpreter.RunCommandAsync(this, c);
                         }
                     }
 
