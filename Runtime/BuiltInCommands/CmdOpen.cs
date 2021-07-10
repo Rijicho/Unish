@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
@@ -21,19 +22,21 @@ namespace RUtil.Debug.Shell
         {
             var path = args["path"].s;
 
-            if (UnishIOUtility.IsValidUrlPath(path))
+            if (IsValidUrlPath(path))
             {
                 Application.OpenURL(path);
                 return default;
             }
 
-            if (shell.CurrentDirectorySystem.TryFindEntry(path, out var foundPath, out _))
+            var d     = shell.CurrentDirectorySystem;
+            var hPath = d.ConvertToHomeRelativePath(path);
+            if (d.TryFindEntry(hPath,  out _))
             {
-                shell.CurrentDirectorySystem.Open(foundPath);
+                shell.CurrentDirectorySystem.Open(hPath);
                 return default;
             }
 
-            if (UnishIOUtility.IsValidUrlPath("https://" + path))
+            if (IsValidUrlPath("https://" + path))
             {
                 Application.OpenURL("https://" + path);
                 return default;
@@ -45,6 +48,13 @@ namespace RUtil.Debug.Shell
         public override string Usage(string op)
         {
             return "指定したURLまたはファイルを開きます。";
+        }
+        
+        
+        private static bool IsValidUrlPath(string path)
+        {
+            return Uri.TryCreate(path, UriKind.Absolute, out var result)
+                   && (result.Scheme == Uri.UriSchemeHttps || result.Scheme == Uri.UriSchemeHttp);
         }
     }
 }

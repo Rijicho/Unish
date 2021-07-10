@@ -27,35 +27,37 @@ namespace RUtil.Debug.Shell
         protected override async UniTask Run(IUnishPresenter shell, string op, Dictionary<string, UnishCommandArg> args,
             Dictionary<string, UnishCommandArg> options)
         {
-            var path1 = args["path1"].s;
-            var path2 = args["path2"].s;
+            var path1  = args["path1"].s;
+            var path2  = args["path2"].s;
+            var d      = shell.CurrentDirectorySystem;
 
             if (string.IsNullOrEmpty(path1))
             {
                 await shell.RunCommandAsync("man cat");
                 return;
             }
-
-            var sb = new StringBuilder();
-            if (shell.CurrentDirectorySystem.TryFindEntry(path1, out var foundPath, out var hasChild) && !hasChild)
+            var hPath1 = d.ConvertToHomeRelativePath(path1);
+            var sb     = new StringBuilder();
+            if (d.TryFindEntry(hPath1, out var hasChild) && !hasChild)
             {
-                sb.Append(shell.CurrentDirectorySystem.Read(foundPath));
+                sb.Append(d.Read(hPath1));
             }
             else
             {
-                shell.SubmitError($"file {path1} not found.");
+                shell.SubmitError($"file \"{hPath1}\" not found.");
                 return;
             }
 
             if (!string.IsNullOrEmpty(path2))
             {
-                if (shell.CurrentDirectorySystem.TryFindEntry(path2, out foundPath, out hasChild) && !hasChild)
+                var hPath2 = d.ConvertToHomeRelativePath(path2);
+                if (d.TryFindEntry(hPath2, out hasChild) && !hasChild)
                 {
-                    sb.Append(shell.CurrentDirectorySystem.Read(foundPath));
+                    sb.Append(d.Read(hPath2));
                 }
                 else
                 {
-                    shell.SubmitError("$file {path2} not found.");
+                    shell.SubmitError($"file \"{hPath2}\" not found.");
                     return;
                 }
             }

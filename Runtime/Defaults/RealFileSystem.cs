@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Security;
+using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks.Linq;
 using UnityEngine;
 
 namespace RUtil.Debug.Shell
@@ -18,25 +21,21 @@ namespace RUtil.Debug.Shell
             Current      = "";
         }
 
-        public bool TryFindEntry(string path, out string foundPath, out bool hasChild)
+        public bool TryFindEntry(string homeReativePath, out bool hasChild)
         {
-            var homeRelative = this.ConvertToHomeRelativePath(path);
-            var realPath     = RealHomePath + homeRelative;
+            var realPath     = RealHomePath + homeReativePath;
             if (Directory.Exists(realPath))
             {
-                foundPath = homeRelative;
                 hasChild  = true;
                 return true;
             }
 
             if (File.Exists(realPath))
             {
-                foundPath = homeRelative;
                 hasChild  = false;
                 return true;
             }
 
-            foundPath = null;
             hasChild  = false;
             return false;
         }
@@ -66,6 +65,25 @@ namespace RUtil.Debug.Shell
         public string Read(string path)
         {
             return File.ReadAllText(this.ConvertToRealPath(path));
+        }
+
+        public IUniTaskAsyncEnumerable<string> ReadLines(string path)
+        {
+            return UniTaskAsyncEnumerable.Create<string>(async (writer, token) =>
+            {
+                if (!File.Exists(path))
+                {
+                    return;
+                }
+
+                using var reader = new StreamReader(path);
+                string    line;
+                while ((line = await reader.ReadLineAsync()) != null)
+                {
+                    await writer.YieldAsync(line);
+                }
+            });
+            
         }
 
         public void Write(string path, string data)

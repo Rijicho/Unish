@@ -7,34 +7,6 @@ namespace RUtil.Debug.Shell
 {
     public static class UnishIOUtility
     {
-        public static string ReadTextFile(string path)
-        {
-            if (!File.Exists(path))
-            {
-                return null;
-            }
-
-            return File.ReadAllText(path);
-        }
-
-        public static IUniTaskAsyncEnumerable<string> ReadTextFileLines(string path)
-        {
-            return UniTaskAsyncEnumerable.Create<string>(async (writer, token) =>
-            {
-                if (!File.Exists(path))
-                {
-                    return;
-                }
-
-                using var reader = new StreamReader(path);
-                string    line;
-                while ((line = await reader.ReadLineAsync()) != null)
-                {
-                    await writer.YieldAsync(line);
-                }
-            });
-        }
-
         public static IUniTaskAsyncEnumerable<string> ReadSourceFileLines(string path)
         {
             return UniTaskAsyncEnumerable.Create<string>(async (writer, token) =>
@@ -64,10 +36,5 @@ namespace RUtil.Debug.Shell
             });
         }
 
-        public static bool IsValidUrlPath(string path)
-        {
-            return Uri.TryCreate(path, UriKind.Absolute, out var result)
-                   && (result.Scheme == Uri.UriSchemeHttps || result.Scheme == Uri.UriSchemeHttp);
-        }
     }
 }

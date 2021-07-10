@@ -12,15 +12,17 @@ namespace RUtil.Debug.Shell
         // virtual full path will be "/{Home}{Current}" or "~{Current}"
         string Current { get; }
 
-        bool TryFindEntry(string path, out string fullPath, out bool hasChild);
+        bool TryFindEntry(string homeRelativePath, out bool hasChild);
 
         bool TryChangeDirectory(string homeRelativePath);
-        
+
         IEnumerable<(string path, int depth, bool hasChild)> GetChilds(string searchRoot, int depth = 0);
 
         void Open(string path);
 
         string Read(string path);
+
+        IUniTaskAsyncEnumerable<string> ReadLines(string path);
 
         void Write(string path, string data);
 
