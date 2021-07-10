@@ -24,10 +24,6 @@ namespace RUtil.Debug.Shell
 
         private readonly Dictionary<string, UnishCommandBase> mMap = new Dictionary<string, UnishCommandBase>();
 
-        public IDictionary<string, string> Aliases => mAliases;
-
-        private readonly Dictionary<string, string> mAliases = new Dictionary<string, string>();
-
 
         protected virtual Assembly[] GetDomainAssemblies()
         {
@@ -40,7 +36,6 @@ namespace RUtil.Debug.Shell
         {
             mMap.Clear();
             mCommands.Clear();
-            mAliases.Clear();
 
             if (mCommandTypesCache == null)
             {

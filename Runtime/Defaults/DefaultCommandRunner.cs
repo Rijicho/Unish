@@ -1,20 +1,27 @@
 ﻿using System;
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 
 namespace RUtil.Debug.Shell
 {
     public class DefaultCommandRunner : IUnishCommandRunner
     {
+        public IDictionary<string, string> Aliases => mAliases;
+
+        private Dictionary<string, string> mAliases;
+
         // ----------------------------------
         // public methods
         // ----------------------------------
         public UniTask InitializeAsync()
         {
+            mAliases = new Dictionary<string, string>();
             return default;
         }
 
         public UniTask FinalizeAsync()
         {
+            mAliases = null;
             return default;
         }
 
@@ -28,7 +35,7 @@ namespace RUtil.Debug.Shell
             cmd = cmd.TrimStart();
 
             // エイリアス解決
-            foreach (var kv in shell.CommandRepository.Aliases)
+            foreach (var kv in Aliases)
             {
                 if (cmd.TrimEnd() == kv.Key)
                 {

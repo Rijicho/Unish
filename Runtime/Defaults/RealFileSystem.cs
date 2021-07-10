@@ -15,8 +15,8 @@ namespace RUtil.Debug.Shell
 
         public RealFileSystem(string virtualHomeName, string realHomePath)
         {
-            HomeName                = virtualHomeName;
-            RealHomePath            = realHomePath;
+            HomeName     = virtualHomeName;
+            RealHomePath = realHomePath;
         }
 
         public UniTask InitializeAsync()

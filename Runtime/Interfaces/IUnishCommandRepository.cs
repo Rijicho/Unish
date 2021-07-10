@@ -6,8 +6,5 @@ namespace RUtil.Debug.Shell
     {
         IReadOnlyList<UnishCommandBase>               Commands { get; }
         IReadOnlyDictionary<string, UnishCommandBase> Map      { get; }
-
-        IDictionary<string, string> Aliases { get; }
-
     }
 }

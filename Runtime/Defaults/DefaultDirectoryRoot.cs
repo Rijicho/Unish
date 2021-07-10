@@ -10,7 +10,7 @@ namespace RUtil.Debug.Shell
     public class DefaultDirectoryRoot : IUnishDirectoryRoot
     {
         private IUnishDirectoryHome[] mDirectories;
-        public           IUnishDirectoryHome   CurrentHome { get; private set; }
+        public  IUnishDirectoryHome   CurrentHome { get; private set; }
 
         public UnishDirectoryEntry Current => UnishDirectoryEntry.Create(
             CurrentHome?.HomeName ?? "",
@@ -32,7 +32,8 @@ namespace RUtil.Debug.Shell
         {
             CurrentHome  = null;
             mDirectories = null;
-            return UniTask.WhenAll(mDirectories.Select(d => d.FinalizeAsync()));;
+            return UniTask.WhenAll(mDirectories.Select(d => d.FinalizeAsync()));
+            ;
         }
 
         public bool TryFindEntry(string path, out UnishDirectoryEntry entry)

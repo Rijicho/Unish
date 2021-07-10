@@ -31,7 +31,7 @@ namespace RUtil.Debug.Shell
         {
             if (options.ContainsKey("l"))
             {
-                foreach (var a in shell.CommandRepository.Aliases)
+                foreach (var a in shell.CommandRunner.Aliases)
                 {
                     shell.SubmitTextIndented($"\"{a.Key}\" = \"{a.Value}\"");
                 }
@@ -73,7 +73,7 @@ namespace RUtil.Debug.Shell
                 return default;
             }
 
-            var aliases = shell.CommandRepository.Aliases;
+            var aliases = shell.CommandRunner.Aliases;
             if (string.IsNullOrWhiteSpace(command))
             {
                 if (!aliases.ContainsKey(alias))
@@ -86,7 +86,7 @@ namespace RUtil.Debug.Shell
             }
             else
             {
-                shell.CommandRepository.Aliases[alias] = command;
+                shell.CommandRunner.Aliases[alias] = command;
             }
 
             return default;
