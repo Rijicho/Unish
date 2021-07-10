@@ -17,7 +17,7 @@ namespace RUtil.Debug.Shell
             CurrentHome == null ? "" : CurrentHome.CurrentHomeRelativePath,
             true);
 
-        public UniTask InitializeAsync()
+        public async UniTask InitializeAsync()
         {
             mDirectories = new[]
             {
@@ -25,15 +25,14 @@ namespace RUtil.Debug.Shell
             };
             CurrentHome = mDirectories[0];
 
-            return UniTask.WhenAll(mDirectories.Select(d => d.InitializeAsync()));
+            await UniTask.WhenAll(mDirectories.Select(d => d.InitializeAsync()));
         }
 
-        public UniTask FinalizeAsync()
+        public async UniTask FinalizeAsync()
         {
+            await UniTask.WhenAll(mDirectories.Select(d => d.FinalizeAsync()));
             CurrentHome  = null;
             mDirectories = null;
-            return UniTask.WhenAll(mDirectories.Select(d => d.FinalizeAsync()));
-            ;
         }
 
         public bool TryFindEntry(string path, out UnishDirectoryEntry entry)
@@ -44,7 +43,6 @@ namespace RUtil.Debug.Shell
                 entry = tmpEntry;
                 return true;
             }
-
 
             var homeName         = tmpEntry.HomeName;
             var homeRelativePath = tmpEntry.HomeRelativePath;

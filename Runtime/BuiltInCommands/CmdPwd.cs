@@ -47,7 +47,7 @@ namespace RUtil.Debug.Shell
                 return default;
             }
 
-            shell.IO.WriteLine(PathConstants.HomeRelativePrefix + shell.Directory.Current.HomeRelativePath);
+            shell.IO.WriteLine(PathConstants.Home + shell.Directory.Current.HomeRelativePath);
 
             return default;
         }

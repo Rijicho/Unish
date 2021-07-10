@@ -74,7 +74,6 @@ namespace RUtil.Debug.Shell
             await OnPreOpenAsync();
             await IO.InitializeAsync();
             await Directory.InitializeAsync();
-            //await CommandRepository.InitializeAsync();
             await CommandRunner.InitializeAsync();
             await OnPostOpenAsync();
             await RunRcAndProfile();
@@ -101,7 +100,6 @@ namespace RUtil.Debug.Shell
         {
             await OnPreCloseAsync();
             await CommandRunner.FinalizeAsync();
-            //await CommandRepository.FinalizeAsync();
             await Directory.FinalizeAsync();
             await IO.FinalizeAsync();
             await OnPostCloseAsync();
