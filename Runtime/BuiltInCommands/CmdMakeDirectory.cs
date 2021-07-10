@@ -17,12 +17,13 @@ namespace RUtil.Debug.Shell
 
         protected override UniTask Run(IUnishPresenter shell, string op, Dictionary<string, UnishCommandArg> args, Dictionary<string, UnishCommandArg> options)
         {
-            if (shell.CurrentDirectorySystem == null)
+            var d = shell.CurrentDirectorySystem;
+            if (d == null)
             {
                 shell.SubmitError("Virtual directory system cannot be created with this command!");
                 return default;
             }
-            shell.CurrentDirectorySystem.Create(args["path"].s, true);
+            d.Create(d.ConvertToHomeRelativePath(args["path"].s), true);
             return default;
         }
     }

@@ -52,31 +52,31 @@ namespace RUtil.Debug.Shell
             return true;
         }
         
-        public IEnumerable<(string path, int depth, bool hasChild)> GetChilds(string searchRoot, int depth = 0)
+        public IEnumerable<(string path, int depth, bool hasChild)> GetChilds(string homeRelativePath, int depth = 0)
         {
-            return GetChildsInternal(searchRoot, depth, depth);
+            return GetChildsInternal(homeRelativePath, depth, depth);
         }
 
-        public void Open(string path)
+        public void Open(string homeRelativePath)
         {
-            Application.OpenURL(this.ConvertToRealPath(path));
+            Application.OpenURL(this.ConvertToRealPath(homeRelativePath));
         }
 
-        public string Read(string path)
+        public string Read(string homeRelativePath)
         {
-            return File.ReadAllText(this.ConvertToRealPath(path));
+            return File.ReadAllText(this.ConvertToRealPath(homeRelativePath));
         }
 
-        public IUniTaskAsyncEnumerable<string> ReadLines(string path)
+        public IUniTaskAsyncEnumerable<string> ReadLines(string homeRelativePath)
         {
             return UniTaskAsyncEnumerable.Create<string>(async (writer, token) =>
             {
-                if (!File.Exists(path))
+                if (!File.Exists(homeRelativePath))
                 {
                     return;
                 }
 
-                using var reader = new StreamReader(path);
+                using var reader = new StreamReader(homeRelativePath);
                 string    line;
                 while ((line = await reader.ReadLineAsync()) != null)
                 {
@@ -86,19 +86,19 @@ namespace RUtil.Debug.Shell
             
         }
 
-        public void Write(string path, string data)
+        public void Write(string homeRelativePath, string data)
         {
-            File.WriteAllText(this.ConvertToRealPath(path), data);
+            File.WriteAllText(this.ConvertToRealPath(homeRelativePath), data);
         }
 
-        public void Append(string path, string data)
+        public void Append(string homeRelativePath, string data)
         {
-            File.AppendAllText(this.ConvertToRealPath(path), data);
+            File.AppendAllText(this.ConvertToRealPath(homeRelativePath), data);
         }
 
-        public void Create(string path, bool isDirectory)
+        public void Create(string homeRelativePath, bool isDirectory)
         {
-            var realPath = this.ConvertToRealPath(path);
+            var realPath = this.ConvertToRealPath(homeRelativePath);
             if (isDirectory)
             {
                 if (!Directory.Exists(realPath))
@@ -115,9 +115,9 @@ namespace RUtil.Debug.Shell
             }
         }
 
-        public void Delete(string path)
+        public void Delete(string homeRelativePath)
         {
-            var realPath = this.ConvertToRealPath(path);
+            var realPath = this.ConvertToRealPath(homeRelativePath);
             if (File.Exists(realPath))
             {
                 File.Delete(realPath);

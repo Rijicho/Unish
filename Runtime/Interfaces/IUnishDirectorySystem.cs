@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Cysharp.Threading.Tasks;
 
 namespace RUtil.Debug.Shell
@@ -16,20 +17,20 @@ namespace RUtil.Debug.Shell
 
         bool TryChangeDirectory(string homeRelativePath);
 
-        IEnumerable<(string path, int depth, bool hasChild)> GetChilds(string searchRoot, int depth = 0);
+        IEnumerable<(string path, int depth, bool hasChild)> GetChilds(string homeRelativePath, int depth = 0);
 
-        void Open(string path);
+        void Open(string homeRelativePath);
 
-        string Read(string path);
+        string Read(string homeRelativePath);
 
-        IUniTaskAsyncEnumerable<string> ReadLines(string path);
+        IUniTaskAsyncEnumerable<string> ReadLines(string homeRelativePath);
 
-        void Write(string path, string data);
+        void Write(string homeRelativePath, string data);
 
-        void Append(string path, string data);
+        void Append(string homeRelativePath, string data);
 
-        void Create(string path, bool isDirectory);
+        void Create(string homeRelativePath, bool isDirectory);
 
-        void Delete(string path);
+        void Delete(string homeRelativePath);
     }
 }
