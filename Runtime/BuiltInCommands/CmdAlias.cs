@@ -13,7 +13,7 @@ namespace RUtil.Debug.Shell
 
         public override (UnishCommandArgType type, string name, string defVal, string info)[] Params { get; } =
         {
-            (UnishCommandArgType.String, "alias", default, "設定するエイリアス e.g. hoge=\"fuga piyo\""),
+            (UnishCommandArgType.String, "alias", "", "設定するエイリアス e.g. hoge=\"fuga piyo\""),
         };
 
         public override (UnishCommandArgType type, string name, string defVal, string info)[] Options { get; } =
@@ -26,8 +26,6 @@ namespace RUtil.Debug.Shell
             return "コマンドのエイリアスを作成します。";
         }
 
-        public override bool AllowTrailingNullParams => true;
-
         protected override UniTask Run(IUnishPresenter shell, string op, Dictionary<string, UnishCommandArg> args,
             Dictionary<string, UnishCommandArg> options)
         {
@@ -38,6 +36,11 @@ namespace RUtil.Debug.Shell
                     shell.SubmitTextIndented($"\"{a.Key}\" = \"{a.Value}\"");
                 }
 
+                return default;
+            }
+
+            if (string.IsNullOrEmpty(args["alias"].s))
+            {
                 return default;
             }
 

@@ -28,11 +28,9 @@ namespace RUtil.Debug.Shell
                 return default;
             }
 
-            var d     = shell.CurrentDirectorySystem;
-            var hPath = d.ConvertToHomeRelativePath(path);
-            if (d.TryFindEntry(hPath,  out _))
+            if (shell.Directory.TryFindEntry(path, out var _))
             {
-                shell.CurrentDirectorySystem.Open(hPath);
+                shell.Directory.Open(path);
                 return default;
             }
 
@@ -49,8 +47,8 @@ namespace RUtil.Debug.Shell
         {
             return "指定したURLまたはファイルを開きます。";
         }
-        
-        
+
+
         private static bool IsValidUrlPath(string path)
         {
             return Uri.TryCreate(path, UriKind.Absolute, out var result)

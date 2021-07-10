@@ -12,47 +12,33 @@ namespace RUtil.Debug.Shell
 
         public override (UnishCommandArgType type, string name, string defVal, string info)[] Params { get; } =
         {
-            (UnishCommandArgType.String, "path", null,
-                "Source-file's path to execute (CurrentDir: PersistentDataPath)"),
+            (UnishCommandArgType.String, "path", null, "Source-file's path to execute"),
         };
 
         protected override async UniTask Run(IUnishPresenter shell, string op, Dictionary<string, UnishCommandArg> args,
             Dictionary<string, UnishCommandArg> options)
         {
-            var d = shell.CurrentDirectorySystem;
-            if (!(d is IUnishRealFileSystem fileSystem))
+            var path = args["path"].s;
+            await foreach (var line in shell.Directory.ReadLines(path))
             {
-                shell.SubmitError("Current directory system is not a file system");
-                return;
-            }
-
-            var hPath = d.ConvertToHomeRelativePath(args["path"].s);
-            if (d.TryFindEntry(hPath, out var hasChild) && !hasChild)
-            {
-                await foreach (var line in d.ReadLines(hPath))
+                var cmd = line.Trim();
+                if (string.IsNullOrWhiteSpace(cmd))
                 {
-                    var cmd = line.Trim();
-                    if (string.IsNullOrWhiteSpace(cmd))
-                    {
-                        continue;
-                    }
-
-                    if (cmd.StartsWith("#"))
-                    {
-                        continue;
-                    }
-                    await shell.RunCommandAsync(cmd);
+                    continue;
                 }
-            }
-            else
-            {
-                shell.SubmitError($"The file \"{args["path"].s}\" is not found.");
+
+                if (cmd.StartsWith("#"))
+                {
+                    continue;
+                }
+
+                await shell.RunCommandAsync(cmd);
             }
         }
 
         public override string Usage(string op)
         {
-            return "Execute commands in a file placed under your PersistentDataPath.";
+            return "Execute commands in given file.";
         }
     }
 }

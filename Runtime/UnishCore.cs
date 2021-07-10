@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using Cysharp.Threading.Tasks;
 
@@ -16,16 +15,16 @@ namespace RUtil.Debug.Shell
         // ----------------------------------
         // properties
         // ----------------------------------
-        public          UnishState                         State                  { get; private set; }
-        public abstract IUnishView                         View                   { get; }
-        public abstract IUnishCommandRepository            CommandRepository      { get; }
-        public abstract IUnishCommandRunner                CommandRunner          { get; }
-        public abstract IUnishColorParser                  ColorParser            { get; }
-        public abstract IUnishTimeProvider                 TimeProvider           { get; }
-        public abstract IUnishRcRepository                 RcRepository           { get; }
-        public abstract IEnumerable<IUnishDirectorySystem> DirectorySystems       { get; }
-        public          IUnishDirectorySystem              CurrentDirectorySystem { get; set; }
-        public          string                             Prompt                 { get; set; } = "> ";
+        public          UnishState              State                  { get; private set; }
+        public abstract IUnishView              View                   { get; }
+        public abstract IUnishCommandRepository CommandRepository      { get; }
+        public abstract IUnishCommandRunner     CommandRunner          { get; }
+        public abstract IUnishColorParser       ColorParser            { get; }
+        public abstract IUnishTimeProvider      TimeProvider           { get; }
+        public abstract IUnishRcRepository      RcRepository           { get; }
+        public abstract IUnishDirectoryRoot     Directory              { get; }
+        public          IUnishDirectorySystem   CurrentDirectorySystem { get; set; }
+        public          string                  Prompt                 { get; set; } = "> ";
 
         // ----------------------------------
         // public methods
@@ -114,11 +113,27 @@ namespace RUtil.Debug.Shell
             State = UnishState.None;
         }
 
-        private string ParsedPrompt =>
-            Prompt.Replace("%d", CurrentDirectorySystem == null ? PathConstants.Root
-                : string.IsNullOrEmpty(CurrentDirectorySystem.Current) ? PathConstants.Home
-                : Path.GetFileName(CurrentDirectorySystem.Current));
+        private string ParsedPrompt
+        {
+            get
+            {
+                if (!Prompt.Contains("%d"))
+                {
+                    return Prompt;
+                }
 
+                if (Directory.Current.IsRoot)
+                {
+                    return Prompt.Replace("%d", PathConstants.Root);
+                }
+
+                if (Directory.Current.IsHome)
+                {
+                    return Prompt.Replace("%d", PathConstants.Home);
+                }
+                return Prompt.Replace("%d", Directory.Current.Name);
+            }
+        }
 
 
         private async UniTask RunRcAndProfile()

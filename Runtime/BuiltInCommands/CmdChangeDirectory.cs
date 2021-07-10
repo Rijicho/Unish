@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Cysharp.Threading.Tasks;
 
 namespace RUtil.Debug.Shell
@@ -20,34 +19,9 @@ namespace RUtil.Debug.Shell
             Dictionary<string, UnishCommandArg> options)
         {
             var target = args["path"].s;
-            var d      = shell.CurrentDirectorySystem;
-
-            if (d == null)
+            if (!shell.Directory.TryChangeDirectory(target))
             {
-                if (target.StartsWith(PathConstants.CurrentRelativePrefix))
-                {
-                    target = target.Substring(PathConstants.CurrentRelativePrefix.Length);
-                }
-
-                d = shell.CurrentDirectorySystem = shell.DirectorySystems.FirstOrDefault(x => x.Home == target);
-
-                if (d == null)
-                {
-                    shell.SubmitError($"The directory system {target} does not exist.");
-                }
-
-                return default;
-            }
-
-            if (d.IsRoot(target))
-            {
-                shell.CurrentDirectorySystem = null;
-                return default;
-            }
-
-            if (!d.TryChangeDirectory(d.ConvertToHomeRelativePath(target)))
-            {
-                shell.SubmitError("directory not found.");
+                shell.SubmitError($"Directory {target} does not exist.");
             }
 
             return default;

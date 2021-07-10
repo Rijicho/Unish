@@ -1,18 +1,8 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Cysharp.Threading.Tasks;
 
 namespace RUtil.Debug.Shell
 {
-    public class UnishDirectoryRoot
-    {
-        public UnishDirectoryRoot(IEnumerable<IUnishDirectorySystem> directories)
-        {
-            mDirectories = directories.ToArray();
-        }
-        private IUnishDirectorySystem[] mDirectories;
-        
-    }
     public interface IUnishDirectorySystem
     {
         // "/{Home}" (= "~") becomes the virtual root of the directory system
@@ -40,6 +30,6 @@ namespace RUtil.Debug.Shell
 
         void Create(string homeRelativePath, bool isDirectory);
 
-        void Delete(string homeRelativePath);
+        void Delete(string homeRelativePath, bool isRecursive);
     }
 }

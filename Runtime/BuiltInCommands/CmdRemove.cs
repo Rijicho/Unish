@@ -15,15 +15,14 @@ namespace RUtil.Debug.Shell
             (UnishCommandArgType.String, "path", null, "entry to delete"),
         };
 
+        public override (UnishCommandArgType type, string name, string defVal, string info)[] Options { get; } =
+        {
+            (UnishCommandArgType.None, "r", null, "delete recursively"),
+        };
+
         protected override UniTask Run(IUnishPresenter shell, string op, Dictionary<string, UnishCommandArg> args, Dictionary<string, UnishCommandArg> options)
         {
-            var d = shell.CurrentDirectorySystem;
-            if (d == null)
-            {
-                shell.SubmitError("Virtual directory system cannot be removed!");
-                return default;
-            }
-            d.Delete(d.ConvertToHomeRelativePath(args["path"].s));
+            shell.Directory.Delete(args["path"].s, options.ContainsKey("r"));
             return default;
         }
     }

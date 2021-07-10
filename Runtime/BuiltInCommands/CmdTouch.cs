@@ -17,13 +17,7 @@ namespace RUtil.Debug.Shell
 
         protected override UniTask Run(IUnishPresenter shell, string op, Dictionary<string, UnishCommandArg> args, Dictionary<string, UnishCommandArg> options)
         {
-            var d = shell.CurrentDirectorySystem;
-            if (d == null)
-            {
-                shell.SubmitError("Any file cannot be created at virtual root!");
-                return default;
-            }
-            d.Create(d.ConvertToHomeRelativePath(args["path"].s), false);
+            shell.Directory.Create(args["path"].s, false);
             return default;
         }
 

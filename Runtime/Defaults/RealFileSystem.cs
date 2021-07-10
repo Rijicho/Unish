@@ -114,12 +114,17 @@ namespace RUtil.Debug.Shell
             }
         }
 
-        public void Delete(string homeRelativePath)
+        public void Delete(string homeRelativePath, bool isRecursive)
         {
             var realPath = RealHomePath + homeRelativePath;
             if (File.Exists(realPath))
             {
                 File.Delete(realPath);
+            }
+
+            if (Directory.Exists(realPath))
+            {
+                Directory.Delete(realPath, isRecursive);
             }
         }
 
@@ -129,12 +134,12 @@ namespace RUtil.Debug.Shell
             var realPath = RealHomePath + homeRelativePath;
             foreach (var filePath in Directory.GetFiles(realPath))
             {
-                yield return (this.ConvertToHomeRelativePath(filePath), maxDepth - remainDepth, false);
+                yield return (filePath.Substring(RealHomePath.Length), maxDepth - remainDepth, false);
             }
 
             foreach (var dirPath in Directory.GetDirectories(realPath))
             {
-                var dirPathWithoutHome = this.ConvertToHomeRelativePath(dirPath);
+                var dirPathWithoutHome = dirPath.Substring(RealHomePath.Length);
                 yield return (dirPathWithoutHome, maxDepth - remainDepth, true);
                 if (remainDepth != 0)
                 {

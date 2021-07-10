@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Cysharp.Threading.Tasks;
 
@@ -25,34 +24,37 @@ namespace RUtil.Debug.Shell
             Dictionary<string, UnishCommandArg> options)
         {
             var maxDepth = options.TryGetValue("R", out var value) ? value.i : 0;
-            var d        = shell.CurrentDirectorySystem;
-            if (d != null && maxDepth != 0)
+
+            if (maxDepth > 0)
             {
-                foreach (var (filePath, depth, hasChild) in d.GetCurrentChilds(maxDepth))
+                foreach (var (entry, depth) in shell.Directory.GetCurrentChilds(maxDepth))
                 {
-                    shell.SubmitTextIndented(new string(' ', depth * 2) + Path.GetFileName(filePath));
+                    shell.SubmitTextIndented(new string(' ', depth * 2) + entry.Name);
                 }
             }
             else
             {
-                var childsEnumerable =
-                    d?.GetCurrentChilds().Select(x => (Path: Path.GetFileName(x.path), x.hasChild))
-                    ?? shell.DirectorySystems.Select(x => (path: x.Home, hasChild: true));
-                var childs               = childsEnumerable.ToList();
-                var maxCharCountPerChild = childs.Max(x => x.Path.Length) + 1;
+                var childsEnumerable = shell.Directory.GetCurrentChilds().Select(x => (x.entry.Name, x.entry.IsDirectory));
+                var childs           = childsEnumerable.ToList();
+                if (childs.Count == 0)
+                {
+                    return default;
+                }
+
+                var maxCharCountPerChild = childs.Max(x => x.Name.Length) + 1;
                 var maxCharCountPerLine  = shell.View.HorizontalCharCount;
                 var childNumPerLine      = maxCharCountPerLine / maxCharCountPerChild;
                 var log                  = "";
                 for (var i = 0; i < childs.Count; i++)
                 {
                     var c = childs[i];
-                    if (c.hasChild)
+                    if (c.IsDirectory)
                     {
-                        log += $"<color=cyan>{childs[i].Path.PadRight(maxCharCountPerChild)}</color>";
+                        log += $"<color=cyan>{childs[i].Name.PadRight(maxCharCountPerChild)}</color>";
                     }
                     else
                     {
-                        log += childs[i].Path.PadRight(maxCharCountPerChild);
+                        log += childs[i].Name.PadRight(maxCharCountPerChild);
                     }
 
                     if (i % childNumPerLine == childNumPerLine - 1)

@@ -23,29 +23,38 @@ namespace RUtil.Debug.Shell
         protected override UniTask Run(IUnishPresenter shell, string op, Dictionary<string, UnishCommandArg> args,
             Dictionary<string, UnishCommandArg> options)
         {
-            if (shell.CurrentDirectorySystem == null)
+            if (options.ContainsKey("r") && shell.Directory.CurrentDirectory is IUnishRealFileSystem fileSystem)
+            {
+                shell.View.WriteLine(fileSystem.RealHomePath + shell.Directory.Current.HomeRelativePath);
+                return default;
+            }
+
+            if (options.ContainsKey("a"))
+            {
+                shell.View.WriteLine(shell.Directory.Current.FullPath);
+                return default;
+            }
+
+            if (shell.Directory.Current.IsRoot)
             {
                 shell.View.WriteLine(PathConstants.Root);
+                return default;
             }
-            else if (options.ContainsKey("r") && shell.CurrentDirectorySystem is IUnishRealFileSystem fileSystem)
+
+            if (shell.Directory.Current.IsHome)
             {
-                shell.View.WriteLine(fileSystem.RealHomePath + shell.CurrentDirectorySystem.Current);
+                shell.View.WriteLine(PathConstants.Home);
+                return default;
             }
-            else if (options.ContainsKey("a"))
-            {
-                shell.View.WriteLine(shell.CurrentDirectorySystem.GetCurrentFullPath());
-            }
-            else
-            {
-                shell.View.WriteLine(shell.CurrentDirectorySystem.Current);
-            }
+
+            shell.View.WriteLine(PathConstants.HomeRelativePrefix + shell.Directory.Current.HomeRelativePath);
 
             return default;
         }
 
         public override string Usage(string op)
         {
-            return "Show the full path of your current directory";
+            return "Show your current directory";
         }
     }
 }
