@@ -6,20 +6,20 @@ using Cysharp.Threading.Tasks;
 
 namespace RUtil.Debug.Shell
 {
-    public class UnishDirectoryRoot : IUnishDirectoryRoot
+    public class DefaultDirectoryRoot : IUnishDirectoryRoot
     {
-        public UnishDirectoryRoot(IEnumerable<IUnishDirectorySystem> directories)
+        private readonly IUnishDirectoryHome[] mDirectories;
+        public           IUnishDirectoryHome   CurrentHome { get; private set; }
+
+        public UnishDirectoryEntry Current => UnishDirectoryEntry.Create(
+            CurrentHome?.HomeName ?? "",
+            CurrentHome == null ? "" : CurrentHome.CurrentHomeRelativePath,
+            true);
+
+        public DefaultDirectoryRoot(IEnumerable<IUnishDirectoryHome> directories)
         {
             mDirectories = directories.ToArray();
         }
-
-        private readonly IUnishDirectorySystem[] mDirectories;
-        public           IUnishDirectorySystem   CurrentDirectory { get; private set; }
-
-        public UnishDirectoryEntry Current => UnishDirectoryEntry.Create(
-            CurrentDirectory?.Home ?? "",
-            CurrentDirectory == null ? "" : CurrentDirectory.Current,
-            true);
 
         public bool TryFindEntry(string path, out UnishDirectoryEntry entry)
         {
@@ -59,7 +59,7 @@ namespace RUtil.Debug.Shell
 
             if (entry.IsRoot)
             {
-                CurrentDirectory = default;
+                CurrentHome = default;
                 return true;
             }
 
@@ -68,7 +68,7 @@ namespace RUtil.Debug.Shell
                 return false;
             }
 
-            CurrentDirectory = d;
+            CurrentHome = d;
             return d.TryChangeDirectory(entry.HomeRelativePath);
         }
 
@@ -84,27 +84,27 @@ namespace RUtil.Debug.Shell
             {
                 if (entry.IsRoot)
                 {
-                    return mDirectories.Select(d => (UnishDirectoryEntry.Home(d.Home), 0));
+                    return mDirectories.Select(d => (UnishDirectoryEntry.Home(d.HomeName), 0));
                 }
 
                 {
                     // TryFindEntryでチェック済みなのでInvalidにはならない
                     TryGetDirectorySystem(entry, out var d);
                     return d.GetChilds(entry.HomeRelativePath)
-                        .Select(x => (UnishDirectoryEntry.Create(d.Home, x.path, x.hasChild), 0));
+                        .Select(x => (UnishDirectoryEntry.Create(d.HomeName, x.homeRelativePath, x.IsDirectory), 0));
                 }
             }
 
             if (entry.IsRoot)
             {
-                static IEnumerable<(UnishDirectoryEntry entry, int depth)> GetChildsOfHome(IUnishDirectorySystem directorySystem, int depth)
+                static IEnumerable<(UnishDirectoryEntry entry, int depth)> GetChildsOfHome(IUnishDirectoryHome directorySystem, int depth)
                 {
-                    yield return (UnishDirectoryEntry.Home(directorySystem.Home), 0);
+                    yield return (UnishDirectoryEntry.Home(directorySystem.HomeName), 0);
                     if (depth > 0)
                     {
                         foreach (var entry in directorySystem.GetChilds("", depth - 1))
                         {
-                            yield return (UnishDirectoryEntry.Create(directorySystem.Home, entry.path, entry.hasChild), entry.depth);
+                            yield return (UnishDirectoryEntry.Create(directorySystem.HomeName, entry.homeRelativePath, entry.IsDirectory), depth: entry.Depth);
                         }
                     }
                 }
@@ -115,7 +115,7 @@ namespace RUtil.Debug.Shell
             {
                 TryGetDirectorySystem(entry, out var d);
                 return d.GetChilds(entry.HomeRelativePath, depth)
-                    .Select(x => (UnishDirectoryEntry.Create(d.Home, x.path, x.hasChild), x.depth));
+                    .Select(x => (UnishDirectoryEntry.Create(d.HomeName, x.homeRelativePath, x.IsDirectory), depth: x.Depth));
             }
         }
 
@@ -241,8 +241,11 @@ namespace RUtil.Debug.Shell
 
         private UnishDirectoryEntry ParsePathInput(string pathInput, bool? isDirectoryExpected)
         {
+            var currentParent = string.IsNullOrWhiteSpace(CurrentHome?.CurrentHomeRelativePath)
+                ? null
+                : CurrentHome.CurrentHomeRelativePath.Substring(0, CurrentHome.CurrentHomeRelativePath.LastIndexOf(PathConstants.Separator));
             var homeRelativePath = PathUtils.ConvertToHomeRelativePath(pathInput,
-                CurrentDirectory?.Home ?? "", CurrentDirectory?.Current, CurrentDirectory?.CurrentParent(), out var home);
+                CurrentHome?.HomeName ?? "", CurrentHome?.CurrentHomeRelativePath, currentParent, out var home);
             if (home == "")
             {
                 return UnishDirectoryEntry.Root;
@@ -256,14 +259,14 @@ namespace RUtil.Debug.Shell
             return UnishDirectoryEntry.Create(home, homeRelativePath, isDirectoryExpected ?? !Path.HasExtension(homeRelativePath));
         }
 
-        private bool TryGetDirectorySystem(UnishDirectoryEntry entry, out IUnishDirectorySystem directory)
+        private bool TryGetDirectorySystem(UnishDirectoryEntry entry, out IUnishDirectoryHome directory)
         {
             return TryGetDirectorySystem(entry.HomeName, out directory);
         }
 
-        private bool TryGetDirectorySystem(string homeName, out IUnishDirectorySystem directory)
+        private bool TryGetDirectorySystem(string homeName, out IUnishDirectoryHome directory)
         {
-            directory = mDirectories.FirstOrDefault(x => x.Home == homeName);
+            directory = mDirectories.FirstOrDefault(x => x.HomeName == homeName);
             return directory != default;
         }
     }

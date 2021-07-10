@@ -23,7 +23,7 @@ namespace RUtil.Debug.Shell
         public abstract IUnishTimeProvider      TimeProvider           { get; }
         public abstract IUnishRcRepository      RcRepository           { get; }
         public abstract IUnishDirectoryRoot     Directory              { get; }
-        public          IUnishDirectorySystem   CurrentDirectorySystem { get; set; }
+        public          IUnishDirectoryHome   CurrentDirectorySystem { get; set; }
         public          string                  Prompt                 { get; set; } = "> ";
 
         // ----------------------------------

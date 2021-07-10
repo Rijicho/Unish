@@ -21,7 +21,7 @@ namespace RUtil.Debug.Shell
             TimeProvider      = DefaultTimeProvider.Instance;
             RcRepository      = DefaultUnishRcRepository.Instance;
             View              = new DefaultUnishView(inputHandler, TimeProvider);
-            Directory = new UnishDirectoryRoot(new[]
+            Directory = new DefaultDirectoryRoot(new[]
             {
                 new RealFileSystem("pdp", Application.persistentDataPath),
                 new RealFileSystem("dp", Application.dataPath),

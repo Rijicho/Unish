@@ -9,33 +9,33 @@ namespace RUtil.Debug.Shell
 {
     public class RealFileSystem : IUnishRealFileSystem
     {
-        public string Home         { get; }
-        public string Current      { get; private set; }
+        public string HomeName         { get; }
+        public string CurrentHomeRelativePath      { get; private set; }
         public string RealHomePath { get; }
 
         public RealFileSystem(string virtualHomeName, string realHomePath)
         {
-            Home         = virtualHomeName;
+            HomeName         = virtualHomeName;
             RealHomePath = realHomePath;
-            Current      = "";
+            CurrentHomeRelativePath      = "";
         }
 
-        public bool TryFindEntry(string homeReativePath, out bool hasChild)
+        public bool TryFindEntry(string homeReativePath, out bool isDirectory)
         {
             var realPath = RealHomePath + homeReativePath;
             if (Directory.Exists(realPath))
             {
-                hasChild = true;
+                isDirectory = true;
                 return true;
             }
 
             if (File.Exists(realPath))
             {
-                hasChild = false;
+                isDirectory = false;
                 return true;
             }
 
-            hasChild = false;
+            isDirectory = false;
             return false;
         }
 
@@ -47,13 +47,13 @@ namespace RUtil.Debug.Shell
                 return false;
             }
 
-            Current = homeRelativePath;
+            CurrentHomeRelativePath = homeRelativePath;
             return true;
         }
 
-        public IEnumerable<(string path, int depth, bool hasChild)> GetChilds(string homeRelativePath, int depth = 0)
+        public IEnumerable<(string homeRelativePath, int Depth, bool IsDirectory)> GetChilds(string homeRelativePath, int maxDepth = 0)
         {
-            return GetChildsInternal(homeRelativePath, depth, depth);
+            return GetChildsInternal(homeRelativePath, maxDepth, maxDepth);
         }
 
         public void Open(string homeRelativePath)
@@ -128,7 +128,7 @@ namespace RUtil.Debug.Shell
             }
         }
 
-        private IEnumerable<(string path, int depth, bool hasChild)> GetChildsInternal(string homeRelativePath, int maxDepth,
+        private IEnumerable<(string homeRelativePath, int Depth, bool IsDirectory)> GetChildsInternal(string homeRelativePath, int maxDepth,
             int remainDepth)
         {
             var realPath = RealHomePath + homeRelativePath;

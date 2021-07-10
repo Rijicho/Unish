@@ -5,6 +5,9 @@ namespace RUtil.Debug.Shell
 {
     public class DefaultCommandRunner : IUnishCommandRunner
     {
+        // ----------------------------------
+        // public methods
+        // ----------------------------------
         public async UniTask RunCommandAsync(IUnishPresenter shell, string cmd)
         {
             if (string.IsNullOrWhiteSpace(cmd))

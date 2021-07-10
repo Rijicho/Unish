@@ -2,20 +2,15 @@
     "name": "Unish",
     "rootNamespace": "",
     "references": [
-        "UniTask",
-        "UniTask.Linq",
-        "Unity.InputSystem"
+        "GUID:f51ebe6a0ceec4240a699833d6309b23",
+        "GUID:5c01796d064528144a599661eaab93a6",
+        "GUID:75469ad4d38634e559750d17036d5f7c"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
-    "allowUnsafeCode": true,
-    "overrideReferences": true,
-    "precompiledReferences": [
-        "System.Runtime.CompilerServices.Unsafe.dll",
-        "System.Threading.Tasks.Extensions.dll",
-        "System.Buffers.dll",
-        "System.Memory.dll"
-    ],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
     "versionDefines": [

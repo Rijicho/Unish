@@ -23,7 +23,7 @@ namespace RUtil.Debug.Shell
         protected override UniTask Run(IUnishPresenter shell, string op, Dictionary<string, UnishCommandArg> args,
             Dictionary<string, UnishCommandArg> options)
         {
-            if (options.ContainsKey("r") && shell.Directory.CurrentDirectory is IUnishRealFileSystem fileSystem)
+            if (options.ContainsKey("r") && shell.Directory.CurrentHome is IUnishRealFileSystem fileSystem)
             {
                 shell.View.WriteLine(fileSystem.RealHomePath + shell.Directory.Current.HomeRelativePath);
                 return default;

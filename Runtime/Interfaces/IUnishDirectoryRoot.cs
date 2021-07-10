@@ -5,9 +5,8 @@ namespace RUtil.Debug.Shell
 {
     public interface IUnishDirectoryRoot
     {
-        UnishDirectoryEntry Current { get; }
-
-        IUnishDirectorySystem CurrentDirectory { get; }
+        UnishDirectoryEntry Current     { get; }
+        IUnishDirectoryHome CurrentHome { get; }
         bool TryFindEntry(string path, out UnishDirectoryEntry entry);
         bool TryChangeDirectory(string path);
         IEnumerable<(UnishDirectoryEntry entry, int depth)> GetChilds(string path, int depth = 0);
