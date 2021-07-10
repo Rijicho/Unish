@@ -12,7 +12,7 @@ namespace RUtil.Debug.Shell
 
         public override (UnishCommandArgType type, string name, string defVal, string info)[] Params { get; } =
         {
-            (UnishCommandArgType.String, "key", null, "変更したい項目 (bgcolor/prompt) "),
+            (UnishCommandArgType.String, "key", null, "変更したい項目 (prompt) "),
             (UnishCommandArgType.String, "value", null, "値"),
         };
 
@@ -31,11 +31,6 @@ namespace RUtil.Debug.Shell
 
             switch (args["key"].s)
             {
-                case "bgcolor":
-                    {
-                        shell.IO.BackgroundColor = shell.ColorParser.Parse(args["value"].s ?? "#000000AA");
-                        return default;
-                    }
                 case "prompt":
                     {
                         shell.Prompt = args["value"].s ?? "> ";

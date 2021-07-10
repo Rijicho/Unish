@@ -9,15 +9,14 @@ namespace RUtil.Debug.Shell
         // non-serialized fields
         // ----------------------------------
 
-        private static bool mIsUprofileExecuted;
+        private static bool       mIsUprofileExecuted;
+        private        UnishState mState;
 
         // ----------------------------------
         // properties
         // ----------------------------------
-        public          UnishState          State         { get; private set; }
         public abstract IUnishIO            IO            { get; }
         public abstract IUnishCommandRunner CommandRunner { get; }
-        public abstract IUnishColorParser   ColorParser   { get; }
         public abstract IUnishDirectoryRoot Directory     { get; }
         public          string              Prompt        { get; set; } = "> ";
 
@@ -34,7 +33,7 @@ namespace RUtil.Debug.Shell
 
         public void Halt()
         {
-            State = UnishState.Quit;
+            mState = UnishState.Quit;
         }
 
 
@@ -69,21 +68,21 @@ namespace RUtil.Debug.Shell
 
         private async UniTask Init()
         {
-            State = UnishState.Init;
+            mState = UnishState.Init;
 
             await OnPreOpenAsync();
             await IO.InitializeAsync();
             await Directory.InitializeAsync();
             await CommandRunner.InitializeAsync();
             await OnPostOpenAsync();
-            await RunRcAndProfile();
         }
 
         private async UniTask Loop()
         {
-            while (State != UnishState.Quit)
+            await RunInitialScripts();
+            while (mState != UnishState.Quit)
             {
-                State = UnishState.Wait;
+                mState = UnishState.Wait;
                 await IO.WriteAsync(ParsedPrompt);
                 var input = await IO.ReadAsync();
                 if (string.IsNullOrWhiteSpace(input))
@@ -91,7 +90,7 @@ namespace RUtil.Debug.Shell
                     continue;
                 }
 
-                State = UnishState.Run;
+                mState = UnishState.Run;
                 await this.RunCommandAsync(input);
             }
         }
@@ -103,7 +102,7 @@ namespace RUtil.Debug.Shell
             await Directory.FinalizeAsync();
             await IO.FinalizeAsync();
             await OnPostCloseAsync();
-            State = UnishState.None;
+            mState = UnishState.None;
         }
 
         private string ParsedPrompt
@@ -130,15 +129,17 @@ namespace RUtil.Debug.Shell
         }
 
 
-        private async UniTask RunRcAndProfile()
+        private async UniTask RunInitialScripts()
         {
+            const string profile = "~/.uprofile";
+            const string rc      = "~/.unishrc";
             try
             {
                 if (!mIsUprofileExecuted)
                 {
-                    if (Directory.TryFindEntry("~/.uprofile", out _))
+                    if (Directory.TryFindEntry(profile, out _))
                     {
-                        await foreach (var c in Directory.ReadLines("~/.uprofile"))
+                        await foreach (var c in Directory.ReadLines(profile))
                         {
                             await CommandRunner.RunCommandAsync(this, c);
                         }
@@ -147,9 +148,9 @@ namespace RUtil.Debug.Shell
                     mIsUprofileExecuted = true;
                 }
 
-                if (Directory.TryFindEntry("~/.unishrc", out _))
+                if (Directory.TryFindEntry(rc, out _))
                 {
-                    await foreach (var c in Directory.ReadLines("~/.unishrc"))
+                    await foreach (var c in Directory.ReadLines(rc))
                     {
                         await this.RunCommandAsync(c);
                     }

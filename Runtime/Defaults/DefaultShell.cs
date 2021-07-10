@@ -4,14 +4,12 @@
     {
         public override IUnishIO            IO            { get; }
         public override IUnishCommandRunner CommandRunner { get; }
-        public override IUnishColorParser   ColorParser   { get; }
         public override IUnishDirectoryRoot Directory     { get; }
 
         public DefaultShell()
         {
             IO            = new DefaultUnishIO();
             CommandRunner = new DefaultCommandRunner();
-            ColorParser   = DefaultColorParser.Instance;
             Directory     = new DefaultDirectoryRoot();
         }
     }

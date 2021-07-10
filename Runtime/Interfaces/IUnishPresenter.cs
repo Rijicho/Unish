@@ -6,7 +6,6 @@ namespace RUtil.Debug.Shell
     {
         IUnishIO            IO            { get; }
         IUnishCommandRunner CommandRunner { get; }
-        IUnishColorParser   ColorParser   { get; }
         IUnishDirectoryRoot Directory     { get; }
         string              Prompt        { set; }
 
