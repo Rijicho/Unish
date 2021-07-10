@@ -104,8 +104,6 @@ namespace RUtil.Debug.Shell
                 State = UnishState.Run;
                 await this.RunCommandAsync(input);
             }
-
-            UnityEngine.Debug.Log("loopend");
         }
 
         private async UniTask Quit()

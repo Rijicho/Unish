@@ -4,6 +4,15 @@ using Cysharp.Threading.Tasks;
 
 namespace RUtil.Debug.Shell
 {
+    public class UnishDirectoryRoot
+    {
+        public UnishDirectoryRoot(IEnumerable<IUnishDirectorySystem> directories)
+        {
+            mDirectories = directories.ToArray();
+        }
+        private IUnishDirectorySystem[] mDirectories;
+        
+    }
     public interface IUnishDirectorySystem
     {
         // "/{Home}" (= "~") becomes the virtual root of the directory system

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Security;
 using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.Linq;
 using UnityEngine;
@@ -23,20 +22,20 @@ namespace RUtil.Debug.Shell
 
         public bool TryFindEntry(string homeReativePath, out bool hasChild)
         {
-            var realPath     = RealHomePath + homeReativePath;
+            var realPath = RealHomePath + homeReativePath;
             if (Directory.Exists(realPath))
             {
-                hasChild  = true;
+                hasChild = true;
                 return true;
             }
 
             if (File.Exists(realPath))
             {
-                hasChild  = false;
+                hasChild = false;
                 return true;
             }
 
-            hasChild  = false;
+            hasChild = false;
             return false;
         }
 
@@ -51,7 +50,7 @@ namespace RUtil.Debug.Shell
             Current = homeRelativePath;
             return true;
         }
-        
+
         public IEnumerable<(string path, int depth, bool hasChild)> GetChilds(string homeRelativePath, int depth = 0)
         {
             return GetChildsInternal(homeRelativePath, depth, depth);
@@ -59,46 +58,46 @@ namespace RUtil.Debug.Shell
 
         public void Open(string homeRelativePath)
         {
-            Application.OpenURL(this.ConvertToRealPath(homeRelativePath));
+            Application.OpenURL(RealHomePath + homeRelativePath);
         }
 
         public string Read(string homeRelativePath)
         {
-            return File.ReadAllText(this.ConvertToRealPath(homeRelativePath));
+            return File.ReadAllText(RealHomePath + homeRelativePath);
         }
 
         public IUniTaskAsyncEnumerable<string> ReadLines(string homeRelativePath)
         {
             return UniTaskAsyncEnumerable.Create<string>(async (writer, token) =>
             {
-                if (!File.Exists(homeRelativePath))
+                var realPath = RealHomePath + homeRelativePath;
+                if (!File.Exists(realPath))
                 {
                     return;
                 }
 
-                using var reader = new StreamReader(homeRelativePath);
+                using var reader = new StreamReader(realPath);
                 string    line;
                 while ((line = await reader.ReadLineAsync()) != null)
                 {
                     await writer.YieldAsync(line);
                 }
             });
-            
         }
 
         public void Write(string homeRelativePath, string data)
         {
-            File.WriteAllText(this.ConvertToRealPath(homeRelativePath), data);
+            File.WriteAllText(RealHomePath + homeRelativePath, data);
         }
 
         public void Append(string homeRelativePath, string data)
         {
-            File.AppendAllText(this.ConvertToRealPath(homeRelativePath), data);
+            File.AppendAllText(RealHomePath + homeRelativePath, data);
         }
 
         public void Create(string homeRelativePath, bool isDirectory)
         {
-            var realPath = this.ConvertToRealPath(homeRelativePath);
+            var realPath = RealHomePath + homeRelativePath;
             if (isDirectory)
             {
                 if (!Directory.Exists(realPath))
@@ -110,33 +109,32 @@ namespace RUtil.Debug.Shell
             {
                 if (!File.Exists(realPath))
                 {
-                    File.WriteAllBytes(this.ConvertToRealPath(realPath), Array.Empty<byte>());
+                    File.WriteAllBytes(realPath, Array.Empty<byte>());
                 }
             }
         }
 
         public void Delete(string homeRelativePath)
         {
-            var realPath = this.ConvertToRealPath(homeRelativePath);
+            var realPath = RealHomePath + homeRelativePath;
             if (File.Exists(realPath))
             {
                 File.Delete(realPath);
             }
         }
 
-        private IEnumerable<(string path, int depth, bool hasChild)> GetChildsInternal(string searchRoot, int maxDepth,
+        private IEnumerable<(string path, int depth, bool hasChild)> GetChildsInternal(string homeRelativePath, int maxDepth,
             int remainDepth)
         {
-            var realPath = RealHomePath + searchRoot;
+            var realPath = RealHomePath + homeRelativePath;
             foreach (var filePath in Directory.GetFiles(realPath))
             {
-                yield return (Path.GetFileName(this.ConvertToHomeRelativePath(filePath)), maxDepth - remainDepth,
-                    false);
+                yield return (this.ConvertToHomeRelativePath(filePath), maxDepth - remainDepth, false);
             }
 
             foreach (var dirPath in Directory.GetDirectories(realPath))
             {
-                var dirPathWithoutHome = Path.GetFileName(this.ConvertToHomeRelativePath(dirPath));
+                var dirPathWithoutHome = this.ConvertToHomeRelativePath(dirPath);
                 yield return (dirPathWithoutHome, maxDepth - remainDepth, true);
                 if (remainDepth != 0)
                 {
