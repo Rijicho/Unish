@@ -39,7 +39,7 @@ public class TestIUnishDirectorySystem
         Assert.IsTrue(d.Current == "");
         Assert.IsTrue(d.Home == "pdp");
 
-        Assert.AreEqual((d as IUnishRealFileSystem)?.RealHomePath, Application.persistentDataPath);
+        Assert.AreEqual(Application.persistentDataPath, (d as IUnishRealFileSystem)?.RealHomePath);
     }
 
 
@@ -69,15 +69,19 @@ public class TestIUnishDirectorySystem
             Assert.IsFalse(d.TryChangeDirectory(input));
         }
 
-        Assert.AreEqual(d.Current, current);
+        Assert.AreEqual(current, d.Current);
     }
 
     private static (string Init, string Input, string Output)[] tcsConvertToHomeRelativePath =
     {
+        ("", ParentDir, null),
         ("/__test/hoge/fuga", Root, null),
+        ("/__test", $"{ParentDir}", ""),
+        ("/__test", $"{ParentRelativePrefix}", ""),
+        ("/__test", $"{ParentRelativePrefix}{ParentDir}", null),
+        ("/__test", $"{ParentRelativePrefix}{ParentRelativePrefix}", null),
         ("", Home, ""),
         ("", CurrentDir, ""),
-        ("", ParentDir, null),
         ("/__test/hoge/fuga", Home, ""),
         ("/__test/hoge/fuga", CurrentDir, "/__test/hoge/fuga"),
         ("/__test/hoge/fuga", ParentDir, "/__test/hoge"),
@@ -102,6 +106,6 @@ public class TestIUnishDirectorySystem
     {
         var (init, input, output) = tc;
         Assert.IsTrue(d.TryChangeDirectory(init));
-        Assert.AreEqual(d.ConvertToHomeRelativePath(input), output);
+        Assert.AreEqual(output, d.ConvertToHomeRelativePath(input));
     }
 }

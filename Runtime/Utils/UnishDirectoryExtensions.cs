@@ -123,6 +123,13 @@ namespace RUtil.Debug.Shell
                 j = i + 1;
             }
 
+            // Root
+            if (pathStack.Count == 0)
+            {
+                return null;
+            }
+
+            // Root以外
             var sb = new StringBuilder();
             while (pathStack.Count > 1)
             {
