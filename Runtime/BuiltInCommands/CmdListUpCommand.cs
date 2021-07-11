@@ -12,16 +12,16 @@ namespace RUtil.Debug.Shell
             "lc",
         };
 
-        public override (UnishCommandArgType type, string name, string defVal, string info)[] Params { get; } =
+        public override (UnishVariableType type, string name, string defVal, string info)[] Params { get; } =
         {
-            (UnishCommandArgType.String, "pattern", "", "フィルタ"),
+            (UnishVariableType.String, "pattern", "", "フィルタ"),
         };
 
-        public override (UnishCommandArgType type, string name, string defVal, string info)[] Options { get; } =
+        public override (UnishVariableType type, string name, string defVal, string info)[] Options { get; } =
         {
-            (UnishCommandArgType.String, "s", "default", "ソートタイプ（default/name）"),
-            (UnishCommandArgType.None, "d", "", "詳細表示"),
-            (UnishCommandArgType.None, "r", "", "フィルタを正規表現とみなして検索"),
+            (UnishVariableType.String, "s", "default", "ソートタイプ（default/name）"),
+            (UnishVariableType.Unit, "d", "", "詳細表示"),
+            (UnishVariableType.Unit, "r", "", "フィルタを正規表現とみなして検索"),
         };
 
         public override string Usage(string op)
@@ -29,15 +29,15 @@ namespace RUtil.Debug.Shell
             return "コマンドリストを表示します。";
         }
 
-        protected override async UniTask Run(string op, Dictionary<string, UnishCommandArg> args,
-            Dictionary<string, UnishCommandArg> options)
+        protected override async UniTask Run(string op, Dictionary<string, UnishVariable> args,
+            Dictionary<string, UnishVariable> options)
         {
-            var filter  = new Regex(options.ContainsKey("r") ? args["pattern"].s : $".*{args["pattern"].s}.*");
+            var filter  = new Regex(options.ContainsKey("r") ? args["pattern"].S : $".*{args["pattern"].S}.*");
             var isFirst = true;
 
             IEnumerable<KeyValuePair<string, UnishCommandBase>> ls;
 
-            if (options.ContainsKey("s") && options["s"].s == "name")
+            if (options.ContainsKey("s") && options["s"].S == "name")
             {
                 ls = Interpreter.Repository.Map.OrderBy(x => x.Key);
             }

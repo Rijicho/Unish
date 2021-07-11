@@ -29,7 +29,7 @@ namespace RUtil.Debug.Shell
                         var varname = input.Substring(beginIdx, endIdx - beginIdx);
                         if (env.TryGetValue(varname, out var value))
                         {
-                            sb.Append(value.s);
+                            sb.Append(value.S);
                         }
 
                         appendBegin = endIdx + 1;
@@ -55,7 +55,7 @@ namespace RUtil.Debug.Shell
 
                         if (env.TryGetValue(varname, out var value))
                         {
-                            sb.Append(value.s);
+                            sb.Append(value.S);
                         }
 
                         appendBegin = i;

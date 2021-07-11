@@ -10,19 +10,19 @@ namespace RUtil.Debug.Shell
             "rm",
         };
 
-        public override (UnishCommandArgType type, string name, string defVal, string info)[] Params { get; } =
+        public override (UnishVariableType type, string name, string defVal, string info)[] Params { get; } =
         {
-            (UnishCommandArgType.String, "path", null, "entry to delete"),
+            (UnishVariableType.String, "path", null, "entry to delete"),
         };
 
-        public override (UnishCommandArgType type, string name, string defVal, string info)[] Options { get; } =
+        public override (UnishVariableType type, string name, string defVal, string info)[] Options { get; } =
         {
-            (UnishCommandArgType.None, "r", null, "delete recursively"),
+            (UnishVariableType.Unit, "r", null, "delete recursively"),
         };
 
-        protected override UniTask Run(string op, Dictionary<string, UnishCommandArg> args, Dictionary<string, UnishCommandArg> options)
+        protected override UniTask Run(string op, Dictionary<string, UnishVariable> args, Dictionary<string, UnishVariable> options)
         {
-            Directory.Delete(args["path"].s, options.ContainsKey("r"));
+            Directory.Delete(args["path"].S, options.ContainsKey("r"));
             return default;
         }
     }

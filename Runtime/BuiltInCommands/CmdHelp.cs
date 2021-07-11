@@ -15,12 +15,12 @@ namespace RUtil.Debug.Shell
             "help",
         };
 
-        public override (UnishCommandArgType type, string name, string defVal, string info)[] Params { get; } =
+        public override (UnishVariableType type, string name, string defVal, string info)[] Params { get; } =
         {
         };
 
-        protected override async UniTask Run(string op, Dictionary<string, UnishCommandArg> args,
-            Dictionary<string, UnishCommandArg> options)
+        protected override async UniTask Run(string op, Dictionary<string, UnishVariable> args,
+            Dictionary<string, UnishVariable> options)
         {
             await IO.WriteLineAsync("| " + "==========================================", "orange");
             await IO.WriteLineAsync("| " + "[Help]", "orange");

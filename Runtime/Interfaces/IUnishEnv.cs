@@ -3,19 +3,19 @@ using System.Collections.Generic;
 
 namespace RUtil.Debug.Shell
 {
-    public interface IUnishEnv : IUnishResource, IEnumerable<KeyValuePair<string, UnishCommandArg>>
+    public interface IUnishEnv : IUnishResource, IEnumerable<KeyValuePair<string, UnishVariable>>
     {
-        event Action<UnishCommandArg> OnSet;
+        event Action<UnishVariable> OnSet;
         event Action<string>          OnRemoved;
 
-        UnishCommandArg this[string key] { get; set; }
+        UnishVariable this[string key] { get; set; }
 
         IEnumerable<string>          Keys   { get; }
-        IEnumerable<UnishCommandArg> Values { get; }
+        IEnumerable<UnishVariable> Values { get; }
 
         bool ContainsKey(string key);
 
-        bool TryGetValue(string key, out UnishCommandArg value);
+        bool TryGetValue(string key, out UnishVariable value);
 
         int Count { get; }
 

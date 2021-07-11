@@ -12,14 +12,14 @@ namespace RUtil.Debug.Shell
             "alias",
         };
 
-        public override (UnishCommandArgType type, string name, string defVal, string info)[] Params { get; } =
+        public override (UnishVariableType type, string name, string defVal, string info)[] Params { get; } =
         {
-            (UnishCommandArgType.String, "alias", "", "設定するエイリアス e.g. hoge=\"fuga piyo\""),
+            (UnishVariableType.String, "alias", "", "設定するエイリアス e.g. hoge=\"fuga piyo\""),
         };
 
-        public override (UnishCommandArgType type, string name, string defVal, string info)[] Options { get; } =
+        public override (UnishVariableType type, string name, string defVal, string info)[] Options { get; } =
         {
-            (UnishCommandArgType.None, "l", null, "定義済みのエイリアス一覧を表示します"),
+            (UnishVariableType.Unit, "l", null, "定義済みのエイリアス一覧を表示します"),
         };
 
         public override string Usage(string op)
@@ -27,7 +27,7 @@ namespace RUtil.Debug.Shell
             return "コマンドのエイリアスを作成します。";
         }
 
-        protected override async UniTask Run(string op, Dictionary<string, UnishCommandArg> args, Dictionary<string, UnishCommandArg> options)
+        protected override async UniTask Run(string op, Dictionary<string, UnishVariable> args, Dictionary<string, UnishVariable> options)
         {
             if (options.ContainsKey("l"))
             {
@@ -37,13 +37,13 @@ namespace RUtil.Debug.Shell
                 }
             }
 
-            if (string.IsNullOrEmpty(args["alias"].s))
+            if (string.IsNullOrEmpty(args["alias"].S))
             {
                 return;
             }
 
 
-            var input      = args["alias"].s.Trim();
+            var input      = args["alias"].S.Trim();
             var firstEqual = input.IndexOf('=');
             if (firstEqual < 0)
             {

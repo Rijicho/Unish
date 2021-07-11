@@ -11,23 +11,23 @@ namespace RUtil.Debug.Shell
             "man",
         };
 
-        public override (UnishCommandArgType type, string name, string defVal, string info)[] Params { get; } =
+        public override (UnishVariableType type, string name, string defVal, string info)[] Params { get; } =
         {
-            (UnishCommandArgType.String, "op", null, ""),
+            (UnishVariableType.String, "op", null, ""),
         };
 
         protected override UniTask Run(string op,
-            Dictionary<string, UnishCommandArg> args,
-            Dictionary<string, UnishCommandArg> options)
+            Dictionary<string, UnishVariable> args,
+            Dictionary<string, UnishVariable> options)
         {
-            if (Interpreter.Repository.Map.TryGetValue(args["op"].s, out var c))
+            if (Interpreter.Repository.Map.TryGetValue(args["op"].S, out var c))
             {
-                return c.WriteUsage(IO, args["op"].s);
+                return c.WriteUsage(IO, args["op"].S);
             }
 
-            if (Interpreter.Repository.Map.TryGetValue("@" + args["op"].s, out c))
+            if (Interpreter.Repository.Map.TryGetValue("@" + args["op"].S, out c))
             {
-                return c.WriteUsage(IO, args["op"].s);
+                return c.WriteUsage(IO, args["op"].S);
             }
 
             return IO.WriteErrorAsync(new Exception("Undefined Command."));

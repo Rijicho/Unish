@@ -10,17 +10,17 @@ namespace RUtil.Debug.Shell
             "echo",
         };
 
-        public override (UnishCommandArgType type, string name, string defVal, string info)[] Params { get; } =
+        public override (UnishVariableType type, string name, string defVal, string info)[] Params { get; } =
         {
-            (UnishCommandArgType.String, "text", null, "表示するテキスト"),
+            (UnishVariableType.String, "text", null, "表示するテキスト"),
         };
 
         public override bool RequiresPreParseArguments => false;
 
-        protected override UniTask Run(string op, Dictionary<string, UnishCommandArg> args,
-            Dictionary<string, UnishCommandArg> options)
+        protected override UniTask Run(string op, Dictionary<string, UnishVariable> args,
+            Dictionary<string, UnishVariable> options)
         {
-            return IO.WriteLineAsync(args[""].s);
+            return IO.WriteLineAsync(args[""].S);
         }
 
         public override string Usage(string op)

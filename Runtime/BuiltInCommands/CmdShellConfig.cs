@@ -10,10 +10,10 @@ namespace RUtil.Debug.Shell
             "shpref",
         };
 
-        public override (UnishCommandArgType type, string name, string defVal, string info)[] Params { get; } =
+        public override (UnishVariableType type, string name, string defVal, string info)[] Params { get; } =
         {
-            (UnishCommandArgType.String, "key", null, "変更したい項目 (prompt/bgcolor/width/height) "),
-            (UnishCommandArgType.String, "value", null, "値"),
+            (UnishVariableType.String, "key", null, "変更したい項目 (prompt/bgcolor/width/height) "),
+            (UnishVariableType.String, "value", null, "値"),
         };
 
         public override string Usage(string op)
@@ -21,35 +21,35 @@ namespace RUtil.Debug.Shell
             return "Shellの環境設定をします。";
         }
 
-        protected override UniTask Run(string op, Dictionary<string, UnishCommandArg> args,
-            Dictionary<string, UnishCommandArg> options)
+        protected override UniTask Run(string op, Dictionary<string, UnishVariable> args,
+            Dictionary<string, UnishVariable> options)
         {
-            if (string.IsNullOrEmpty(args["key"].s))
+            if (string.IsNullOrEmpty(args["key"].S))
             {
                 return WriteUsage(IO);
             }
 
-            switch (args["key"].s)
+            switch (args["key"].S)
             {
                 case "prompt":
                     {
-                        Env.Set(BuiltInEnvKeys.Prompt, args["value"].s ?? "%d $ ");
+                        Env.Set(BuiltInEnvKeys.Prompt, args["value"].S ?? "%d $ ");
                         return default;
                     }
                 case "bgcolor":
                     {
-                        Env.Set(BuiltInEnvKeys.BgColor, args["value"].s,
-                            new UnishCommandArg(BuiltInEnvKeys.BgColor, DefaultColorParser.Instance.Parse("#000000cc")));
+                        Env.Set(BuiltInEnvKeys.BgColor, args["value"].S,
+                            new UnishVariable(BuiltInEnvKeys.BgColor, DefaultColorParser.Instance.Parse("#000000cc")));
                         return default;
                     }
                 case "width":
                     {
-                        Env.Set(BuiltInEnvKeys.CharCountPerLine, args["value"].s, new UnishCommandArg(BuiltInEnvKeys.CharCountPerLine, 100));
+                        Env.Set(BuiltInEnvKeys.CharCountPerLine, args["value"].S, new UnishVariable(BuiltInEnvKeys.CharCountPerLine, 100));
                         return default;
                     }
                 case "height":
                     {
-                        Env.Set(BuiltInEnvKeys.LineCount, args["value"].s, new UnishCommandArg(BuiltInEnvKeys.LineCount, 24));
+                        Env.Set(BuiltInEnvKeys.LineCount, args["value"].S, new UnishVariable(BuiltInEnvKeys.LineCount, 24));
                         return default;
                     }
                 default:

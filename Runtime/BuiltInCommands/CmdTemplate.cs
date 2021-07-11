@@ -10,13 +10,13 @@ namespace RUtil.Debug.Shell
             "",
         };
 
-        public override (UnishCommandArgType type, string name, string defVal, string info)[] Params { get; } =
+        public override (UnishVariableType type, string name, string defVal, string info)[] Params { get; } =
         {
-            (UnishCommandArgType.String, "", "", ""),
+            (UnishVariableType.String, "", "", ""),
         };
 
-        protected override UniTask Run(string op, Dictionary<string, UnishCommandArg> args,
-            Dictionary<string, UnishCommandArg> options)
+        protected override UniTask Run(string op, Dictionary<string, UnishVariable> args,
+            Dictionary<string, UnishVariable> options)
         {
             return UniTask.CompletedTask;
         }

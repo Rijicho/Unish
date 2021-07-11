@@ -10,18 +10,18 @@ namespace RUtil.Debug.Shell
             "pwd",
         };
 
-        public override (UnishCommandArgType type, string name, string defVal, string info)[] Params { get; } =
+        public override (UnishVariableType type, string name, string defVal, string info)[] Params { get; } =
         {
         };
 
-        public override (UnishCommandArgType type, string name, string defVal, string info)[] Options { get; } =
+        public override (UnishVariableType type, string name, string defVal, string info)[] Options { get; } =
         {
-            (UnishCommandArgType.None, "a", null, "show full path"),
-            (UnishCommandArgType.None, "r", null, "show real full path (real file-system only)"),
+            (UnishVariableType.Unit, "a", null, "show full path"),
+            (UnishVariableType.Unit, "r", null, "show real full path (real file-system only)"),
         };
 
-        protected override UniTask Run(string op, Dictionary<string, UnishCommandArg> args,
-            Dictionary<string, UnishCommandArg> options)
+        protected override UniTask Run(string op, Dictionary<string, UnishVariable> args,
+            Dictionary<string, UnishVariable> options)
         {
             if (options.ContainsKey("r") && Directory.CurrentHome is IUnishRealFileSystem fileSystem)
             {

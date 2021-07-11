@@ -5,133 +5,133 @@ using UnityEngine;
 
 namespace RUtil.Debug.Shell
 {
-    public readonly struct UnishCommandArg
+    public readonly struct UnishVariable
     {
-        public readonly UnishCommandArgType Type;
+        public readonly UnishVariableType Type;
         public readonly string              Name;
-        public readonly string              s;
-        public readonly bool                b;
-        public readonly int                 i;
-        public readonly float               f;
-        public readonly Vector2             v;
-        public readonly Vector3             v3;
-        public readonly Color               c;
+        public readonly string              S;
+        public readonly bool                B;
+        public readonly int                 I;
+        public readonly float               F;
+        public readonly Vector2             V2;
+        public readonly Vector3             V3;
+        public readonly Color               C;
 
-        public UnishCommandArg(string name, UnishCommandArgType type) : this()
+        public UnishVariable(string name, UnishVariableType type) : this()
         {
             Name = name;
             Type = type;
         }
 
-        public UnishCommandArg(string name, string s) : this(name, UnishCommandArgType.String)
+        public UnishVariable(string name, string s) : this(name, UnishVariableType.String)
         {
-            this.s = s;
+            this.S = s;
         }
 
-        public UnishCommandArg(string name, bool b) : this(name, UnishCommandArgType.Bool)
+        public UnishVariable(string name, bool b) : this(name, UnishVariableType.Bool)
         {
-            s      = b ? "true" : "false";
-            this.b = b;
+            S      = b ? "true" : "false";
+            this.B = b;
         }
 
-        public UnishCommandArg(string name, int i) : this(name, UnishCommandArgType.Int)
+        public UnishVariable(string name, int i) : this(name, UnishVariableType.Int)
         {
-            s      = i.ToString();
-            this.i = i;
-        }
-
-
-        public UnishCommandArg(string name, float f) : this(name, UnishCommandArgType.Float)
-        {
-            s      = f.ToString(CultureInfo.CurrentCulture);
-            this.f = f;
+            S      = i.ToString();
+            this.I = i;
         }
 
 
-        public UnishCommandArg(string name, Vector2 v) : this(name, UnishCommandArgType.Vector2)
+        public UnishVariable(string name, float f) : this(name, UnishVariableType.Float)
         {
-            s      = $"[{v.x}, {v.y}]";
-            this.v = v;
-        }
-
-        public UnishCommandArg(string name, Vector3 v) : this(name, UnishCommandArgType.Vector3)
-        {
-            s  = $"[{v.x}, {v.y}, {v.z}]";
-            v3 = v;
-        }
-
-        public UnishCommandArg(string name, Color c) : this(name, UnishCommandArgType.Color)
-        {
-            s      = DefaultColorParser.Instance.ColorToCode(c);
-            this.c = c;
-        }
-
-        public static UnishCommandArg Unit(string name)
-        {
-            return new UnishCommandArg(name, UnishCommandArgType.None, "<unit>");
+            S      = f.ToString(CultureInfo.CurrentCulture);
+            this.F = f;
         }
 
 
-        public UnishCommandArg(string name, UnishCommandArgType type, string input) : this(name, type)
+        public UnishVariable(string name, Vector2 v2) : this(name, UnishVariableType.Vector2)
         {
-            s = input;
+            S      = $"[{v2.x}, {v2.y}]";
+            this.V2 = v2;
+        }
+
+        public UnishVariable(string name, Vector3 v) : this(name, UnishVariableType.Vector3)
+        {
+            S  = $"[{v.x}, {v.y}, {v.z}]";
+            V3 = v;
+        }
+
+        public UnishVariable(string name, Color c) : this(name, UnishVariableType.Color)
+        {
+            S      = DefaultColorParser.Instance.ColorToCode(c);
+            this.C = c;
+        }
+
+        public static UnishVariable Unit(string name)
+        {
+            return new UnishVariable(name, UnishVariableType.Unit, "<unit>");
+        }
+
+
+        public UnishVariable(string name, UnishVariableType type, string input) : this(name, type)
+        {
+            S = input;
             switch (type)
             {
-                case UnishCommandArgType.Bool:
-                    if (!TryStrToBool(input, out b))
+                case UnishVariableType.Bool:
+                    if (!TryStrToBool(input, out B))
                     {
-                        Type = UnishCommandArgType.Error;
+                        Type = UnishVariableType.Error;
                     }
 
                     break;
-                case UnishCommandArgType.Int:
-                    if (!int.TryParse(input, out i))
+                case UnishVariableType.Int:
+                    if (!int.TryParse(input, out I))
                     {
-                        Type = UnishCommandArgType.Error;
+                        Type = UnishVariableType.Error;
                     }
 
                     break;
-                case UnishCommandArgType.Float:
-                    if (!float.TryParse(input, out f))
+                case UnishVariableType.Float:
+                    if (!float.TryParse(input, out F))
                     {
-                        Type = UnishCommandArgType.Error;
+                        Type = UnishVariableType.Error;
                     }
 
                     break;
-                case UnishCommandArgType.String:
+                case UnishVariableType.String:
                     break;
-                case UnishCommandArgType.Vector2:
+                case UnishVariableType.Vector2:
                     {
                         var arr = new float[2];
                         var cnt = TryParseVector(input, arr);
                         if (cnt == 2)
                         {
-                            v = new Vector2(arr[0], arr[1]);
+                            V2 = new Vector2(arr[0], arr[1]);
                         }
                         else
                         {
-                            Type = UnishCommandArgType.Error;
+                            Type = UnishVariableType.Error;
                         }
                     }
                     break;
-                case UnishCommandArgType.Vector3:
+                case UnishVariableType.Vector3:
                     {
                         var arr = new float[3];
                         var cnt = TryParseVector(input, arr);
                         if (cnt >= 2)
                         {
-                            v = new Vector3(arr[0], arr[1], arr.Length == 3 ? arr[2] : 0);
+                            V2 = new Vector3(arr[0], arr[1], arr.Length == 3 ? arr[2] : 0);
                         }
                         else
                         {
-                            Type = UnishCommandArgType.Error;
+                            Type = UnishVariableType.Error;
                         }
                     }
                     break;
-                case UnishCommandArgType.Color:
-                    if (!DefaultColorParser.Instance.TryParse(input, out c))
+                case UnishVariableType.Color:
+                    if (!DefaultColorParser.Instance.TryParse(input, out C))
                     {
-                        Type = UnishCommandArgType.Error;
+                        Type = UnishVariableType.Error;
                     }
 
                     break;

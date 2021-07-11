@@ -10,15 +10,15 @@ namespace RUtil.Debug.Shell
             "source",
         };
 
-        public override (UnishCommandArgType type, string name, string defVal, string info)[] Params { get; } =
+        public override (UnishVariableType type, string name, string defVal, string info)[] Params { get; } =
         {
-            (UnishCommandArgType.String, "path", null, "Source-file's path to execute"),
+            (UnishVariableType.String, "path", null, "Source-file's path to execute"),
         };
 
-        protected override async UniTask Run(string op, Dictionary<string, UnishCommandArg> args,
-            Dictionary<string, UnishCommandArg> options)
+        protected override async UniTask Run(string op, Dictionary<string, UnishVariable> args,
+            Dictionary<string, UnishVariable> options)
         {
-            var path = args["path"].s;
+            var path = args["path"].S;
             await foreach (var line in Directory.ReadLines(path))
             {
                 var cmd = line.Trim();

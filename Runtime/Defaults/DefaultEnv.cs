@@ -10,15 +10,15 @@ namespace RUtil.Debug.Shell
 
     public class DefaultEnv : IUnishEnv
     {
-        private readonly Dictionary<string, UnishCommandArg> mDictionary;
+        private readonly Dictionary<string, UnishVariable> mDictionary;
         public           int                                 Count  => mDictionary.Count;
         public           IEnumerable<string>                 Keys   => mDictionary.Keys;
-        public           IEnumerable<UnishCommandArg>        Values => mDictionary.Values;
+        public           IEnumerable<UnishVariable>        Values => mDictionary.Values;
 
-        public event Action<UnishCommandArg> OnSet;
+        public event Action<UnishVariable> OnSet;
         public event Action<string>          OnRemoved;
 
-        public UnishCommandArg this[string key]
+        public UnishVariable this[string key]
         {
             get => mDictionary[key];
             set
@@ -28,19 +28,19 @@ namespace RUtil.Debug.Shell
             }
         }
 
-        private readonly UnishCommandArg[] mInitials =
+        private readonly UnishVariable[] mInitials =
         {
-            new UnishCommandArg(ProfilePath, "~/.uprofile"),
-            new UnishCommandArg(RcPath, "~/.unishrc"),
-            new UnishCommandArg(Prompt, "%d $ "),
-            new UnishCommandArg(CharCountPerLine, 100),
-            new UnishCommandArg(LineCount, 24),
-            new UnishCommandArg(BgColor, new Color(0, 0, 0, (float)0xcc / 0xff)),
+            new UnishVariable(ProfilePath, "~/.uprofile"),
+            new UnishVariable(RcPath, "~/.unishrc"),
+            new UnishVariable(Prompt, "%d $ "),
+            new UnishVariable(CharCountPerLine, 100),
+            new UnishVariable(LineCount, 24),
+            new UnishVariable(BgColor, new Color(0, 0, 0, (float)0xcc / 0xff)),
         };
 
         public DefaultEnv()
         {
-            mDictionary = new Dictionary<string, UnishCommandArg>();
+            mDictionary = new Dictionary<string, UnishVariable>();
         }
 
         public UniTask InitializeAsync(IUnishEnv env)
@@ -64,7 +64,7 @@ namespace RUtil.Debug.Shell
             return mDictionary.ContainsKey(key);
         }
 
-        public bool TryGetValue(string key, out UnishCommandArg value)
+        public bool TryGetValue(string key, out UnishVariable value)
         {
             return mDictionary.TryGetValue(key, out value);
         }
@@ -77,7 +77,7 @@ namespace RUtil.Debug.Shell
         }
 
 
-        public IEnumerator<KeyValuePair<string, UnishCommandArg>> GetEnumerator()
+        public IEnumerator<KeyValuePair<string, UnishVariable>> GetEnumerator()
         {
             return mDictionary.GetEnumerator();
         }

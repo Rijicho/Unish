@@ -204,19 +204,19 @@ namespace RUtil.Debug.Shell
         }
 
 
-        private void OnEnvSet(UnishCommandArg envvar)
+        private void OnEnvSet(UnishVariable envvar)
         {
             switch (envvar.Name)
             {
                 case BuiltInEnvKeys.BgColor:
-                    BackgroundColor = envvar.c;
+                    BackgroundColor = envvar.C;
                     break;
                 case BuiltInEnvKeys.CharCountPerLine:
-                    mCharCountPerLine = Mathf.Max(20, envvar.i);
+                    mCharCountPerLine = Mathf.Max(20, envvar.I);
                     RefleshSize();
                     break;
                 case BuiltInEnvKeys.LineCount:
-                    mLineCount = Mathf.Max(1, envvar.i);
+                    mLineCount = Mathf.Max(1, envvar.I);
                     RefleshSize();
                     break;
             }

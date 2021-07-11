@@ -13,10 +13,10 @@ namespace RUtil.Debug.Shell
             "cat",
         };
 
-        public override (UnishCommandArgType type, string name, string defVal, string info)[] Params { get; } =
+        public override (UnishVariableType type, string name, string defVal, string info)[] Params { get; } =
         {
-            (UnishCommandArgType.String, "path1", null, "接続したいファイル１"),
-            (UnishCommandArgType.String, "path2", null, "接続したいファイル２"),
+            (UnishVariableType.String, "path1", null, "接続したいファイル１"),
+            (UnishVariableType.String, "path2", null, "接続したいファイル２"),
         };
 
         public override string Usage(string op)
@@ -26,11 +26,11 @@ namespace RUtil.Debug.Shell
 
         public override bool AllowTrailingNullParams => true;
 
-        protected override async UniTask Run(string op, Dictionary<string, UnishCommandArg> args,
-            Dictionary<string, UnishCommandArg> options)
+        protected override async UniTask Run(string op, Dictionary<string, UnishVariable> args,
+            Dictionary<string, UnishVariable> options)
         {
-            var path1 = args["path1"].s;
-            var path2 = args["path2"].s;
+            var path1 = args["path1"].S;
+            var path2 = args["path2"].S;
             var d     = Directory;
 
             if (string.IsNullOrEmpty(path1))

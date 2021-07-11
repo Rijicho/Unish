@@ -1,9 +1,9 @@
 ﻿namespace RUtil.Debug.Shell
 {
-    public enum UnishCommandArgType
+    public enum UnishVariableType
     {
-        Error = -1,
-        None  = 0,
+        Error = -1, // Failed to resolve its type
+        Unit  = 0,  // No value
         String,
         Bool,
         Int,

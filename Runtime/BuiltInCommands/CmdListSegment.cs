@@ -11,19 +11,19 @@ namespace RUtil.Debug.Shell
             "ls",
         };
 
-        public override (UnishCommandArgType type, string name, string defVal, string info)[] Params { get; } =
+        public override (UnishVariableType type, string name, string defVal, string info)[] Params { get; } =
         {
         };
 
-        public override (UnishCommandArgType type, string name, string defVal, string info)[] Options { get; } =
+        public override (UnishVariableType type, string name, string defVal, string info)[] Options { get; } =
         {
-            (UnishCommandArgType.Int, "R", "0", "list up recursively (DFS)"),
+            (UnishVariableType.Int, "R", "0", "list up recursively (DFS)"),
         };
 
-        protected override async UniTask Run(string op, Dictionary<string, UnishCommandArg> args,
-            Dictionary<string, UnishCommandArg> options)
+        protected override async UniTask Run(string op, Dictionary<string, UnishVariable> args,
+            Dictionary<string, UnishVariable> options)
         {
-            var maxDepth = options.TryGetValue("R", out var value) ? value.i : 0;
+            var maxDepth = options.TryGetValue("R", out var value) ? value.I : 0;
 
             if (maxDepth > 0)
             {
