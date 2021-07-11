@@ -89,7 +89,7 @@ namespace RUtil.Debug.Shell
 
             if (Env.TryGetValue(BuiltInEnvKeys.HomePath, out var homePath))
             {
-                Directory.TryChangeDirectory(homePath);
+                Directory.TryChangeDirectory(homePath.s);
             }
 
             await OnPostOpenAsync();
@@ -129,7 +129,7 @@ namespace RUtil.Debug.Shell
         {
             get
             {
-                var prompt = Env[BuiltInEnvKeys.Prompt];
+                var prompt = Env[BuiltInEnvKeys.Prompt].s;
                 if (!prompt.Contains("%d"))
                 {
                     return prompt;
@@ -152,8 +152,8 @@ namespace RUtil.Debug.Shell
 
         private async UniTask RunInitialScripts()
         {
-            var profile = Env[BuiltInEnvKeys.ProfilePath];
-            var rc      = Env[BuiltInEnvKeys.RcPath];
+            var profile = Env[BuiltInEnvKeys.ProfilePath].s;
+            var rc      = Env[BuiltInEnvKeys.RcPath].s;
             if (!mIsUprofileExecuted)
             {
                 if (Directory.TryFindEntry(profile, out _))

@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
+using UnityEngine;
 
 namespace RUtil.Debug.Shell
 {
@@ -9,40 +10,44 @@ namespace RUtil.Debug.Shell
 
     public class DefaultEnv : IUnishEnv
     {
-        private Dictionary<string, string> mDictionary;
-        public  int                        Count  => mDictionary.Count;
-        public  IEnumerable<string>        Keys   => mDictionary.Keys;
-        public  IEnumerable<string>        Values => mDictionary.Values;
+        private readonly Dictionary<string, UnishCommandArg> mDictionary;
+        public           int                                 Count  => mDictionary.Count;
+        public           IEnumerable<string>                 Keys   => mDictionary.Keys;
+        public           IEnumerable<UnishCommandArg>        Values => mDictionary.Values;
 
-        public event Action<KeyValuePair<string, string>> OnSet;
-        public event Action<string>                       OnRemoved;
+        public event Action<UnishCommandArg> OnSet;
+        public event Action<string>          OnRemoved;
 
-        public string this[string key]
+        public UnishCommandArg this[string key]
         {
             get => mDictionary[key];
             set
             {
                 mDictionary[key] = value;
-                OnSet?.Invoke(new KeyValuePair<string, string>(key, value));
+                OnSet?.Invoke(value);
             }
         }
 
-        private readonly (string Key, string Value)[] mInitials =
+        private readonly UnishCommandArg[] mInitials =
         {
-            (ProfilePath, "~/.uprofile"),
-            (RcPath, "~/.unishrc"),
-            (Prompt, "%d $ "),
-            (CharCountPerLine, "100"),
-            (LineCount, "24"),
-            (BgColor, "#000000cc"),
+            new UnishCommandArg(ProfilePath, "~/.uprofile"),
+            new UnishCommandArg(RcPath, "~/.unishrc"),
+            new UnishCommandArg(Prompt, "%d $ "),
+            new UnishCommandArg(CharCountPerLine, 100),
+            new UnishCommandArg(LineCount, 24),
+            new UnishCommandArg(BgColor, new Color(0, 0, 0, (float)0xcc / 0xff)),
         };
+
+        public DefaultEnv()
+        {
+            mDictionary = new Dictionary<string, UnishCommandArg>();
+        }
 
         public UniTask InitializeAsync(IUnishEnv env)
         {
-            mDictionary = new Dictionary<string, string>();
-            foreach (var (key, value) in mInitials)
+            foreach (var arg in mInitials)
             {
-                mDictionary.Add(key, value);
+                mDictionary.Add(arg.Name, arg);
             }
 
             return default;
@@ -59,10 +64,11 @@ namespace RUtil.Debug.Shell
             return mDictionary.ContainsKey(key);
         }
 
-        public bool TryGetValue(string key, out string value)
+        public bool TryGetValue(string key, out UnishCommandArg value)
         {
             return mDictionary.TryGetValue(key, out value);
         }
+
 
         public void Remove(string key)
         {
@@ -71,7 +77,7 @@ namespace RUtil.Debug.Shell
         }
 
 
-        public IEnumerator<KeyValuePair<string, string>> GetEnumerator()
+        public IEnumerator<KeyValuePair<string, UnishCommandArg>> GetEnumerator()
         {
             return mDictionary.GetEnumerator();
         }

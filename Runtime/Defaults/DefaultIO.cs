@@ -91,22 +91,22 @@ namespace RUtil.Debug.Shell
             background = component.Background;
             text       = component.Text;
 
-            if (!env.TryGetValue(BuiltInEnvKeys.BgColor, out var bgColor, mColorParser))
+            if (!env.TryGet(BuiltInEnvKeys.BgColor, out Color bgColor))
             {
-                env[BuiltInEnvKeys.BgColor] = "#000000cc";
-                bgColor                          = mColorParser.Parse("#000000cc");
+                bgColor = mColorParser.Parse("#000000cc");
+                env.Set(BuiltInEnvKeys.BgColor, bgColor);
             }
 
-            if (!env.TryGetValue(BuiltInEnvKeys.CharCountPerLine, out mCharCountPerLine))
+            if (!env.TryGet(BuiltInEnvKeys.CharCountPerLine, out mCharCountPerLine))
             {
-                env[BuiltInEnvKeys.CharCountPerLine] = "100";
-                mCharCountPerLine                         = 100;
+                mCharCountPerLine = 100;
+                env.Set(BuiltInEnvKeys.CharCountPerLine, mCharCountPerLine);
             }
 
-            if (!env.TryGetValue(BuiltInEnvKeys.LineCount, out mLineCount))
+            if (!env.TryGet(BuiltInEnvKeys.LineCount, out mLineCount))
             {
-                env[BuiltInEnvKeys.LineCount] = "24";
-                mLineCount                         = 24;
+                mLineCount = 24;
+                env.Set(BuiltInEnvKeys.LineCount, mLineCount);
             }
 
             // 背景色設定
@@ -204,27 +204,21 @@ namespace RUtil.Debug.Shell
         }
 
 
-        private void OnEnvSet(KeyValuePair<string, string> kv)
+        private void OnEnvSet(UnishCommandArg envvar)
         {
-            switch (kv.Key)
+            switch (envvar.Name)
             {
                 case BuiltInEnvKeys.BgColor:
-                    BackgroundColor = mColorParser.TryParse(kv.Value, out var col)
-                        ? col
-                        : mColorParser.Parse("#000000cc");
+                    BackgroundColor = envvar.c;
                     break;
                 case BuiltInEnvKeys.CharCountPerLine:
-                    {
-                        mCharCountPerLine = int.TryParse(kv.Value, out var cnt) ? cnt : 100;
-                        RefleshSize();
-                        break;
-                    }
+                    mCharCountPerLine = Mathf.Max(20, envvar.i);
+                    RefleshSize();
+                    break;
                 case BuiltInEnvKeys.LineCount:
-                    {
-                        mLineCount = int.TryParse(kv.Value, out var cnt) ? cnt : 24;
-                        RefleshSize();
-                        break;
-                    }
+                    mLineCount = Mathf.Max(1, envvar.i);
+                    RefleshSize();
+                    break;
             }
         }
 

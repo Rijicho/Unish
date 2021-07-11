@@ -9,19 +9,24 @@ namespace RUtil.Debug.Shell
         public IUnishCommandRepository     Repository { get; private set; }
         public IDictionary<string, string> Aliases    { get; private set; }
 
+        private IUnishParser mParser;
+
         // ----------------------------------
         // public methods
         // ----------------------------------
-        public UniTask InitializeAsync(IUnishEnv env)
+        public async UniTask InitializeAsync(IUnishEnv env)
         {
             Repository = DefaultCommandRepository.Instance;
             Aliases    = new Dictionary<string, string>();
-            return Repository.InitializeAsync(env);
+            mParser    = new DefaultParser();
+            await mParser.InitializeAsync(env);
+            await Repository.InitializeAsync(env);
         }
 
         public async UniTask FinalizeAsync(IUnishEnv env)
         {
             await Repository.FinalizeAsync(env);
+            await mParser.FinalizeAsync(env);
             Aliases    = null;
             Repository = null;
         }
@@ -34,6 +39,7 @@ namespace RUtil.Debug.Shell
             }
 
             cmd = cmd.TrimStart();
+
 
             // エイリアス解決
             foreach (var kv in Aliases)
@@ -51,13 +57,14 @@ namespace RUtil.Debug.Shell
                 }
             }
 
-            // オペランドのみパースし、コマンドが存在すれば実行
-            if (TryPreParseCommand(Repository, cmd,
-                out var c, out var op, out var argsNotParsed))
+            var parsed = mParser.Parse(cmd, shell.Env);
+
+            // 対応するコマンドが存在すれば実行
+            if (Repository.Map.TryGetValue(parsed.Command, out var cmdInstance))
             {
                 try
                 {
-                    await c.Run(shell, op, argsNotParsed);
+                    await cmdInstance.Run(shell, parsed);
                 }
                 catch (Exception e)
                 {

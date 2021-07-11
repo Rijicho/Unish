@@ -22,21 +22,21 @@ namespace RUtil.Debug.Shell
         protected override async UniTask Run(string op, Dictionary<string, UnishCommandArg> args,
             Dictionary<string, UnishCommandArg> options)
         {
-            await IO.WriteLineAsync("| "+"==========================================", "orange");
-            await IO.WriteLineAsync("| "+"[Help]", "orange");
-            await IO.WriteLineAsync("| "+"Input command and press Enter key.", "orange");
+            await IO.WriteLineAsync("| " + "==========================================", "orange");
+            await IO.WriteLineAsync("| " + "[Help]", "orange");
+            await IO.WriteLineAsync("| " + "Input command and press Enter key.", "orange");
             await IO.WriteLineAsync("");
-            await IO.WriteLineAsync("| "+"Important commands:", "orange");
-            await IO.WriteLineAsync("| "+"----------------", "yellow");
+            await IO.WriteLineAsync("| " + "Important commands:", "orange");
+            await IO.WriteLineAsync("| " + "----------------", "yellow");
             await Interpreter.Repository.Map["lc"].WriteUsage(IO, false, false);
-            await IO.WriteLineAsync("| "+"----------------", "yellow");
+            await IO.WriteLineAsync("| " + "----------------", "yellow");
             await Interpreter.Repository.Map["man"].WriteUsage(IO, false, false);
-            await IO.WriteLineAsync("| "+"----------------", "yellow");
+            await IO.WriteLineAsync("| " + "----------------", "yellow");
             await Interpreter.Repository.Map["q"].WriteUsage(IO, false, false);
-            await IO.WriteLineAsync("| "+"----------------", "yellow");
+            await IO.WriteLineAsync("| " + "----------------", "yellow");
             await IO.WriteLineAsync("");
-            await IO.WriteLineAsync("| "+"This view can be scrolled by Ctrl(Cmd)+Arrow keys.", "orange");
-            await IO.WriteLineAsync("| "+"==========================================", "orange");
+            await IO.WriteLineAsync("| " + "This view can be scrolled by Ctrl(Cmd)+Arrow keys.", "orange");
+            await IO.WriteLineAsync("| " + "==========================================", "orange");
         }
 
         public override string Usage(string op)

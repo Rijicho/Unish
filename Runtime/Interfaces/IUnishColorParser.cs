@@ -6,5 +6,6 @@ namespace RUtil.Debug.Shell
     {
         Color Parse(string str);
         bool TryParse(string str, out Color value);
+        string ColorToCode(Color color);
     }
 }

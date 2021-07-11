@@ -9,5 +9,7 @@
         Int,
         Float,
         Vector2,
+        Vector3,
+        Color,
     }
 }

@@ -38,7 +38,9 @@ namespace RUtil.Debug.Shell
             return Interpreter.RunCommandAsync(mShell, cmd);
         }
 
-        protected abstract UniTask Run(string op, Dictionary<string, UnishCommandArg> args,
+        protected abstract UniTask Run(
+            string op, 
+            Dictionary<string, UnishCommandArg> args,
             Dictionary<string, UnishCommandArg> options);
 
         private static readonly char[] Separators =
@@ -46,6 +48,46 @@ namespace RUtil.Debug.Shell
             ' ',
         };
 
+        public async UniTask Run(IUnishPresenter shell, UnishParseResult parsed)
+        {
+            mShell = shell;
+            var dParams  = new Dictionary<string, UnishCommandArg>();
+            var dOptions = new Dictionary<string, UnishCommandArg>();
+
+            int i;
+            for (i=0; i<Options.Length && i<parsed.Options.Count; i++)
+            {
+                var option      = Options[i];
+                var optionTyped = new UnishCommandArg(option.name, option.type, parsed.Options[i]);
+                if (optionTyped.Type == UnishCommandArgType.Error)
+                {
+                    await IO.WriteErrorAsync(new Exception($"Type mismatch: {parsed.Params[i]} is not {option.type}."));
+                    await WriteUsage(parsed.Command);
+                    return;
+                }
+                dOptions[option.name] = optionTyped;
+            }
+            for (i=0; i<Params.Length && i<parsed.Params.Count; i++)
+            {
+                var param = Params[i];
+                var paramTyped = new UnishCommandArg(param.name, param.type, parsed.Params[i]);
+                if (paramTyped.Type == UnishCommandArgType.Error)
+                {
+                    await IO.WriteErrorAsync(new Exception($"Type mismatch: {parsed.Params[i]} is not {param.type}."));
+                    await WriteUsage(parsed.Command);
+                    return;
+                }
+                dParams[param.name] = paramTyped;
+            }
+
+            for (; i < Params.Length; i++)
+            {
+                var param = Params[i];
+                dParams[param.name] = new UnishCommandArg(param.name, param.type, param.defVal);
+            }
+
+            await Run(parsed.Command, dParams, dOptions);
+        }
         public async UniTask Run(IUnishPresenter shell, string op, string argsNotParsed)
         {
             mShell = shell;
@@ -61,7 +103,7 @@ namespace RUtil.Debug.Shell
                     return;
                 }
 
-                dic[""] = new UnishCommandArg(UnishCommandArgType.String, argsNotParsed ?? "");
+                dic[""] = new UnishCommandArg("", UnishCommandArgType.String, argsNotParsed ?? "");
                 await Run(op, dic, options);
                 return;
             }
@@ -116,17 +158,17 @@ namespace RUtil.Debug.Shell
                     {
                         if (Options[k].name == args[i].Substring(1))
                         {
-                            var optionArg = UnishCommandArg.None;
+                            var optionArg = UnishCommandArg.Unit(Options[k].name);
                             if (Options[k].type != UnishCommandArgType.None)
                             {
                                 if (i == args.Length - 1 || (args[i + 1].StartsWith("-") &&
                                                              !float.TryParse(args[i + 1], out var _)))
                                 {
-                                    optionArg = new UnishCommandArg(Options[k].type, Options[k].defVal);
+                                    optionArg = new UnishCommandArg(Options[k].name, Options[k].type, Options[k].defVal);
                                 }
                                 else
                                 {
-                                    optionArg = new UnishCommandArg(Options[k].type, args[i + 1]);
+                                    optionArg = new UnishCommandArg(Options[k].name, Options[k].type, args[i + 1]);
                                     i++;
                                 }
                             }
@@ -156,7 +198,7 @@ namespace RUtil.Debug.Shell
                     {
                         if (AllowTrailingNullParams)
                         {
-                            dic[Params[j].name] = new UnishCommandArg(Params[j].type, Params[j].defVal);
+                            dic[Params[j].name] = new UnishCommandArg(Params[j].name, Params[j].type, Params[j].defVal);
                         }
                         else
                         {
@@ -166,7 +208,7 @@ namespace RUtil.Debug.Shell
                     }
                     else
                     {
-                        dic[Params[j].name] = new UnishCommandArg(Params[j].type, Params[j].defVal);
+                        dic[Params[j].name] = new UnishCommandArg(Params[j].name, Params[j].type, Params[j].defVal);
                         if (dic[Params[j].name].Type == UnishCommandArgType.Error)
                         {
                             await IO.WriteErrorAsync(new Exception($"Type mismatch: {Params[j]} is not {Params[j].type}."));
@@ -178,7 +220,7 @@ namespace RUtil.Debug.Shell
                 }
                 else
                 {
-                    dic[Params[j].name] = new UnishCommandArg(Params[j].type, args[i]);
+                    dic[Params[j].name] = new UnishCommandArg(Params[j].name, Params[j].type, args[i]);
                     if (dic[Params[j].name].Type == UnishCommandArgType.Error)
                     {
                         await IO.WriteErrorAsync(new Exception($"Type mismatch: {args[i]} is not {Params[j].type}."));
@@ -195,7 +237,7 @@ namespace RUtil.Debug.Shell
                 {
                     if (AllowTrailingNullParams)
                     {
-                        dic[Params[j].name] = new UnishCommandArg(Params[j].type, Params[j].defVal);
+                        dic[Params[j].name] = new UnishCommandArg(Params[j].name, Params[j].type, Params[j].defVal);
                     }
                     else
                     {
@@ -205,7 +247,7 @@ namespace RUtil.Debug.Shell
                 }
                 else
                 {
-                    dic[Params[j].name] = new UnishCommandArg(Params[j].type, Params[j].defVal);
+                    dic[Params[j].name] = new UnishCommandArg(Params[j].name, Params[j].type, Params[j].defVal);
                     if (dic[Params[j].name].Type == UnishCommandArgType.Error)
                     {
                         await IO.WriteErrorAsync(new Exception($"Type mismatch: {Params[j]} is not {Params[j].type}."));

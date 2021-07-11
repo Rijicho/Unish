@@ -76,5 +76,14 @@ namespace RUtil.Debug.Shell
                 return false;
             }
         }
+
+        public string ColorToCode(Color color)
+        {
+            var r = (byte)(255 * color.r);
+            var g = (byte)(255 * color.g);
+            var b = (byte)(255 * color.b);
+            var a = (byte)(255 * color.a);
+            return $"#{r:X}{g:X}{b:X}{a:X}";
+        }
     }
 }

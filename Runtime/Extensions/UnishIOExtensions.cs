@@ -13,6 +13,7 @@ namespace RUtil.Debug.Shell
         Canceled,
         Failed,
     }
+
     public static class UnishIOExtensions
     {
         public static async UniTask<(string selected, int index, SelectionState state)> SuggestAndSelectAsync(

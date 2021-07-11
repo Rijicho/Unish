@@ -54,7 +54,8 @@ namespace RUtil.Debug.Shell
 
             var alias   = input.Substring(0, firstEqual).Trim();
             var command = input.Substring(firstEqual + 1).Trim();
-            if (command[0] == '"' && command[command.Length - 1] == '"')
+            if ((command[0] == '"' && command[command.Length - 1] == '"')
+                || (command[0] == '\'' && command[command.Length - 1] == '\''))
             {
                 command = command.Substring(1, command.Length - 2);
             }
@@ -86,8 +87,6 @@ namespace RUtil.Debug.Shell
             {
                 Interpreter.Aliases[alias] = command;
             }
-
-            return;
         }
     }
 }

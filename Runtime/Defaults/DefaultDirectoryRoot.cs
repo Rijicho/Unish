@@ -31,7 +31,7 @@ namespace RUtil.Debug.Shell
 
             if (!env.ContainsKey(BuiltInEnvKeys.HomePath))
             {
-                env[BuiltInEnvKeys.HomePath] = $"{PathConstants.Root}{mDirectories[0].HomeName}";
+                env.Set(BuiltInEnvKeys.HomePath, $"{PathConstants.Root}{mDirectories[0].HomeName}");
             }
         }
 
