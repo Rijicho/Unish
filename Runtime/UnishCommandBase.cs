@@ -39,7 +39,7 @@ namespace RUtil.Debug.Shell
         }
 
         protected abstract UniTask Run(
-            string op, 
+            string op,
             Dictionary<string, UnishCommandArg> args,
             Dictionary<string, UnishCommandArg> options);
 
@@ -55,7 +55,7 @@ namespace RUtil.Debug.Shell
             var dOptions = new Dictionary<string, UnishCommandArg>();
 
             int i;
-            for (i=0; i<Options.Length && i<parsed.Options.Count; i++)
+            for (i = 0; i < Options.Length && i < parsed.Options.Count; i++)
             {
                 var option      = Options[i];
                 var optionTyped = new UnishCommandArg(option.name, option.type, parsed.Options[i]);
@@ -65,11 +65,13 @@ namespace RUtil.Debug.Shell
                     await WriteUsage(parsed.Command);
                     return;
                 }
+
                 dOptions[option.name] = optionTyped;
             }
-            for (i=0; i<Params.Length && i<parsed.Params.Count; i++)
+
+            for (i = 0; i < Params.Length && i < parsed.Params.Count; i++)
             {
-                var param = Params[i];
+                var param      = Params[i];
                 var paramTyped = new UnishCommandArg(param.name, param.type, parsed.Params[i]);
                 if (paramTyped.Type == UnishCommandArgType.Error)
                 {
@@ -77,6 +79,7 @@ namespace RUtil.Debug.Shell
                     await WriteUsage(parsed.Command);
                     return;
                 }
+
                 dParams[param.name] = paramTyped;
             }
 
@@ -88,6 +91,7 @@ namespace RUtil.Debug.Shell
 
             await Run(parsed.Command, dParams, dOptions);
         }
+
         public async UniTask Run(IUnishPresenter shell, string op, string argsNotParsed)
         {
             mShell = shell;

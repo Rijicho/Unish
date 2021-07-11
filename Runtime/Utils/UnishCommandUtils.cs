@@ -95,7 +95,7 @@ namespace RUtil.Debug.Shell
             {
                 return;
             }
-            
+
             var tokenStartedIndex       = -1;
             var isInStringSingle        = false;
             var isInStringDouble        = false;
