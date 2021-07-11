@@ -72,6 +72,7 @@ namespace RUtil.Debug.Shell
 
             await OnPreOpenAsync();
             await IO.InitializeAsync();
+            IO.OnHaltInput += Halt;
             await Directory.InitializeAsync();
             await Interpreter.InitializeAsync();
             await OnPostOpenAsync();
@@ -100,6 +101,7 @@ namespace RUtil.Debug.Shell
             await OnPreCloseAsync();
             await Interpreter.FinalizeAsync();
             await Directory.FinalizeAsync();
+            IO.OnHaltInput -= Halt;
             await IO.FinalizeAsync();
             await OnPostCloseAsync();
             mState = UnishState.None;
