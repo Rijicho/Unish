@@ -27,14 +27,13 @@ namespace RUtil.Debug.Shell
             return "コマンドのエイリアスを作成します。";
         }
 
-        protected override async UniTask Run(IUnishPresenter shell, string op, Dictionary<string, UnishCommandArg> args,
-            Dictionary<string, UnishCommandArg> options)
+        protected override async UniTask Run(string op, Dictionary<string, UnishCommandArg> args, Dictionary<string, UnishCommandArg> options)
         {
             if (options.ContainsKey("l"))
             {
-                foreach (var a in shell.Interpreter.Aliases)
+                foreach (var a in Interpreter.Aliases)
                 {
-                    await shell.IO.WriteLineAsync($"\"{a.Key}\" = \"{a.Value}\"");
+                    await IO.WriteLineAsync($"\"{a.Key}\" = \"{a.Value}\"");
                 }
             }
 
@@ -48,7 +47,7 @@ namespace RUtil.Debug.Shell
             var firstEqual = input.IndexOf('=');
             if (firstEqual < 0)
             {
-                await WriteUsage(shell.IO);
+                await WriteUsage(IO);
                 return;
             }
 
@@ -62,22 +61,22 @@ namespace RUtil.Debug.Shell
 
             if (string.IsNullOrEmpty(command) || string.IsNullOrEmpty(alias))
             {
-                await WriteUsage(shell.IO);
+                await WriteUsage(IO);
                 return;
             }
 
-            if (shell.Interpreter.Repository.Commands.Count(x => x.Ops.Contains(alias)) > 0)
+            if (Interpreter.Repository.Commands.Count(x => x.Ops.Contains(alias)) > 0)
             {
-                await shell.IO.WriteErrorAsync(new Exception($"The command {alias} already exists."));
+                await IO.WriteErrorAsync(new Exception($"The command {alias} already exists."));
                 return;
             }
 
-            var aliases = shell.Interpreter.Aliases;
+            var aliases = Interpreter.Aliases;
             if (string.IsNullOrWhiteSpace(command))
             {
                 if (!aliases.ContainsKey(alias))
                 {
-                    await shell.IO.WriteErrorAsync(new Exception($"Alias {alias} does not exist."));
+                    await IO.WriteErrorAsync(new Exception($"Alias {alias} does not exist."));
                     return;
                 }
 
@@ -85,7 +84,7 @@ namespace RUtil.Debug.Shell
             }
             else
             {
-                shell.Interpreter.Aliases[alias] = command;
+                Interpreter.Aliases[alias] = command;
             }
 
             return;

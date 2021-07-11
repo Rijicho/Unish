@@ -15,9 +15,9 @@ namespace RUtil.Debug.Shell
             (UnishCommandArgType.String, "path", null, "directory to create"),
         };
 
-        protected override UniTask Run(IUnishPresenter shell, string op, Dictionary<string, UnishCommandArg> args, Dictionary<string, UnishCommandArg> options)
+        protected override UniTask Run(string op, Dictionary<string, UnishCommandArg> args, Dictionary<string, UnishCommandArg> options)
         {
-            shell.Directory.Create(args["path"].s, true);
+            Directory.Create(args["path"].s, true);
             return default;
         }
     }

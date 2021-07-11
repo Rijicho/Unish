@@ -20,30 +20,30 @@ namespace RUtil.Debug.Shell
             (UnishCommandArgType.None, "r", null, "show real full path (real file-system only)"),
         };
 
-        protected override UniTask Run(IUnishPresenter shell, string op, Dictionary<string, UnishCommandArg> args,
+        protected override UniTask Run(string op, Dictionary<string, UnishCommandArg> args,
             Dictionary<string, UnishCommandArg> options)
         {
-            if (options.ContainsKey("r") && shell.Directory.CurrentHome is IUnishRealFileSystem fileSystem)
+            if (options.ContainsKey("r") && Directory.CurrentHome is IUnishRealFileSystem fileSystem)
             {
-                return shell.IO.WriteLineAsync(fileSystem.RealHomePath + shell.Directory.Current.HomeRelativePath);
+                return IO.WriteLineAsync(fileSystem.RealHomePath + Directory.Current.HomeRelativePath);
             }
 
             if (options.ContainsKey("a"))
             {
-                return shell.IO.WriteLineAsync(shell.Directory.Current.FullPath);
+                return IO.WriteLineAsync(Directory.Current.FullPath);
             }
 
-            if (shell.Directory.Current.IsRoot)
+            if (Directory.Current.IsRoot)
             {
-                return shell.IO.WriteLineAsync(PathConstants.Root);
+                return IO.WriteLineAsync(PathConstants.Root);
             }
 
-            if (shell.Directory.Current.IsHome)
+            if (Directory.Current.IsHome)
             {
-                return shell.IO.WriteLineAsync(PathConstants.Home);
+                return IO.WriteLineAsync(PathConstants.Home);
             }
 
-            return shell.IO.WriteLineAsync(PathConstants.Home + shell.Directory.Current.HomeRelativePath);
+            return IO.WriteLineAsync(PathConstants.Home + Directory.Current.HomeRelativePath);
         }
 
         public override string Usage(string op)

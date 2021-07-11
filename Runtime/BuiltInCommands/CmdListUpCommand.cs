@@ -29,7 +29,7 @@ namespace RUtil.Debug.Shell
             return "コマンドリストを表示します。";
         }
 
-        protected override async UniTask Run(IUnishPresenter shell, string op, Dictionary<string, UnishCommandArg> args,
+        protected override async UniTask Run(string op, Dictionary<string, UnishCommandArg> args,
             Dictionary<string, UnishCommandArg> options)
         {
             var filter  = new Regex(options.ContainsKey("r") ? args["pattern"].s : $".*{args["pattern"].s}.*");
@@ -39,11 +39,11 @@ namespace RUtil.Debug.Shell
 
             if (options.ContainsKey("s") && options["s"].s == "name")
             {
-                ls = shell.Interpreter.Repository.Map.OrderBy(x => x.Key);
+                ls = Interpreter.Repository.Map.OrderBy(x => x.Key);
             }
             else
             {
-                ls = shell.Interpreter.Repository.Map;
+                ls = Interpreter.Repository.Map;
             }
 
             foreach (var c in ls)
@@ -63,12 +63,12 @@ namespace RUtil.Debug.Shell
                 {
                     if (options.ContainsKey("d"))
                     {
-                        await c.Value.WriteUsage(c.Key, shell.IO, isFirst);
+                        await c.Value.WriteUsage(IO, c.Key, isFirst);
                         isFirst = false;
                     }
                     else
                     {
-                        await shell.IO.WriteLineAsync("| " + c.Key);
+                        await IO.WriteLineAsync("| " + c.Key);
                     }
 
                     await UniTask.Yield();

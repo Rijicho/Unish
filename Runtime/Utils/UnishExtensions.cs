@@ -10,7 +10,7 @@ namespace RUtil.Debug.Shell
     public static class UnishExtensions
     {
         public static async UniTask<(string selected, int index, SelectionState state)> SuggestAndSelectAsync(
-            this IUnishPresenter shell,
+            this IUnishIO io,
             string searchWord,
             IEnumerable<string> candidates,
             bool enableRegex = true,
@@ -56,7 +56,7 @@ namespace RUtil.Debug.Shell
             if (suggestion.Count > 0)
             {
                 var longest = suggestion.Max(x => (entryFormatter?.Invoke(x) ?? x).Length);
-                longest = Mathf.Min(longest, shell.IO.HorizontalCharCount - 10);
+                longest = Mathf.Min(longest, io.HorizontalCharCount - 10);
                 var i = 0;
                 foreach (var s in suggestion)
                 {
@@ -64,15 +64,15 @@ namespace RUtil.Debug.Shell
                     var iColor  = i % 2 == 0 ? "#ffff55" : "#55ff55";
                     var content = (entryFormatter?.Invoke(s) ?? s).PadRight(longest);
                     var color   = i % 2 == 0 ? "#ffffaa" : "#aaffaa";
-                    await shell.IO.WriteLineAsync($"| <color={iColor}>|{iStr}></color> <color={color}>{content}</color>",
+                    await io.WriteLineAsync($"| <color={iColor}>|{iStr}></color> <color={color}>{content}</color>",
                         "orange");
                     await UniTask.Yield();
                     i++;
                 }
 
-                shell.IO.WriteLineAsync("| Select index: ", "orange");
+                io.WriteLineAsync("| Select index: ", "orange");
 
-                var newInput = await shell.IO.ReadAsync();
+                var newInput = await io.ReadAsync();
 
                 if (string.IsNullOrWhiteSpace(newInput))
                 {

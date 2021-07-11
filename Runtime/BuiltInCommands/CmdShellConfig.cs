@@ -21,23 +21,24 @@ namespace RUtil.Debug.Shell
             return "Shellの環境設定をします。";
         }
 
-        protected override UniTask Run(IUnishPresenter shell, string op, Dictionary<string, UnishCommandArg> args,
+        protected override UniTask Run(string op, Dictionary<string, UnishCommandArg> args,
             Dictionary<string, UnishCommandArg> options)
         {
             if (string.IsNullOrEmpty(args["key"].s))
             {
-                return shell.Interpreter.RunCommandAsync(shell, "man shpref");
+                return WriteUsage(IO);
             }
 
             switch (args["key"].s)
             {
                 case "prompt":
                     {
-                        shell.Prompt = args["value"].s ?? "> ";
+                        //TODO: 復旧
+                        //shell.Prompt = args["value"].s ?? "> ";
                         return default;
                     }
                 default:
-                    return shell.Interpreter.RunCommandAsync(shell, "man shpref");
+                    return WriteUsage(IO);
             }
         }
     }

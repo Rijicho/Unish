@@ -15,11 +15,11 @@ namespace RUtil.Debug.Shell
             (UnishCommandArgType.String, "path", null, "Source-file's path to execute"),
         };
 
-        protected override async UniTask Run(IUnishPresenter shell, string op, Dictionary<string, UnishCommandArg> args,
+        protected override async UniTask Run(string op, Dictionary<string, UnishCommandArg> args,
             Dictionary<string, UnishCommandArg> options)
         {
             var path = args["path"].s;
-            await foreach (var line in shell.Directory.ReadLines(path))
+            await foreach (var line in Directory.ReadLines(path))
             {
                 var cmd = line.Trim();
                 if (string.IsNullOrWhiteSpace(cmd))
@@ -32,7 +32,7 @@ namespace RUtil.Debug.Shell
                     continue;
                 }
 
-                await shell.Interpreter.RunCommandAsync(shell, cmd);
+                await RunNewCommandAsync(cmd);
             }
         }
 

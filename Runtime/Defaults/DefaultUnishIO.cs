@@ -187,7 +187,7 @@ namespace RUtil.Debug.Shell
 
         public async UniTask WriteErrorAsync(Exception error)
         {
-            await this.WriteLineAsync($"<color=#ff7777>error: {error.Message}</color>");
+            await this.WriteLineAsync($"error: {error.Message}", "#ff7777");
             UnityEngine.Debug.LogError(error);
         }
 

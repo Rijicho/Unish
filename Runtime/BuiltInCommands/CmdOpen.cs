@@ -17,7 +17,7 @@ namespace RUtil.Debug.Shell
             (UnishCommandArgType.String, "path", null, "URL or file path to open"),
         };
 
-        protected override UniTask Run(IUnishPresenter shell, string op, Dictionary<string, UnishCommandArg> args,
+        protected override UniTask Run(string op, Dictionary<string, UnishCommandArg> args,
             Dictionary<string, UnishCommandArg> options)
         {
             var path = args["path"].s;
@@ -28,9 +28,9 @@ namespace RUtil.Debug.Shell
                 return default;
             }
 
-            if (shell.Directory.TryFindEntry(path, out var _))
+            if (Directory.TryFindEntry(path, out var _))
             {
-                shell.Directory.Open(path);
+                Directory.Open(path);
                 return default;
             }
 

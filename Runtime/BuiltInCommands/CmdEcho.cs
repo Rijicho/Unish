@@ -17,10 +17,10 @@ namespace RUtil.Debug.Shell
 
         public override bool RequiresPreParseArguments => false;
 
-        protected override UniTask Run(IUnishPresenter shell, string op, Dictionary<string, UnishCommandArg> args,
+        protected override UniTask Run(string op, Dictionary<string, UnishCommandArg> args,
             Dictionary<string, UnishCommandArg> options)
         {
-            return shell.IO.WriteLineAsync(args[""].s);
+            return IO.WriteLineAsync(args[""].s);
         }
 
         public override string Usage(string op)

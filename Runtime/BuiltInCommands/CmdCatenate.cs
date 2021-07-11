@@ -26,33 +26,33 @@ namespace RUtil.Debug.Shell
 
         public override bool AllowTrailingNullParams => true;
 
-        protected override async UniTask Run(IUnishPresenter shell, string op, Dictionary<string, UnishCommandArg> args,
+        protected override async UniTask Run(string op, Dictionary<string, UnishCommandArg> args,
             Dictionary<string, UnishCommandArg> options)
         {
             var path1 = args["path1"].s;
             var path2 = args["path2"].s;
-            var d     = shell.Directory;
+            var d     = Directory;
 
             if (string.IsNullOrEmpty(path1))
             {
-                await shell.Interpreter.RunCommandAsync(shell, "man cat");
+                await WriteUsage();
                 return;
             }
 
             var sb = new StringBuilder();
             try
             {
-                sb.Append(shell.Directory.Read(path1));
+                sb.Append(Directory.Read(path1));
                 if (!string.IsNullOrEmpty(path2))
                 {
-                    sb.Append(shell.Directory.Read(path2));
+                    sb.Append(Directory.Read(path2));
                 }
 
-                await shell.IO.WriteLineAsync(sb.ToString());
+                await IO.WriteLineAsync(sb.ToString());
             }
             catch (Exception e) when (e is FileNotFoundException || e is DirectoryNotFoundException || e is InvalidOperationException)
             {
-                await shell.IO.WriteErrorAsync(new Exception(e.Message));
+                await IO.WriteErrorAsync(new Exception(e.Message));
             }
         }
     }

@@ -20,9 +20,9 @@ namespace RUtil.Debug.Shell
             (UnishCommandArgType.None, "r", null, "delete recursively"),
         };
 
-        protected override UniTask Run(IUnishPresenter shell, string op, Dictionary<string, UnishCommandArg> args, Dictionary<string, UnishCommandArg> options)
+        protected override UniTask Run(string op, Dictionary<string, UnishCommandArg> args, Dictionary<string, UnishCommandArg> options)
         {
-            shell.Directory.Delete(args["path"].s, options.ContainsKey("r"));
+            Directory.Delete(args["path"].s, options.ContainsKey("r"));
             return default;
         }
     }

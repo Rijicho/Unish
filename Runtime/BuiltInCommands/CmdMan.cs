@@ -16,21 +16,21 @@ namespace RUtil.Debug.Shell
             (UnishCommandArgType.String, "op", null, ""),
         };
 
-        protected override UniTask Run(IUnishPresenter shell, string op,
+        protected override UniTask Run(string op,
             Dictionary<string, UnishCommandArg> args,
             Dictionary<string, UnishCommandArg> options)
         {
-            if (shell.Interpreter.Repository.Map.TryGetValue(args["op"].s, out var c))
+            if (Interpreter.Repository.Map.TryGetValue(args["op"].s, out var c))
             {
-                return c.WriteUsage(args["op"].s, shell.IO);
+                return c.WriteUsage(IO, args["op"].s);
             }
 
-            if (shell.Interpreter.Repository.Map.TryGetValue("@" + args["op"].s, out c))
+            if (Interpreter.Repository.Map.TryGetValue("@" + args["op"].s, out c))
             {
-                return c.WriteUsage(args["op"].s, shell.IO);
+                return c.WriteUsage(IO, args["op"].s);
             }
 
-            return shell.IO.WriteErrorAsync(new Exception("Undefined Command."));
+            return IO.WriteErrorAsync(new Exception("Undefined Command."));
         }
 
         public override string Usage(string op)

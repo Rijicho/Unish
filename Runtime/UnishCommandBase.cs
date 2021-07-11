@@ -7,6 +7,14 @@ namespace RUtil.Debug.Shell
 {
     public abstract class UnishCommandBase
     {
+        private   IUnishPresenter     mShell;
+        protected IUnishIO            IO          => mShell?.IO;
+        protected IUnishDirectoryRoot Directory   => mShell?.Directory;
+        protected IUnishInterpreter   Interpreter => mShell?.Interpreter;
+
+        public virtual bool RequiresPreParseArguments => true;
+        public virtual bool AllowTrailingNullParams   => false;
+
         public abstract string[] Ops { get; }
 
         public virtual string[] Aliases { get; } =
@@ -24,11 +32,12 @@ namespace RUtil.Debug.Shell
             return "";
         }
 
-        public virtual bool RequiresPreParseArguments => true;
+        protected UniTask RunNewCommandAsync(string cmd)
+        {
+            return Interpreter.RunCommandAsync(mShell, cmd);
+        }
 
-        public virtual bool AllowTrailingNullParams => false;
-
-        protected abstract UniTask Run(IUnishPresenter shell, string op, Dictionary<string, UnishCommandArg> args,
+        protected abstract UniTask Run(string op, Dictionary<string, UnishCommandArg> args,
             Dictionary<string, UnishCommandArg> options);
 
         private static readonly char[] Separators =
@@ -38,6 +47,7 @@ namespace RUtil.Debug.Shell
 
         public async UniTask Run(IUnishPresenter shell, string op, string argsNotParsed)
         {
+            mShell = shell;
             var isError = false;
             var dic     = new Dictionary<string, UnishCommandArg>();
             var options = new Dictionary<string, UnishCommandArg>();
@@ -46,12 +56,12 @@ namespace RUtil.Debug.Shell
             {
                 if (!AllowTrailingNullParams && string.IsNullOrWhiteSpace(argsNotParsed))
                 {
-                    await WriteUsage(op, shell.IO);
+                    await WriteUsage(op);
                     return;
                 }
 
                 dic[""] = new UnishCommandArg(UnishCommandArgType.String, argsNotParsed ?? "");
-                await Run(shell, op, dic, options);
+                await Run(op, dic, options);
                 return;
             }
 
@@ -128,15 +138,15 @@ namespace RUtil.Debug.Shell
 
                     if (!found)
                     {
-                        await shell.IO.WriteErrorAsync(new Exception("Invalid Option."));
-                        await WriteUsage(op, shell.IO);
+                        await IO.WriteErrorAsync(new Exception("Invalid Option."));
+                        await WriteUsage(op);
                         return;
                     }
                 }
                 else if (j >= Params.Length)
                 {
-                    await shell.IO.WriteErrorAsync(new Exception("Too many arguments."));
-                    await WriteUsage(op, shell.IO);
+                    await IO.WriteErrorAsync(new Exception("Too many arguments."));
+                    await WriteUsage(op);
                     return;
                 }
                 else if (args[i] == "_")
@@ -149,7 +159,7 @@ namespace RUtil.Debug.Shell
                         }
                         else
                         {
-                            await shell.IO.WriteErrorAsync(new Exception($"Argument <{Params[j].name}> is required."));
+                            await IO.WriteErrorAsync(new Exception($"Argument <{Params[j].name}> is required."));
                             isError = true;
                         }
                     }
@@ -158,7 +168,7 @@ namespace RUtil.Debug.Shell
                         dic[Params[j].name] = new UnishCommandArg(Params[j].type, Params[j].defVal);
                         if (dic[Params[j].name].Type == UnishCommandArgType.Error)
                         {
-                            await shell.IO.WriteErrorAsync(new Exception($"Type mismatch: {Params[j]} is not {Params[j].type}."));
+                            await IO.WriteErrorAsync(new Exception($"Type mismatch: {Params[j]} is not {Params[j].type}."));
                             isError = true;
                         }
                     }
@@ -170,7 +180,7 @@ namespace RUtil.Debug.Shell
                     dic[Params[j].name] = new UnishCommandArg(Params[j].type, args[i]);
                     if (dic[Params[j].name].Type == UnishCommandArgType.Error)
                     {
-                        await shell.IO.WriteErrorAsync(new Exception($"Type mismatch: {args[i]} is not {Params[j].type}."));
+                        await IO.WriteErrorAsync(new Exception($"Type mismatch: {args[i]} is not {Params[j].type}."));
                         isError = true;
                     }
 
@@ -188,7 +198,7 @@ namespace RUtil.Debug.Shell
                     }
                     else
                     {
-                        await shell.IO.WriteErrorAsync(new Exception($"Argument <{Params[j].name}> is required."));
+                        await IO.WriteErrorAsync(new Exception($"Argument <{Params[j].name}> is required."));
                         isError = true;
                     }
                 }
@@ -197,7 +207,7 @@ namespace RUtil.Debug.Shell
                     dic[Params[j].name] = new UnishCommandArg(Params[j].type, Params[j].defVal);
                     if (dic[Params[j].name].Type == UnishCommandArgType.Error)
                     {
-                        await shell.IO.WriteErrorAsync(new Exception($"Type mismatch: {Params[j]} is not {Params[j].type}."));
+                        await IO.WriteErrorAsync(new Exception($"Type mismatch: {Params[j]} is not {Params[j].type}."));
                         isError = true;
                     }
                 }
@@ -205,19 +215,32 @@ namespace RUtil.Debug.Shell
 
             if (isError)
             {
-                await WriteUsage(op, shell.IO);
+                await WriteUsage(op);
                 return;
             }
 
-            await Run(shell, op, dic, options);
+            await Run(op, dic, options);
         }
 
-        public async UniTask WriteUsage(IUnishIO io, bool drawTopLine = true, bool drawBottomLine = true)
+        public UniTask WriteUsage(IUnishIO io, bool drawTopLine = true, bool drawBottomLine = true)
         {
-            await WriteUsage(Ops[0], io, drawTopLine, drawBottomLine);
+            return WriteUsageInternal(io, Ops[0], drawTopLine, drawBottomLine);
+        }
+        public UniTask WriteUsage(IUnishIO io, string op, bool drawTopLine = true, bool drawBottomLine = true)
+        {
+            return WriteUsageInternal(io, op ?? Ops[0], drawTopLine, drawBottomLine);
+        }
+        
+        protected UniTask WriteUsage(bool drawTopLine = true, bool drawBottomLine = true)
+        {
+            return WriteUsage(Ops[0], drawTopLine, drawBottomLine);
         }
 
-        public async UniTask WriteUsage(string op, IUnishIO io, bool drawTopLine = true, bool drawBottomLine = true)
+        protected  UniTask WriteUsage(string op, bool drawTopLine = true, bool drawBottomLine = true)
+        {
+            return WriteUsageInternal(mShell.IO, op, drawTopLine, drawBottomLine);
+        }
+        private async UniTask WriteUsageInternal(IUnishIO io, string op, bool drawTopLine, bool drawBottomLine)
         {
             if (drawTopLine)
             {
