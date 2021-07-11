@@ -33,22 +33,22 @@ namespace RUtil.Debug.Shell
             {
                 case "prompt":
                     {
-                        Env[UnishBuiltInEnvKeys.Prompt] = args["value"].s ?? "> ";
+                        Env[BuiltInEnvKeys.Prompt] = args["value"].s ?? "> ";
                         return default;
                     }
                 case "bgcolor":
                     {
-                        Env[UnishBuiltInEnvKeys.BgColor] = args["value"].s ?? "#000000cc";
+                        Env[BuiltInEnvKeys.BgColor] = args["value"].s ?? "#000000cc";
                         return default;
                     }
                 case "width":
                     {
-                        Env[UnishBuiltInEnvKeys.CharCountPerLine] = args["value"].s ?? "100";
+                        Env[BuiltInEnvKeys.CharCountPerLine] = args["value"].s ?? "100";
                         return default;
                     }
                 case "height":
                     {
-                        Env[UnishBuiltInEnvKeys.LineCount] = args["value"].s ?? "24";
+                        Env[BuiltInEnvKeys.LineCount] = args["value"].s ?? "24";
                         return default;
                     }
                 default:

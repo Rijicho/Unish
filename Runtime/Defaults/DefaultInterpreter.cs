@@ -14,7 +14,7 @@ namespace RUtil.Debug.Shell
         // ----------------------------------
         public UniTask InitializeAsync(IUnishEnv env)
         {
-            Repository = DefaultUnishCommandRepository.Instance;
+            Repository = DefaultCommandRepository.Instance;
             Aliases    = new Dictionary<string, string>();
             return Repository.InitializeAsync(env);
         }

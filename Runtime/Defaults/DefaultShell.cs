@@ -10,7 +10,7 @@
         public DefaultShell()
         {
             Env         = new DefaultEnv();
-            IO          = new DefaultUnishIO();
+            IO          = new DefaultIO();
             Interpreter = new DefaultInterpreter();
             Directory   = new DefaultDirectoryRoot();
         }

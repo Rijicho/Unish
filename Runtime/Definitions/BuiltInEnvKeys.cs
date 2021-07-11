@@ -1,6 +1,6 @@
 ﻿namespace RUtil.Debug.Shell
 {
-    public static class UnishBuiltInEnvKeys
+    public static class BuiltInEnvKeys
     {
         public const string ProfilePath      = "UNISH_PROFILE";
         public const string RcPath           = "UNISH_RC";

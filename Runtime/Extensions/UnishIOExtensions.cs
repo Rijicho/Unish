@@ -7,7 +7,13 @@ using UnityEngine;
 
 namespace RUtil.Debug.Shell
 {
-    public static class UnishExtensions
+    public enum SelectionState
+    {
+        Succeeded,
+        Canceled,
+        Failed,
+    }
+    public static class UnishIOExtensions
     {
         public static async UniTask<(string selected, int index, SelectionState state)> SuggestAndSelectAsync(
             this IUnishIO io,

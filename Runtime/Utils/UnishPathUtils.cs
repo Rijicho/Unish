@@ -4,7 +4,7 @@ using static RUtil.Debug.Shell.PathConstants;
 
 namespace RUtil.Debug.Shell
 {
-    public static class PathUtils
+    public static class UnishPathUtils
     {
         public static string ConvertToHomeRelativePath(
             string input,

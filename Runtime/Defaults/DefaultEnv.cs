@@ -5,7 +5,7 @@ using Cysharp.Threading.Tasks;
 
 namespace RUtil.Debug.Shell
 {
-    using static UnishBuiltInEnvKeys;
+    using static BuiltInEnvKeys;
 
     public class DefaultEnv : IUnishEnv
     {

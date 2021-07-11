@@ -5,6 +5,17 @@ namespace RUtil.Debug.Shell
     public abstract class UnishCore : IUnishPresenter
     {
         // ----------------------------------
+        // enums / subclasses
+        // ----------------------------------
+        private enum UnishState
+        {
+            None,
+            Init,
+            Wait,
+            Run,
+            Quit,
+        }
+        // ----------------------------------
         // non-serialized fields
         // ----------------------------------
 
@@ -76,7 +87,7 @@ namespace RUtil.Debug.Shell
             await Directory.InitializeAsync(Env);
             await Interpreter.InitializeAsync(Env);
 
-            if (Env.TryGetValue(UnishBuiltInEnvKeys.HomePath, out var homePath))
+            if (Env.TryGetValue(BuiltInEnvKeys.HomePath, out var homePath))
             {
                 Directory.TryChangeDirectory(homePath);
             }
@@ -118,7 +129,7 @@ namespace RUtil.Debug.Shell
         {
             get
             {
-                var prompt = Env[UnishBuiltInEnvKeys.Prompt];
+                var prompt = Env[BuiltInEnvKeys.Prompt];
                 if (!prompt.Contains("%d"))
                 {
                     return prompt;
@@ -141,8 +152,8 @@ namespace RUtil.Debug.Shell
 
         private async UniTask RunInitialScripts()
         {
-            var profile = Env[UnishBuiltInEnvKeys.ProfilePath];
-            var rc      = Env[UnishBuiltInEnvKeys.RcPath];
+            var profile = Env[BuiltInEnvKeys.ProfilePath];
+            var rc      = Env[BuiltInEnvKeys.RcPath];
             if (!mIsUprofileExecuted)
             {
                 if (Directory.TryFindEntry(profile, out _))

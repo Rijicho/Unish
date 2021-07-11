@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 namespace RUtil.Debug.Shell
 {
-    public class DefaultUnishViewRoot : MonoBehaviour
+    public class DefaultDisplay : MonoBehaviour
     {
         public Image Background;
         public Text  Text;

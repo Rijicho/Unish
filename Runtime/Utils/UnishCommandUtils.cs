@@ -2,7 +2,7 @@
 
 namespace RUtil.Debug.Shell
 {
-    public static class UnishParseUtility
+    public static class UnishCommandUtils
     {
         public static List<string> ParseArgs(string input)
         {

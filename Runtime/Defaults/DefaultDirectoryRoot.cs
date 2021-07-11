@@ -29,9 +29,9 @@ namespace RUtil.Debug.Shell
                 await d.InitializeAsync(env);
             }
 
-            if (!env.ContainsKey(UnishBuiltInEnvKeys.HomePath))
+            if (!env.ContainsKey(BuiltInEnvKeys.HomePath))
             {
-                env[UnishBuiltInEnvKeys.HomePath] = $"{PathConstants.Root}{mDirectories[0].HomeName}";
+                env[BuiltInEnvKeys.HomePath] = $"{PathConstants.Root}{mDirectories[0].HomeName}";
             }
         }
 
@@ -268,7 +268,7 @@ namespace RUtil.Debug.Shell
             var currentParent = string.IsNullOrWhiteSpace(CurrentHome?.CurrentHomeRelativePath)
                 ? null
                 : CurrentHome.CurrentHomeRelativePath.Substring(0, CurrentHome.CurrentHomeRelativePath.LastIndexOf(PathConstants.Separator));
-            var homeRelativePath = PathUtils.ConvertToHomeRelativePath(pathInput,
+            var homeRelativePath = UnishPathUtils.ConvertToHomeRelativePath(pathInput,
                 CurrentHome?.HomeName ?? "", CurrentHome?.CurrentHomeRelativePath, currentParent, out var home);
             if (home == "")
             {

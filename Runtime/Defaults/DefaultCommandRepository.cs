@@ -6,15 +6,15 @@ using Cysharp.Threading.Tasks;
 
 namespace RUtil.Debug.Shell
 {
-    public class DefaultUnishCommandRepository : IUnishCommandRepository
+    public class DefaultCommandRepository : IUnishCommandRepository
     {
-        protected DefaultUnishCommandRepository()
+        protected DefaultCommandRepository()
         {
         }
 
-        private static DefaultUnishCommandRepository mInstance;
+        private static DefaultCommandRepository mInstance;
 
-        public static DefaultUnishCommandRepository Instance => mInstance ??= new DefaultUnishCommandRepository();
+        public static DefaultCommandRepository Instance => mInstance ??= new DefaultCommandRepository();
 
         public IReadOnlyList<UnishCommandBase> Commands => mCommands;
 

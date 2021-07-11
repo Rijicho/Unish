@@ -10,7 +10,7 @@ using UnityEngine.InputSystem;
 
 namespace RUtil.Debug.Shell
 {
-    public class DefaultUnishInputHandler : IUnishInputHandler
+    public class DefaultInputHandler : IUnishInputHandler
     {
         private Dictionary<UnishInputType, float> longPushStartTimes = new Dictionary<UnishInputType, float>();
 
@@ -50,7 +50,7 @@ namespace RUtil.Debug.Shell
             }
         }
 
-        public DefaultUnishInputHandler(IUnishTimeProvider timeProvider)
+        public DefaultInputHandler(IUnishTimeProvider timeProvider)
         {
             mTimeProvider = timeProvider;
         }

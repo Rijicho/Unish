@@ -69,7 +69,7 @@ namespace RUtil.Debug.Shell
                 return false;
             }
 
-            values = UnishParseUtility.ParseArgs(sValue);
+            values = UnishCommandUtils.ParseArgs(sValue);
             return true;
         }
     }

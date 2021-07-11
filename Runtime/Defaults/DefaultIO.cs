@@ -10,7 +10,7 @@ using UnityEngine.UI;
 
 namespace RUtil.Debug.Shell
 {
-    public class DefaultUnishIO : IUnishIO
+    public class DefaultIO : IUnishIO
     {
         private const    string             SceneName = "UnishDefault";
         private readonly IUnishInputHandler mInputHandler;
@@ -62,14 +62,14 @@ namespace RUtil.Debug.Shell
         }
 
 
-        public DefaultUnishIO()
+        public DefaultIO()
         {
             mTimeProvider = DefaultTimeProvider.Instance;
-            mInputHandler = new DefaultUnishInputHandler(mTimeProvider);
+            mInputHandler = new DefaultInputHandler(mTimeProvider);
             mColorParser  = DefaultColorParser.Instance;
         }
 
-        public DefaultUnishIO(IUnishInputHandler inputHandler, IUnishTimeProvider timeProvider)
+        public DefaultIO(IUnishInputHandler inputHandler, IUnishTimeProvider timeProvider)
         {
             mInputHandler = inputHandler;
             mTimeProvider = timeProvider;
@@ -87,25 +87,25 @@ namespace RUtil.Debug.Shell
 
             await SceneManager.LoadSceneAsync(SceneName, LoadSceneMode.Additive);
             loadedScene = SceneManager.GetSceneByName(SceneName);
-            var component = loadedScene.GetRootGameObjects()[0].GetComponent<DefaultUnishViewRoot>();
+            var component = loadedScene.GetRootGameObjects()[0].GetComponent<DefaultDisplay>();
             background = component.Background;
             text       = component.Text;
 
-            if (!env.TryGetValue(UnishBuiltInEnvKeys.BgColor, out var bgColor, mColorParser))
+            if (!env.TryGetValue(BuiltInEnvKeys.BgColor, out var bgColor, mColorParser))
             {
-                env[UnishBuiltInEnvKeys.BgColor] = "#000000cc";
+                env[BuiltInEnvKeys.BgColor] = "#000000cc";
                 bgColor                          = mColorParser.Parse("#000000cc");
             }
 
-            if (!env.TryGetValue(UnishBuiltInEnvKeys.CharCountPerLine, out mCharCountPerLine))
+            if (!env.TryGetValue(BuiltInEnvKeys.CharCountPerLine, out mCharCountPerLine))
             {
-                env[UnishBuiltInEnvKeys.CharCountPerLine] = "100";
+                env[BuiltInEnvKeys.CharCountPerLine] = "100";
                 mCharCountPerLine                         = 100;
             }
 
-            if (!env.TryGetValue(UnishBuiltInEnvKeys.LineCount, out mLineCount))
+            if (!env.TryGetValue(BuiltInEnvKeys.LineCount, out mLineCount))
             {
-                env[UnishBuiltInEnvKeys.LineCount] = "24";
+                env[BuiltInEnvKeys.LineCount] = "24";
                 mLineCount                         = 24;
             }
 
@@ -208,18 +208,18 @@ namespace RUtil.Debug.Shell
         {
             switch (kv.Key)
             {
-                case UnishBuiltInEnvKeys.BgColor:
+                case BuiltInEnvKeys.BgColor:
                     BackgroundColor = mColorParser.TryParse(kv.Value, out var col)
                         ? col
                         : mColorParser.Parse("#000000cc");
                     break;
-                case UnishBuiltInEnvKeys.CharCountPerLine:
+                case BuiltInEnvKeys.CharCountPerLine:
                     {
                         mCharCountPerLine = int.TryParse(kv.Value, out var cnt) ? cnt : 100;
                         RefleshSize();
                         break;
                     }
-                case UnishBuiltInEnvKeys.LineCount:
+                case BuiltInEnvKeys.LineCount:
                     {
                         mLineCount = int.TryParse(kv.Value, out var cnt) ? cnt : 24;
                         RefleshSize();
@@ -232,14 +232,14 @@ namespace RUtil.Debug.Shell
         {
             switch (key)
             {
-                case UnishBuiltInEnvKeys.BgColor:
+                case BuiltInEnvKeys.BgColor:
                     BackgroundColor = mColorParser.Parse("#000000cc");
                     break;
-                case UnishBuiltInEnvKeys.CharCountPerLine:
+                case BuiltInEnvKeys.CharCountPerLine:
                     mCharCountPerLine = 100;
                     RefleshSize();
                     break;
-                case UnishBuiltInEnvKeys.LineCount:
+                case BuiltInEnvKeys.LineCount:
                     mLineCount = 24;
                     RefleshSize();
                     break;
