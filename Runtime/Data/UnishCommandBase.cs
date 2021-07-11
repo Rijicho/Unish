@@ -43,53 +43,123 @@ namespace RUtil.Debug.Shell
             Dictionary<string, UnishVariable> args,
             Dictionary<string, UnishVariable> options);
 
+        public UniTask Run(IUnishPresenter shell, string cmd,
+            Dictionary<string, UnishVariable> args,
+            Dictionary<string, UnishVariable> options)
+        {
+            mShell = shell;
+            return Run(cmd, args, options);
+        }
+
         private static readonly char[] Separators =
         {
             ' ',
         };
 
-        public async UniTask Run(IUnishPresenter shell, UnishParseResult parsed)
+        public async UniTask Run(IUnishPresenter shell, string cmd, IEnumerable<(string Token, bool IsOption)> parsed)
         {
             mShell = shell;
             var dParams  = new Dictionary<string, UnishVariable>();
             var dOptions = new Dictionary<string, UnishVariable>();
 
-            int i;
-            for (i = 0; i < Options.Length && i < parsed.Options.Count; i++)
+            var parsingOptionName    = "";
+            var parsingOptionType    = UnishVariableType.Unit;
+            var parsingOptionDefault = "";
+
+            var currentParamIndex = 0;
+
+            foreach (var (token, isOption) in parsed)
             {
-                var option      = Options[i];
-                var optionTyped = new UnishVariable(option.name, option.type, parsed.Options[i]);
-                if (optionTyped.Type == UnishVariableType.Error)
+                if (isOption)
                 {
-                    await IO.WriteErrorAsync(new Exception($"Type mismatch: {parsed.Params[i]} is not {option.type}."));
-                    await WriteUsage(parsed.Command);
-                    return;
+                    // 前のトークンがオプションで、引数を必要としていたら既定値を入れて生成
+                    if (parsingOptionType != UnishVariableType.Unit)
+                    {
+                        dOptions[token]      = new UnishVariable(parsingOptionName, parsingOptionType, parsingOptionDefault);
+                        parsingOptionType    = UnishVariableType.Unit;
+                        parsingOptionName    = "";
+                        parsingOptionDefault = "";
+                    }
+
+                    // 現在のトークンに相当するオプションを検索
+                    foreach (var expected in Options)
+                    {
+                        if (token == expected.name)
+                        {
+                            // 引数を必要としないならこの場で生成
+                            if (expected.type == UnishVariableType.Unit)
+                            {
+                                dOptions[token]      = UnishVariable.Unit(token);
+                                parsingOptionType    = UnishVariableType.Unit;
+                                parsingOptionName    = "";
+                                parsingOptionDefault = "";
+                            }
+                            // 引数を必要とするなら、次のトークンを引数として判定するための情報を確保
+                            else
+                            {
+                                parsingOptionType    = expected.type;
+                                parsingOptionName    = expected.name;
+                                parsingOptionDefault = expected.defVal;
+                            }
+
+                            break;
+                        }
+                    }
+
+                    continue;
                 }
 
-                dOptions[option.name] = optionTyped;
-            }
-
-            for (i = 0; i < Params.Length && i < parsed.Params.Count; i++)
-            {
-                var param      = Params[i];
-                var paramTyped = new UnishVariable(param.name, param.type, parsed.Params[i]);
-                if (paramTyped.Type == UnishVariableType.Error)
+                // 前のトークンがオプションかつ要引数で、現在のトークンがオプションでない場合
+                if (parsingOptionType != UnishVariableType.Unit)
                 {
-                    await IO.WriteErrorAsync(new Exception($"Type mismatch: {parsed.Params[i]} is not {param.type}."));
-                    await WriteUsage(parsed.Command);
-                    return;
+                    // 現在のトークンをオプションの引数として格納
+                    var arg = new UnishVariable(parsingOptionName, parsingOptionType, token);
+                    dOptions[parsingOptionName] = arg;
+                    // 型エラーチェック
+                    if (arg.Type == UnishVariableType.Error)
+                    {
+                        await IO.WriteErrorAsync(new Exception($"Type mismatch: {token} is not {parsingOptionType}."));
+                        await WriteUsage(cmd);
+                        return;
+                    }
+
+                    parsingOptionType    = UnishVariableType.Unit;
+                    parsingOptionName    = "";
+                    parsingOptionDefault = "";
+                    continue;
                 }
 
-                dParams[param.name] = paramTyped;
+                // 現在のトークンがコマンドの引数であり、期待される引数の個数に収まっている場合
+                if (currentParamIndex < Params.Length)
+                {
+                    var expectedParam = Params[currentParamIndex];
+                    // 現在のトークンをコマンドの引数として格納
+                    var arg = new UnishVariable(expectedParam.name, expectedParam.type, token);
+                    // $1, $2,...にも格納
+                    dParams[$"${currentParamIndex + 1}"] = dParams[expectedParam.name] = arg;
+                    // 型エラーチェック
+                    if (arg.Type == UnishVariableType.Error)
+                    {
+                        await IO.WriteErrorAsync(new Exception($"Type mismatch: {token} is not {expectedParam.type}."));
+                        await WriteUsage(cmd);
+                        return;
+                    }
+
+                    // 次に期待されるコマンドにindexを進める
+                    currentParamIndex++;
+                    continue;
+                }
+
+                // 現在のトークンがコマンドの引数であり、期待されるコマンドリストに含まれない場合
+                {
+                    // string入力として $1, $2,...にのみ格納
+                    var name = $"${currentParamIndex + 1}";
+                    dParams[name] = new UnishVariable(name, token);
+                    currentParamIndex++;
+                }
             }
 
-            for (; i < Params.Length; i++)
-            {
-                var param = Params[i];
-                dParams[param.name] = new UnishVariable(param.name, param.type, param.defVal);
-            }
-
-            await Run(parsed.Command, dParams, dOptions);
+            await Run(cmd, dParams, dOptions);
         }
 
         public async UniTask Run(IUnishPresenter shell, string op, string argsNotParsed)
