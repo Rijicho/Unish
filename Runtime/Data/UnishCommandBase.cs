@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
 
@@ -44,6 +43,14 @@ namespace RUtil.Debug.Shell
             Dictionary<string, UnishVariable> options)
         {
             mShell = shell;
+            foreach (var e in Env)
+            {
+                if (!args.ContainsKey(e.Key))
+                {
+                    args[e.Key] = e.Value;
+                }
+            }
+
             return Run(args, options);
         }
 

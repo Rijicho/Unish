@@ -12,6 +12,8 @@ namespace RUtil.Debug.Shell
         private IUnishDirectoryHome[] mDirectories;
         public  IUnishDirectoryHome   CurrentHome { get; private set; }
 
+        private IUnishEnv mEnv;
+
         public UnishDirectoryEntry Current => UnishDirectoryEntry.Create(
             CurrentHome?.HomeName ?? "",
             CurrentHome == null ? "" : CurrentHome.CurrentHomeRelativePath,
@@ -19,6 +21,7 @@ namespace RUtil.Debug.Shell
 
         public async UniTask InitializeAsync(IUnishEnv env)
         {
+            mEnv = env;
             mDirectories = new[]
             {
                 new RealFileSystem("PersistentData", Application.persistentDataPath),
@@ -44,6 +47,7 @@ namespace RUtil.Debug.Shell
 
             CurrentHome  = null;
             mDirectories = null;
+            mEnv         = null;
         }
 
         public bool TryFindEntry(string path, out UnishDirectoryEntry entry)
@@ -84,6 +88,7 @@ namespace RUtil.Debug.Shell
             if (entry.IsRoot)
             {
                 CurrentHome = default;
+                mEnv.Set(BuiltInEnvKeys.WorkingDirectory, Current.FullPath);
                 return true;
             }
 

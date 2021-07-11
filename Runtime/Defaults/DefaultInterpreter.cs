@@ -108,7 +108,7 @@ namespace RUtil.Debug.Shell
         {
             var dParams  = new VDictionary();
             var dOptions = new VDictionary();
-            dParams["$0"] = new UnishVariable("$0", op);
+            dParams["0"] = new UnishVariable("0", op);
 
             var parsingOptionName    = "";
             var parsingOptionType    = UnishVariableType.Unit;
@@ -184,7 +184,7 @@ namespace RUtil.Debug.Shell
                     // 現在のトークンをコマンドの引数として格納
                     var arg = new UnishVariable(expectedParam.name, expectedParam.type, token);
                     // $1, $2,...にも格納
-                    dParams[$"${currentParamIndex + 1}"] = dParams[expectedParam.name] = arg;
+                    dParams[$"{currentParamIndex + 1}"] = dParams[expectedParam.name] = arg;
                     // 型エラーチェック
                     if (arg.Type == UnishVariableType.Error)
                     {
@@ -201,7 +201,7 @@ namespace RUtil.Debug.Shell
                 // 現在のトークンはパラメータだが、期待されるパラメータ数を超過している場合
                 {
                     // string入力として $1, $2,...にのみ格納
-                    var name = $"${currentParamIndex + 1}";
+                    var name = $"{currentParamIndex + 1}";
                     dParams[name] = new UnishVariable(name, token);
                     currentParamIndex++;
                 }
@@ -217,20 +217,20 @@ namespace RUtil.Debug.Shell
             while (currentParamIndex < targetCommand.Params.Length)
             {
                 var expectedParam = targetCommand.Params[currentParamIndex];
-                dParams[$"${currentParamIndex + 1}"] = dParams[expectedParam.name]
+                dParams[$"{currentParamIndex + 1}"] = dParams[expectedParam.name]
                     = new UnishVariable(expectedParam.name, expectedParam.type, expectedParam.defVal);
 
                 currentParamIndex++;
             }
 
             // パラメータの個数を格納
-            dParams["$#"] = new UnishVariable("$#", currentParamIndex);
+            dParams["#"] = new UnishVariable("#", currentParamIndex);
 
             var assembledParams = "";
             var listedParams    = new string[currentParamIndex];
             for (var i = 1; i <= currentParamIndex; i++)
             {
-                var p = dParams[$"${i}"].S;
+                var p = dParams[$"{i}"].S;
                 assembledParams += p;
                 if (i < currentParamIndex)
                 {
@@ -246,9 +246,9 @@ namespace RUtil.Debug.Shell
                 assembledOptions += option;
             }
 
-            dParams["$*"] = new UnishVariable("$*", assembledParams);
-            dParams["$@"] = new UnishVariable("$@", listedParams);
-            dParams["$-"] = new UnishVariable("$-", assembledOptions);
+            dParams["*"] = new UnishVariable("*", assembledParams);
+            dParams["@"] = new UnishVariable("@", listedParams);
+            dParams["-"] = new UnishVariable("-", assembledOptions);
 
             return (dParams, dOptions, true);
         }

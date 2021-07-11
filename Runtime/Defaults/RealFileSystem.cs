@@ -13,6 +13,8 @@ namespace RUtil.Debug.Shell
         public string RealHomePath            { get; }
         public string CurrentHomeRelativePath { get; private set; }
 
+        private IUnishEnv mEnv;
+        
         public RealFileSystem(string virtualHomeName, string realHomePath)
         {
             HomeName     = virtualHomeName;
@@ -21,12 +23,14 @@ namespace RUtil.Debug.Shell
 
         public UniTask InitializeAsync(IUnishEnv env)
         {
+            mEnv                    = env;
             CurrentHomeRelativePath = "";
             return default;
         }
 
         public UniTask FinalizeAsync(IUnishEnv env)
         {
+            mEnv = null;
             return default;
         }
 
@@ -58,6 +62,7 @@ namespace RUtil.Debug.Shell
             }
 
             CurrentHomeRelativePath = homeRelativePath;
+            mEnv.Set(BuiltInEnvKeys.WorkingDirectory, $"{PathConstants.Root}{HomeName}{CurrentHomeRelativePath}");
             return true;
         }
 

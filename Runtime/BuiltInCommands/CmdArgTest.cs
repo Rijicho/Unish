@@ -38,15 +38,15 @@ namespace RUtil.Debug.Shell
         protected override async UniTask Run(Dictionary<string, UnishVariable> args,
             Dictionary<string, UnishVariable> options)
         {
-            await IO.WriteLineAsync($"$# = {args["$#"].S}");
-            for (var i = 0; i <= args["$#"].I; i++)
+            await IO.WriteLineAsync($"$# = {args["#"].S}");
+            for (var i = 0; i <= args["#"].I; i++)
             {
-                await IO.WriteLineAsync($"${i} = {args[$"${i}"].S}");
+                await IO.WriteLineAsync($"${i} = {args[$"{i}"].S}");
             }
 
-            await IO.WriteLineAsync($"$- = {args["$-"].S}");
-            await IO.WriteLineAsync($"$@ = {args["$@"].S}");
-            await IO.WriteLineAsync($"$* = {args["$*"].S}");
+            await IO.WriteLineAsync($"$- = {args["-"].S}");
+            await IO.WriteLineAsync($"$@ = {args["@"].S}");
+            await IO.WriteLineAsync($"$* = {args["*"].S}");
         }
     }
 }
