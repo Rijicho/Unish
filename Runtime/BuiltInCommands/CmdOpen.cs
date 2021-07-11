@@ -17,7 +17,7 @@ namespace RUtil.Debug.Shell
             (UnishVariableType.String, "path", null, "URL or file path to open"),
         };
 
-        protected override UniTask Run(string op, Dictionary<string, UnishVariable> args,
+        protected override UniTask Run(Dictionary<string, UnishVariable> args,
             Dictionary<string, UnishVariable> options)
         {
             var path = args["path"].S;

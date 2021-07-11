@@ -15,12 +15,10 @@ namespace RUtil.Debug.Shell
             (UnishVariableType.String, "text", null, "表示するテキスト"),
         };
 
-        public override bool RequiresPreParseArguments => false;
-
-        protected override UniTask Run(string op, Dictionary<string, UnishVariable> args,
+        protected override UniTask Run(Dictionary<string, UnishVariable> args,
             Dictionary<string, UnishVariable> options)
         {
-            return IO.WriteLineAsync(args[""].S);
+            return IO.WriteLineAsync(args["text"].S);
         }
 
         public override string Usage(string op)

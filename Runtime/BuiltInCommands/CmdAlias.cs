@@ -27,7 +27,7 @@ namespace RUtil.Debug.Shell
             return "コマンドのエイリアスを作成します。";
         }
 
-        protected override async UniTask Run(string op, Dictionary<string, UnishVariable> args, Dictionary<string, UnishVariable> options)
+        protected override async UniTask Run(Dictionary<string, UnishVariable> args, Dictionary<string, UnishVariable> options)
         {
             if (options.ContainsKey("l"))
             {

@@ -16,7 +16,7 @@ namespace RUtil.Debug.Shell
             (UnishVariableType.String, "path", null, "target path"),
         };
 
-        protected override async UniTask Run(string op, Dictionary<string, UnishVariable> args,
+        protected override async UniTask Run(Dictionary<string, UnishVariable> args,
             Dictionary<string, UnishVariable> options)
         {
             var target = args["path"].S;

@@ -20,7 +20,7 @@ namespace RUtil.Debug.Shell
             (UnishVariableType.Unit, "r", null, "delete recursively"),
         };
 
-        protected override UniTask Run(string op, Dictionary<string, UnishVariable> args, Dictionary<string, UnishVariable> options)
+        protected override UniTask Run(Dictionary<string, UnishVariable> args, Dictionary<string, UnishVariable> options)
         {
             Directory.Delete(args["path"].S, options.ContainsKey("r"));
             return default;

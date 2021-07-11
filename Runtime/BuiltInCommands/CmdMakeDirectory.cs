@@ -15,7 +15,7 @@ namespace RUtil.Debug.Shell
             (UnishVariableType.String, "path", null, "directory to create"),
         };
 
-        protected override UniTask Run(string op, Dictionary<string, UnishVariable> args, Dictionary<string, UnishVariable> options)
+        protected override UniTask Run(Dictionary<string, UnishVariable> args, Dictionary<string, UnishVariable> options)
         {
             Directory.Create(args["path"].S, true);
             return default;

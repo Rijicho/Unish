@@ -20,7 +20,7 @@ namespace RUtil.Debug.Shell
             (UnishVariableType.Unit, "r", null, "show real full path (real file-system only)"),
         };
 
-        protected override UniTask Run(string op, Dictionary<string, UnishVariable> args,
+        protected override UniTask Run(Dictionary<string, UnishVariable> args,
             Dictionary<string, UnishVariable> options)
         {
             if (options.ContainsKey("r") && Directory.CurrentHome is IUnishRealFileSystem fileSystem)

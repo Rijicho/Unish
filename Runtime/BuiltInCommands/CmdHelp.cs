@@ -19,7 +19,7 @@ namespace RUtil.Debug.Shell
         {
         };
 
-        protected override async UniTask Run(string op, Dictionary<string, UnishVariable> args,
+        protected override async UniTask Run(Dictionary<string, UnishVariable> args,
             Dictionary<string, UnishVariable> options)
         {
             await IO.WriteLineAsync("| " + "==========================================", "orange");

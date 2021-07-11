@@ -16,7 +16,7 @@ namespace RUtil.Debug.Shell
             (UnishVariableType.String, "op", null, ""),
         };
 
-        protected override UniTask Run(string op,
+        protected override UniTask Run(
             Dictionary<string, UnishVariable> args,
             Dictionary<string, UnishVariable> options)
         {

@@ -24,9 +24,7 @@ namespace RUtil.Debug.Shell
             return "ファイルを連結して出力します。";
         }
 
-        public override bool AllowTrailingNullParams => true;
-
-        protected override async UniTask Run(string op, Dictionary<string, UnishVariable> args,
+        protected override async UniTask Run(Dictionary<string, UnishVariable> args,
             Dictionary<string, UnishVariable> options)
         {
             var path1 = args["path1"].S;

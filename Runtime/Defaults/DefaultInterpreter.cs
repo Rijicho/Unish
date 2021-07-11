@@ -70,7 +70,7 @@ namespace RUtil.Debug.Shell
                     var (parsedParams, parsedOptions, isSucceeded) = await ParseArguments(shell.IO, cmdInstance, cmdToken, arguments);
                     if (isSucceeded)
                     {
-                        await cmdInstance.Run(shell, cmdToken, parsedParams, parsedOptions);
+                        await cmdInstance.Run(shell, parsedParams, parsedOptions);
                     }
                 }
                 catch (Exception e)

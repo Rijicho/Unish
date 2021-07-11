@@ -20,7 +20,7 @@ namespace RUtil.Debug.Shell
             (UnishVariableType.Int, "R", "0", "list up recursively (DFS)"),
         };
 
-        protected override async UniTask Run(string op, Dictionary<string, UnishVariable> args,
+        protected override async UniTask Run(Dictionary<string, UnishVariable> args,
             Dictionary<string, UnishVariable> options)
         {
             var maxDepth = options.TryGetValue("R", out var value) ? value.I : 0;

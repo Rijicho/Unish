@@ -20,7 +20,7 @@ namespace RUtil.Debug.Shell
         {
         };
 
-        protected override UniTask Run(string op, Dictionary<string, UnishVariable> args,
+        protected override UniTask Run(Dictionary<string, UnishVariable> args,
             Dictionary<string, UnishVariable> options)
         {
             Unish.Stop();
