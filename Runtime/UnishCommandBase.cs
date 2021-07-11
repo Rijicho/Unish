@@ -36,11 +36,6 @@ namespace RUtil.Debug.Shell
             ' ',
         };
 
-
-        public delegate void SubmitLineAction(string line, string colorCode, bool allowOverflow);
-
-        public delegate void SubmitErrorAction(string message);
-
         public async UniTask Run(IUnishPresenter shell, string op, string argsNotParsed)
         {
             var isError = false;
@@ -51,7 +46,7 @@ namespace RUtil.Debug.Shell
             {
                 if (!AllowTrailingNullParams && string.IsNullOrWhiteSpace(argsNotParsed))
                 {
-                    await SubmitUsage(op, shell.IO);
+                    await WriteUsage(op, shell.IO);
                     return;
                 }
 
@@ -134,14 +129,14 @@ namespace RUtil.Debug.Shell
                     if (!found)
                     {
                         await shell.IO.WriteErrorAsync(new Exception("Invalid Option."));
-                        await SubmitUsage(op, shell.IO);
+                        await WriteUsage(op, shell.IO);
                         return;
                     }
                 }
                 else if (j >= Params.Length)
                 {
                     await shell.IO.WriteErrorAsync(new Exception("Too many arguments."));
-                    await SubmitUsage(op, shell.IO);
+                    await WriteUsage(op, shell.IO);
                     return;
                 }
                 else if (args[i] == "_")
@@ -210,20 +205,19 @@ namespace RUtil.Debug.Shell
 
             if (isError)
             {
-                await SubmitUsage(op, shell.IO);
+                await WriteUsage(op, shell.IO);
                 return;
             }
 
             await Run(shell, op, dic, options);
         }
 
-        public async UniTask SubmitUsage(IUnishIO io, bool drawTopLine = true, bool drawBottomLine = true)
+        public async UniTask WriteUsage(IUnishIO io, bool drawTopLine = true, bool drawBottomLine = true)
         {
-            await SubmitUsage(Ops[0], io, drawTopLine, drawBottomLine);
+            await WriteUsage(Ops[0], io, drawTopLine, drawBottomLine);
         }
 
-        public async UniTask SubmitUsage(string op, IUnishIO io, bool drawTopLine = true,
-            bool drawBottomLine = true)
+        public async UniTask WriteUsage(string op, IUnishIO io, bool drawTopLine = true, bool drawBottomLine = true)
         {
             if (drawTopLine)
             {
@@ -262,7 +256,7 @@ namespace RUtil.Debug.Shell
                     {
                         await io.WriteColoredAsync(
                             $" <color=#ff7777>-{option.name.PadRight(labelWidth - 1)}</color>{option.info}", "#aaaaaa"
-                            );
+                        );
                     }
                     else
                     {

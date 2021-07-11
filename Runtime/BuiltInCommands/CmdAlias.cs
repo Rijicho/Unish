@@ -48,7 +48,7 @@ namespace RUtil.Debug.Shell
             var firstEqual = input.IndexOf('=');
             if (firstEqual < 0)
             {
-                await SubmitUsage(shell.IO);
+                await WriteUsage(shell.IO);
                 return;
             }
 
@@ -62,7 +62,7 @@ namespace RUtil.Debug.Shell
 
             if (string.IsNullOrEmpty(command) || string.IsNullOrEmpty(alias))
             {
-                await SubmitUsage(shell.IO);
+                await WriteUsage(shell.IO);
                 return;
             }
 

@@ -28,11 +28,11 @@ namespace RUtil.Debug.Shell
             await shell.IO.WriteLineAsync("");
             await shell.IO.WriteLineAsync("| "+"Important commands:", "orange");
             await shell.IO.WriteLineAsync("| "+"----------------", "yellow");
-            await shell.Interpreter.Repository.Map["lc"].SubmitUsage(shell.IO, false, false);
+            await shell.Interpreter.Repository.Map["lc"].WriteUsage(shell.IO, false, false);
             await shell.IO.WriteLineAsync("| "+"----------------", "yellow");
-            await shell.Interpreter.Repository.Map["man"].SubmitUsage(shell.IO, false, false);
+            await shell.Interpreter.Repository.Map["man"].WriteUsage(shell.IO, false, false);
             await shell.IO.WriteLineAsync("| "+"----------------", "yellow");
-            await shell.Interpreter.Repository.Map["q"].SubmitUsage(shell.IO, false, false);
+            await shell.Interpreter.Repository.Map["q"].WriteUsage(shell.IO, false, false);
             await shell.IO.WriteLineAsync("| "+"----------------", "yellow");
             await shell.IO.WriteLineAsync("");
             await shell.IO.WriteLineAsync("| "+"This view can be scrolled by Ctrl(Cmd)+Arrow keys.", "orange");

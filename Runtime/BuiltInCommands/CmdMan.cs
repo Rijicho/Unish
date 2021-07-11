@@ -22,12 +22,12 @@ namespace RUtil.Debug.Shell
         {
             if (shell.Interpreter.Repository.Map.TryGetValue(args["op"].s, out var c))
             {
-                return c.SubmitUsage(args["op"].s, shell.IO);
+                return c.WriteUsage(args["op"].s, shell.IO);
             }
 
             if (shell.Interpreter.Repository.Map.TryGetValue("@" + args["op"].s, out c))
             {
-                return c.SubmitUsage(args["op"].s, shell.IO);
+                return c.WriteUsage(args["op"].s, shell.IO);
             }
 
             return shell.IO.WriteErrorAsync(new Exception("Undefined Command."));

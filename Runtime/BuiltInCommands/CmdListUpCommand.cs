@@ -63,7 +63,7 @@ namespace RUtil.Debug.Shell
                 {
                     if (options.ContainsKey("d"))
                     {
-                        await c.Value.SubmitUsage(c.Key, shell.IO, isFirst);
+                        await c.Value.WriteUsage(c.Key, shell.IO, isFirst);
                         isFirst = false;
                     }
                     else
