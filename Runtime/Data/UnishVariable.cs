@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using UnityEngine;
@@ -8,14 +9,15 @@ namespace RUtil.Debug.Shell
     public readonly struct UnishVariable
     {
         public readonly UnishVariableType Type;
-        public readonly string              Name;
-        public readonly string              S;
-        public readonly bool                B;
-        public readonly int                 I;
-        public readonly float               F;
-        public readonly Vector2             V2;
-        public readonly Vector3             V3;
-        public readonly Color               C;
+        public readonly string            Name;
+        public readonly string            S;
+        public readonly bool              B;
+        public readonly int               I;
+        public readonly float             F;
+        public readonly Vector2           V2;
+        public readonly Vector3           V3;
+        public readonly Color             C;
+        public readonly string[]          Array;
 
         public UnishVariable(string name, UnishVariableType type) : this()
         {
@@ -64,6 +66,12 @@ namespace RUtil.Debug.Shell
         {
             S      = DefaultColorParser.Instance.ColorToCode(c);
             this.C = c;
+        }
+
+        public UnishVariable(string name, IEnumerable<string> arr) : this(name, UnishVariableType.Array)
+        {
+            this.Array = arr.ToArray();
+            S          = $"({this.Array.ToSingleString(" ")})";
         }
 
         public static UnishVariable Unit(string name)
@@ -133,7 +141,12 @@ namespace RUtil.Debug.Shell
                     {
                         Type = UnishVariableType.Error;
                     }
-
+                    break;
+                case UnishVariableType.Array:
+                    if (!TryParseArray(input, out Array))
+                    {
+                        Type = UnishVariableType.Error;
+                    }
                     break;
             }
         }
@@ -193,7 +206,7 @@ namespace RUtil.Debug.Shell
         private static int TryParseVector(string str, float[] dest)
         {
             str = str.Trim();
-            if ((str[0] != '[' || str[str.Length - 1] != ']') && (str[0] != '(' || str[str.Length - 1] != ')'))
+            if ((str[0] != '[' || str[str.Length - 1] != ']'))
             {
                 return -1;
             }
@@ -218,6 +231,21 @@ namespace RUtil.Debug.Shell
             }
 
             return i;
+        }
+
+        private static bool TryParseArray(string str, out string[] dest)
+        {
+            str = str.Trim();
+            if ((str[0] != '(' || str[str.Length - 1] != ')'))
+            {
+                dest = null;
+                return false;
+            }
+            
+            dest = str.Substring(1, str.Length - 2).Split(null)
+                .Where(x=>!string.IsNullOrEmpty(x))
+                .ToArray();
+            return dest.Length != 0;
         }
     }
 }

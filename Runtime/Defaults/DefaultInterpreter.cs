@@ -108,6 +108,7 @@ namespace RUtil.Debug.Shell
         {
             var dParams  = new VDictionary();
             var dOptions = new VDictionary();
+            dParams["$0"] = new UnishVariable("$0", op);
 
             var parsingOptionName    = "";
             var parsingOptionType    = UnishVariableType.Unit;
@@ -122,10 +123,10 @@ namespace RUtil.Debug.Shell
                     // 前のトークンがオプションで、引数を必要としていたら既定値を入れて生成
                     if (parsingOptionType != UnishVariableType.Unit)
                     {
-                        dOptions[token]      = new UnishVariable(parsingOptionName, parsingOptionType, parsingOptionDefault);
-                        parsingOptionType    = UnishVariableType.Unit;
-                        parsingOptionName    = "";
-                        parsingOptionDefault = "";
+                        dOptions[parsingOptionName] = new UnishVariable(parsingOptionName, parsingOptionType, parsingOptionDefault);
+                        parsingOptionType           = UnishVariableType.Unit;
+                        parsingOptionName           = "";
+                        parsingOptionDefault        = "";
                     }
 
                     // 現在のトークンに相当するオプションを検索
@@ -206,6 +207,12 @@ namespace RUtil.Debug.Shell
                 }
             }
 
+            // 最後のオプションが引数を必要とするものだった場合、既定値を格納
+            if (parsingOptionType != UnishVariableType.Unit)
+            {
+                dOptions[parsingOptionName] = new UnishVariable(parsingOptionName, parsingOptionType, parsingOptionDefault);
+            }
+
             // 入力だけでは期待されるパラメータリストを全て満たせない場合、それぞれ既定値を格納
             while (currentParamIndex < targetCommand.Params.Length)
             {
@@ -215,6 +222,33 @@ namespace RUtil.Debug.Shell
 
                 currentParamIndex++;
             }
+
+            // パラメータの個数を格納
+            dParams["$#"] = new UnishVariable("$#", currentParamIndex);
+
+            var assembledParams = "";
+            var listedParams    = new string[currentParamIndex];
+            for (var i = 1; i <= currentParamIndex; i++)
+            {
+                var p = dParams[$"${i}"].S;
+                assembledParams += p;
+                if (i < currentParamIndex)
+                {
+                    assembledParams += " ";
+                }
+
+                listedParams[i - 1] = p;
+            }
+
+            var assembledOptions = "";
+            foreach (var option in dOptions.Keys)
+            {
+                assembledOptions += option;
+            }
+
+            dParams["$*"] = new UnishVariable("$*", assembledParams);
+            dParams["$@"] = new UnishVariable("$@", listedParams);
+            dParams["$-"] = new UnishVariable("$-", assembledOptions);
 
             return (dParams, dOptions, true);
         }
