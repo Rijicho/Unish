@@ -15,11 +15,13 @@ namespace RUtil.Debug.Shell
         private const    string             SceneName = "UnishDefault";
         private readonly IUnishInputHandler mInputHandler;
         private readonly IUnishTimeProvider mTimeProvider;
+        private readonly IUnishColorParser  mColorParser;
         private          Scene              loadedScene;
         private          Image              background;
         private          Text               text;
-
-        public string Prompt { get; set; } = "> ";
+        private          int                mCharCountPerLine;
+        private          int                mLineCount;
+        private          bool               mIsReading;
 
         // 入力履歴
         private readonly List<string> mSubmittedInputs = new List<string>();
@@ -46,19 +48,8 @@ namespace RUtil.Debug.Shell
         // カーソルの点滅開始時刻
         private float mCursorBrinkStartTime;
 
-        public Color DisplayTextColor
-        {
-            get => text ? text.color : Color.white;
-            set
-            {
-                if (text)
-                {
-                    text.color = value;
-                }
-            }
-        }
 
-        public Color BackgroundColor
+        private Color BackgroundColor
         {
             get => background ? background.color : Color.clear;
             set
@@ -70,12 +61,21 @@ namespace RUtil.Debug.Shell
             }
         }
 
-        public int MaxLineCount        { get; private set; }
-        public int HorizontalCharCount { get; private set; }
 
-        protected virtual Color BackgroundDefaultColor => new Color(0, 0, 0, 0.7f);
+        public DefaultUnishIO()
+        {
+            mTimeProvider = DefaultTimeProvider.Instance;
+            mInputHandler = new DefaultUnishInputHandler(mTimeProvider);
+            mColorParser  = DefaultColorParser.Instance;
+        }
 
-        public async UniTask InitializeAsync()
+        public DefaultUnishIO(IUnishInputHandler inputHandler, IUnishTimeProvider timeProvider)
+        {
+            mInputHandler = inputHandler;
+            mTimeProvider = timeProvider;
+        }
+
+        public async UniTask InitializeAsync(IUnishEnv env)
         {
             if (loadedScene.IsValid())
             {
@@ -88,75 +88,66 @@ namespace RUtil.Debug.Shell
             await SceneManager.LoadSceneAsync(SceneName, LoadSceneMode.Additive);
             loadedScene = SceneManager.GetSceneByName(SceneName);
             var component = loadedScene.GetRootGameObjects()[0].GetComponent<DefaultUnishViewRoot>();
-            background          = component.Background;
-            text                = component.Text;
-            HorizontalCharCount = component.CharCountPerLine;
-            MaxLineCount        = component.MaxLineCount;
+            background = component.Background;
+            text       = component.Text;
 
-            BackgroundColor = BackgroundDefaultColor;
-
-            var placeHolder = new StringBuilder();
-            for (var i = 0; i < MaxLineCount; i++)
+            if (!env.TryGetValue(UnishBuiltInEnvKeys.BgColor, out var bgColor, mColorParser))
             {
-                placeHolder.AppendLine(new string(' ', HorizontalCharCount));
+                env[UnishBuiltInEnvKeys.BgColor] = "#000000cc";
+                bgColor                          = mColorParser.Parse("#000000cc");
             }
 
+            if (!env.TryGetValue(UnishBuiltInEnvKeys.CharCountPerLine, out mCharCountPerLine))
+            {
+                env[UnishBuiltInEnvKeys.CharCountPerLine] = "100";
+                mCharCountPerLine                         = 100;
+            }
+
+            if (!env.TryGetValue(UnishBuiltInEnvKeys.LineCount, out mLineCount))
+            {
+                env[UnishBuiltInEnvKeys.LineCount] = "24";
+                mLineCount                         = 24;
+            }
+
+            // 背景色設定
+            BackgroundColor = bgColor;
+
+            // フォント設定
             var font = await GetOrLoadFont();
             if (font)
             {
                 text.font = font;
             }
 
-            text.text                          = placeHolder.ToString();
-            text.rectTransform.sizeDelta       = new Vector2(text.preferredWidth, text.preferredHeight);
-            background.rectTransform.sizeDelta = new Vector2(text.preferredWidth + 20, text.preferredHeight + 20);
-            text.text                          = "";
-            await mInputHandler.InitializeAsync();
+            // 画面サイズ設定
+            RefleshSize();
+
+            await mInputHandler.InitializeAsync(env);
+            env.OnSet     += OnEnvSet;
+            env.OnRemoved += OnEnvRemoved;
 
             StartUpdate().Forget();
         }
 
-        private async UniTaskVoid StartUpdate()
-        {
-            await foreach (var _ in UniTaskAsyncEnumerable.EveryUpdate())
-            {
-                if (!OnUpdate())
-                {
-                    break;
-                }
-            }
-        }
-
-        private bool isInputEventUsed;
-
-        private bool OnUpdate()
-        {
-            isInputEventUsed = HandleScrollInput();
-            if (mInputHandler.CheckInputOnThisFrame(UnishInputType.Quit))
-            {
-                OnHaltInput?.Invoke();
-                return false;
-            }
-
-            UpdateDisplay();
-            return true;
-        }
-
-        public event Action OnHaltInput;
-
-        public async UniTask FinalizeAsync()
+        public async UniTask FinalizeAsync(IUnishEnv env)
         {
             if (!loadedScene.IsValid())
             {
                 throw new Exception("Unish scene has not been loaded.");
             }
 
-            await mInputHandler.FinalizeAsync();
+            env.OnRemoved -= OnEnvRemoved;
+            env.OnSet     -= OnEnvSet;
+
+            await mInputHandler.FinalizeAsync(env);
             await SceneManager.UnloadSceneAsync(loadedScene);
             text        = null;
             background  = null;
             loadedScene = default;
         }
+
+        public event Action OnHaltInput;
+
 
         public UniTask WriteAsync(string input)
         {
@@ -191,7 +182,6 @@ namespace RUtil.Debug.Shell
             UnityEngine.Debug.LogError(error);
         }
 
-        private bool mIsReading;
 
         public async UniTask<string> ReadAsync()
         {
@@ -207,24 +197,96 @@ namespace RUtil.Debug.Shell
             return ret;
         }
 
-        public DefaultUnishIO()
-        {
-            mTimeProvider = DefaultTimeProvider.Instance;
-            mInputHandler = new DefaultUnishInputHandler(mTimeProvider);
-        }
-
-        public DefaultUnishIO(IUnishInputHandler inputHandler, IUnishTimeProvider timeProvider)
-        {
-            mInputHandler = inputHandler;
-            mTimeProvider = timeProvider;
-        }
-
 
         protected virtual UniTask<Font> GetOrLoadFont()
         {
             return UniTask.FromResult<Font>(default);
         }
 
+
+        private void OnEnvSet(KeyValuePair<string, string> kv)
+        {
+            switch (kv.Key)
+            {
+                case UnishBuiltInEnvKeys.BgColor:
+                    BackgroundColor = mColorParser.TryParse(kv.Value, out var col)
+                        ? col
+                        : mColorParser.Parse("#000000cc");
+                    break;
+                case UnishBuiltInEnvKeys.CharCountPerLine:
+                    {
+                        mCharCountPerLine = int.TryParse(kv.Value, out var cnt) ? cnt : 100;
+                        RefleshSize();
+                        break;
+                    }
+                case UnishBuiltInEnvKeys.LineCount:
+                    {
+                        mLineCount = int.TryParse(kv.Value, out var cnt) ? cnt : 24;
+                        RefleshSize();
+                        break;
+                    }
+            }
+        }
+
+        private void OnEnvRemoved(string key)
+        {
+            switch (key)
+            {
+                case UnishBuiltInEnvKeys.BgColor:
+                    BackgroundColor = mColorParser.Parse("#000000cc");
+                    break;
+                case UnishBuiltInEnvKeys.CharCountPerLine:
+                    mCharCountPerLine = 100;
+                    RefleshSize();
+                    break;
+                case UnishBuiltInEnvKeys.LineCount:
+                    mLineCount = 24;
+                    RefleshSize();
+                    break;
+            }
+        }
+
+        private void RefleshSize()
+        {
+            var prevText    = text.text;
+            var placeHolder = new StringBuilder();
+            for (var i = 0; i < mLineCount; i++)
+            {
+                placeHolder.AppendLine(new string('0', mCharCountPerLine));
+            }
+
+
+            text.text                          = placeHolder.ToString();
+            text.rectTransform.sizeDelta       = new Vector2(text.preferredWidth, text.preferredHeight);
+            background.rectTransform.sizeDelta = new Vector2(text.preferredWidth + 20, text.preferredHeight + 20);
+            text.text                          = prevText;
+        }
+
+        private async UniTaskVoid StartUpdate()
+        {
+            await foreach (var _ in UniTaskAsyncEnumerable.EveryUpdate())
+            {
+                if (!OnUpdate())
+                {
+                    break;
+                }
+            }
+        }
+
+        private bool isInputEventUsed;
+
+        private bool OnUpdate()
+        {
+            isInputEventUsed = HandleScrollInput();
+            if (mInputHandler.CheckInputOnThisFrame(UnishInputType.Quit))
+            {
+                OnHaltInput?.Invoke();
+                return false;
+            }
+
+            UpdateDisplay();
+            return true;
+        }
 
         private async UniTask<string> HandleSubmissionInput()
         {
@@ -342,7 +404,7 @@ namespace RUtil.Debug.Shell
         {
             if (mInputHandler.CheckInputOnThisFrame(UnishInputType.ScrollUp))
             {
-                if (mDisplayLineOffset < mSubmittedLines.Count - MaxLineCount)
+                if (mDisplayLineOffset < mSubmittedLines.Count - mLineCount)
                 {
                     mDisplayLineOffset++;
                 }
@@ -362,14 +424,14 @@ namespace RUtil.Debug.Shell
 
             if (mInputHandler.CheckInputOnThisFrame(UnishInputType.PageUp))
             {
-                mDisplayLineOffset = Mathf.Min(mDisplayLineOffset + MaxLineCount,
-                    mSubmittedLines.Count - MaxLineCount);
+                mDisplayLineOffset = Mathf.Min(mDisplayLineOffset + mLineCount,
+                    mSubmittedLines.Count - mLineCount);
                 return true;
             }
 
             if (mInputHandler.CheckInputOnThisFrame(UnishInputType.PageDown))
             {
-                mDisplayLineOffset = Mathf.Max(mDisplayLineOffset - MaxLineCount, 0);
+                mDisplayLineOffset = Mathf.Max(mDisplayLineOffset - mLineCount, 0);
                 return true;
             }
 
@@ -409,15 +471,15 @@ namespace RUtil.Debug.Shell
             if (mDisplayLineOffset == 0)
             {
                 text.text = mSubmittedLines
-                                .Skip(mSubmittedLines.Count - MaxLineCount)
+                                .Skip(mSubmittedLines.Count - mLineCount)
                                 .ToSingleString("\n") +
                             (mIsReading ? inputWithCursor : "");
                 return;
             }
 
             text.text = mSubmittedLines
-                            .Skip(mSubmittedLines.Count - MaxLineCount - mDisplayLineOffset)
-                            .Take(Mathf.Min(MaxLineCount, mSubmittedLines.Count) - 1)
+                            .Skip(mSubmittedLines.Count - mLineCount - mDisplayLineOffset)
+                            .Take(Mathf.Min(mLineCount, mSubmittedLines.Count) - 1)
                             .ToSingleString("\n") + "\n" + mSubmittedLines.Last() +
                         (mIsReading ? inputWithCursor : "");
         }

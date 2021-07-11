@@ -17,20 +17,31 @@ namespace RUtil.Debug.Shell
             CurrentHome == null ? "" : CurrentHome.CurrentHomeRelativePath,
             true);
 
-        public async UniTask InitializeAsync()
+        public async UniTask InitializeAsync(IUnishEnv env)
         {
             mDirectories = new[]
             {
                 new RealFileSystem("PersistentData", Application.persistentDataPath),
             };
-            CurrentHome = mDirectories[0];
 
-            await UniTask.WhenAll(mDirectories.Select(d => d.InitializeAsync()));
+            foreach (var d in mDirectories)
+            {
+                await d.InitializeAsync(env);
+            }
+
+            if (!env.ContainsKey(UnishBuiltInEnvKeys.HomePath))
+            {
+                env[UnishBuiltInEnvKeys.HomePath] = $"{PathConstants.Root}{mDirectories[0].HomeName}";
+            }
         }
 
-        public async UniTask FinalizeAsync()
+        public async UniTask FinalizeAsync(IUnishEnv env)
         {
-            await UniTask.WhenAll(mDirectories.Select(d => d.FinalizeAsync()));
+            foreach (var d in mDirectories.Reverse())
+            {
+                await d.FinalizeAsync(env);
+            }
+
             CurrentHome  = null;
             mDirectories = null;
         }

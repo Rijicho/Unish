@@ -19,13 +19,13 @@ namespace RUtil.Debug.Shell
             RealHomePath = realHomePath;
         }
 
-        public UniTask InitializeAsync()
+        public UniTask InitializeAsync(IUnishEnv env)
         {
             CurrentHomeRelativePath = "";
             return default;
         }
 
-        public UniTask FinalizeAsync()
+        public UniTask FinalizeAsync(IUnishEnv env)
         {
             return default;
         }

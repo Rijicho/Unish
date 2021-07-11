@@ -13,6 +13,7 @@ namespace RUtil.Debug.Shell
             this IUnishIO io,
             string searchWord,
             IEnumerable<string> candidates,
+            int lineWidth,
             bool enableRegex = true,
             Func<string, string> entryFormatter = default)
         {
@@ -56,7 +57,7 @@ namespace RUtil.Debug.Shell
             if (suggestion.Count > 0)
             {
                 var longest = suggestion.Max(x => (entryFormatter?.Invoke(x) ?? x).Length);
-                longest = Mathf.Min(longest, io.HorizontalCharCount - 10);
+                longest = Mathf.Min(longest, lineWidth - 10);
                 var i = 0;
                 foreach (var s in suggestion)
                 {
@@ -70,7 +71,7 @@ namespace RUtil.Debug.Shell
                     i++;
                 }
 
-                io.WriteLineAsync("| Select index: ", "orange");
+                await io.WriteLineAsync("| Select index: ", "orange");
 
                 var newInput = await io.ReadAsync();
 

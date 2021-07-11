@@ -32,7 +32,7 @@ namespace RUtil.Debug.Shell
 
         private Type[] mCommandTypesCache;
 
-        public UniTask InitializeAsync()
+        public UniTask InitializeAsync(IUnishEnv env)
         {
             mMap.Clear();
             mCommands.Clear();
@@ -64,7 +64,7 @@ namespace RUtil.Debug.Shell
             return default;
         }
 
-        public UniTask FinalizeAsync()
+        public UniTask FinalizeAsync(IUnishEnv env)
         {
             mInstance = null;
             return default;

@@ -55,7 +55,7 @@ namespace RUtil.Debug.Shell
             mTimeProvider = timeProvider;
         }
 
-        public UniTask InitializeAsync()
+        public UniTask InitializeAsync(IUnishEnv env)
         {
             inputs                 =  Enum.GetValues(typeof(UnishInputType)).Cast<UnishInputType>().ToArray();
             longPushStartTimes     =  inputs.ToDictionary(x => x, x => 0f);
@@ -95,7 +95,7 @@ namespace RUtil.Debug.Shell
             }
         }
 
-        public UniTask FinalizeAsync()
+        public UniTask FinalizeAsync(IUnishEnv env)
         {
             OnTextInput -= UpdateCurrentCharInput;
             mIsRunning  =  false;

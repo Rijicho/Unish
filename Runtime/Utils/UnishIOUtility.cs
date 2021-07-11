@@ -10,10 +10,21 @@ namespace RUtil.Debug.Shell
         {
             return io.WriteColoredAsync(data + '\n');
         }
-        public static UniTask WriteColoredAsync(this IUnishIO io, string data, string colorCode = "white")
+
+        public static async UniTask WriteColoredAsync(this IUnishIO io, string data, string colorCode = "white")
         {
-            return io.WriteAsync($"<color={colorCode}>{data}</color>");
+            var lines = data.Split('\n');
+            if (lines.Length == 1)
+            {
+                await io.WriteAsync($"<color={colorCode}>{data}</color>");
+            }
+
+            for (var i = 0; i < lines.Length; i++)
+            {
+                await io.WriteAsync($"<color={colorCode}>{lines[i]}</color>{(i == lines.Length - 1 ? "" : "\n")}");
+            }
         }
+
         public static IUniTaskAsyncEnumerable<string> ReadSourceFileLines(string path)
         {
             return UniTaskAsyncEnumerable.Create<string>(async (writer, token) =>

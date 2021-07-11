@@ -8,6 +8,7 @@ namespace RUtil.Debug.Shell
     public abstract class UnishCommandBase
     {
         private   IUnishPresenter     mShell;
+        protected IUnishEnv           Env         => mShell?.Env;
         protected IUnishIO            IO          => mShell?.IO;
         protected IUnishDirectoryRoot Directory   => mShell?.Directory;
         protected IUnishInterpreter   Interpreter => mShell?.Interpreter;
@@ -226,20 +227,22 @@ namespace RUtil.Debug.Shell
         {
             return WriteUsageInternal(io, Ops[0], drawTopLine, drawBottomLine);
         }
+
         public UniTask WriteUsage(IUnishIO io, string op, bool drawTopLine = true, bool drawBottomLine = true)
         {
             return WriteUsageInternal(io, op ?? Ops[0], drawTopLine, drawBottomLine);
         }
-        
+
         protected UniTask WriteUsage(bool drawTopLine = true, bool drawBottomLine = true)
         {
             return WriteUsage(Ops[0], drawTopLine, drawBottomLine);
         }
 
-        protected  UniTask WriteUsage(string op, bool drawTopLine = true, bool drawBottomLine = true)
+        protected UniTask WriteUsage(string op, bool drawTopLine = true, bool drawBottomLine = true)
         {
             return WriteUsageInternal(mShell.IO, op, drawTopLine, drawBottomLine);
         }
+
         private async UniTask WriteUsageInternal(IUnishIO io, string op, bool drawTopLine, bool drawBottomLine)
         {
             if (drawTopLine)

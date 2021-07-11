@@ -1,5 +1,4 @@
-﻿using System;
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 
 namespace RUtil.Debug.Shell
 {
@@ -15,10 +14,10 @@ namespace RUtil.Debug.Shell
         // ----------------------------------
         // properties
         // ----------------------------------
+        public abstract IUnishEnv           Env         { get; }
         public abstract IUnishIO            IO          { get; }
         public abstract IUnishInterpreter   Interpreter { get; }
         public abstract IUnishDirectoryRoot Directory   { get; }
-        public          string              Prompt      { get; set; } = "> ";
 
         // ----------------------------------
         // public methods
@@ -71,10 +70,17 @@ namespace RUtil.Debug.Shell
             mState = UnishState.Init;
 
             await OnPreOpenAsync();
-            await IO.InitializeAsync();
+            await Env.InitializeAsync(null);
+            await IO.InitializeAsync(Env);
             IO.OnHaltInput += Halt;
-            await Directory.InitializeAsync();
-            await Interpreter.InitializeAsync();
+            await Directory.InitializeAsync(Env);
+            await Interpreter.InitializeAsync(Env);
+
+            if (Env.TryGetValue(UnishBuiltInEnvKeys.HomePath, out var homePath))
+            {
+                Directory.TryChangeDirectory(homePath);
+            }
+
             await OnPostOpenAsync();
         }
 
@@ -99,10 +105,11 @@ namespace RUtil.Debug.Shell
         private async UniTask Quit()
         {
             await OnPreCloseAsync();
-            await Interpreter.FinalizeAsync();
-            await Directory.FinalizeAsync();
+            await Interpreter.FinalizeAsync(Env);
+            await Directory.FinalizeAsync(Env);
             IO.OnHaltInput -= Halt;
-            await IO.FinalizeAsync();
+            await IO.FinalizeAsync(Env);
+            await Env.FinalizeAsync(Env);
             await OnPostCloseAsync();
             mState = UnishState.None;
         }
@@ -111,30 +118,31 @@ namespace RUtil.Debug.Shell
         {
             get
             {
-                if (!Prompt.Contains("%d"))
+                var prompt = Env[UnishBuiltInEnvKeys.Prompt];
+                if (!prompt.Contains("%d"))
                 {
-                    return Prompt;
+                    return prompt;
                 }
 
                 if (Directory.Current.IsRoot)
                 {
-                    return Prompt.Replace("%d", PathConstants.Root);
+                    return prompt.Replace("%d", PathConstants.Root);
                 }
 
                 if (Directory.Current.IsHome)
                 {
-                    return Prompt.Replace("%d", PathConstants.Home);
+                    return prompt.Replace("%d", PathConstants.Home);
                 }
 
-                return Prompt.Replace("%d", Directory.Current.Name);
+                return prompt.Replace("%d", Directory.Current.Name);
             }
         }
 
 
         private async UniTask RunInitialScripts()
         {
-            const string profile = "~/.uprofile";
-            const string rc      = "~/.unishrc";
+            var profile = Env[UnishBuiltInEnvKeys.ProfilePath];
+            var rc      = Env[UnishBuiltInEnvKeys.RcPath];
             if (!mIsUprofileExecuted)
             {
                 if (Directory.TryFindEntry(profile, out _))

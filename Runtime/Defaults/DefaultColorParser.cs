@@ -14,15 +14,30 @@ namespace RUtil.Debug.Shell
 
         public Color Parse(string str)
         {
+            if (TryParse(str, out var value))
+            {
+                return value;
+            }
+
+            UnityEngine.Debug.LogError($"\"{str}\" cannot parse to color");
+            return Color.clear;
+        }
+
+        public bool TryParse(string str, out Color value)
+        {
             str = str.Replace(" ", "");
             if (ColorUtility.TryParseHtmlString(str, out var tmp))
             {
-                return tmp;
+                value = tmp;
+                return true;
             }
 
             switch (str.ToLower())
             {
-                case "clear": return Color.clear;
+                case "clear":
+                case "transparent":
+                    value = Color.clear;
+                    return true;
             }
 
             try
@@ -36,7 +51,8 @@ namespace RUtil.Debug.Shell
                         c[i] = float.Parse(args[i]);
                     }
 
-                    return new Color(c[0], c[1], c[2], c[3]);
+                    value = new Color(c[0], c[1], c[2], c[3]);
+                    return true;
                 }
 
                 if (args.Length == 3)
@@ -47,16 +63,17 @@ namespace RUtil.Debug.Shell
                         c[i] = float.Parse(args[i]);
                     }
 
-                    return new Color(c[0], c[1], c[2], 1);
+                    value = new Color(c[0], c[1], c[2], 1);
+                    return true;
                 }
 
-                UnityEngine.Debug.LogError("Error - ColorParse() : 無効な文字列 [" + str + "]");
-                return Color.clear;
+                value = Color.clear;
+                return false;
             }
             catch
             {
-                UnityEngine.Debug.LogError("Error - ColorParse() : 無効な文字列 [" + str + "]");
-                return Color.clear;
+                value = Color.clear;
+                return false;
             }
         }
     }

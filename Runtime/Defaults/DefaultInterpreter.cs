@@ -12,16 +12,16 @@ namespace RUtil.Debug.Shell
         // ----------------------------------
         // public methods
         // ----------------------------------
-        public UniTask InitializeAsync()
+        public UniTask InitializeAsync(IUnishEnv env)
         {
             Repository = DefaultUnishCommandRepository.Instance;
             Aliases    = new Dictionary<string, string>();
-            return Repository.InitializeAsync();
+            return Repository.InitializeAsync(env);
         }
 
-        public async UniTask FinalizeAsync()
+        public async UniTask FinalizeAsync(IUnishEnv env)
         {
-            await Repository.FinalizeAsync();
+            await Repository.FinalizeAsync(env);
             Aliases    = null;
             Repository = null;
         }

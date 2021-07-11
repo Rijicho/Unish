@@ -4,10 +4,10 @@ namespace RUtil.Debug.Shell
 {
     public interface IUnishPresenter
     {
+        IUnishEnv           Env         { get; }
         IUnishIO            IO          { get; }
         IUnishInterpreter   Interpreter { get; }
         IUnishDirectoryRoot Directory   { get; }
-        string              Prompt      { set; }
 
         UniTask RunAsync();
         void Halt();

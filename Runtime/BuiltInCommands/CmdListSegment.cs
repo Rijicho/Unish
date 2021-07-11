@@ -29,7 +29,7 @@ namespace RUtil.Debug.Shell
             {
                 foreach (var (entry, depth) in Directory.GetCurrentChilds(maxDepth))
                 {
-                    await IO.WriteLineAsync("| "+new string(' ', depth * 2) + entry.Name);
+                    await IO.WriteLineAsync("| " + new string(' ', depth * 2) + entry.Name);
                 }
             }
             else
@@ -42,7 +42,7 @@ namespace RUtil.Debug.Shell
                 }
 
                 var maxCharCountPerChild = childs.Max(x => x.Name.Length) + 1;
-                var maxCharCountPerLine  = IO.HorizontalCharCount;
+                var maxCharCountPerLine  = Env.TryGetValue(UnishBuiltInEnvKeys.CharCountPerLine, out int count) ? count : 100;
                 var childNumPerLine      = maxCharCountPerLine / maxCharCountPerChild;
                 var log                  = "";
                 for (var i = 0; i < childs.Count; i++)
