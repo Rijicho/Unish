@@ -10,7 +10,7 @@ using UnityEngine.UI;
 
 namespace RUtil.Debug.Shell
 {
-    public class DefaultIO : IUnishStandardIO
+    public class DefaultIO : IUnishIO
     {
         private const    string             SceneName = "UnishDefault";
         private readonly IUnishInputHandler mInputHandler;
