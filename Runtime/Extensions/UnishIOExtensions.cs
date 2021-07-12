@@ -20,7 +20,7 @@ namespace RUtil.Debug.Shell
         {
             return io.WriteLineAsync("");
         }
-        
+
         public static async UniTask<(string selected, int index, SelectionState state)> SuggestAndSelectAsync(
             this IUnishIO io,
             string searchWord,

@@ -52,6 +52,7 @@ namespace RUtil.Debug.Shell
                     args[e.Key] = e.Value;
                 }
             }
+
             foreach (var e in ShellVars)
             {
                 if (!args.ContainsKey(e.Key))

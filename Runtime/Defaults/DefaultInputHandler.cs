@@ -1,12 +1,13 @@
-﻿using System;
+﻿#if UNISH_INPUT_SYSTEM_SUPPORT
+using UnityEngine.InputSystem;
+#else
+using UnityEngine;
+#endif
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.Linq;
-#if UNISH_INPUT_SYSTEM_SUPPORT
-using UnityEngine.InputSystem;
-
-#endif
 
 namespace RUtil.Debug.Shell
 {
@@ -165,8 +166,7 @@ namespace RUtil.Debug.Shell
         private static bool CheckInputOnThisFramePure(UnishInputType input)
         {
 #if UNISH_INPUT_SYSTEM_SUPPORT
-
-            var kb      = Keyboard.current;
+            var kb = Keyboard.current;
             var ctrlcmd = kb.ctrlKey.isPressed || kb.leftCommandKey.isPressed || kb.rightCommandKey.isPressed;
             return input switch
             {
@@ -191,19 +191,19 @@ namespace RUtil.Debug.Shell
                           Input.GetKey(KeyCode.LeftCommand) || Input.GetKey(KeyCode.RightCommand);
             return input switch
             {
-                ConsoleInputType.Up =>        !ctrlcmd && Input.GetKeyDown(KeyCode.UpArrow),
-                ConsoleInputType.Down =>      !ctrlcmd && Input.GetKeyDown(KeyCode.DownArrow),
-                ConsoleInputType.Left =>      !ctrlcmd && Input.GetKeyDown(KeyCode.LeftArrow),
-                ConsoleInputType.Right =>     !ctrlcmd && Input.GetKeyDown(KeyCode.RightArrow),
-                ConsoleInputType.ScrollUp =>   ctrlcmd && Input.GetKeyDown(KeyCode.UpArrow),
-                ConsoleInputType.ScrollDown => ctrlcmd && Input.GetKeyDown(KeyCode.DownArrow), 
-                ConsoleInputType.PageUp =>     ctrlcmd && Input.GetKeyDown(KeyCode.LeftArrow), 
-                ConsoleInputType.PageDown =>   ctrlcmd && Input.GetKeyDown(KeyCode.RightArrow),
-                ConsoleInputType.BackSpace => !ctrlcmd && Input.GetKeyDown(KeyCode.Backspace), 
-                ConsoleInputType.Delete =>    !ctrlcmd && Input.GetKeyDown(KeyCode.Delete), 
-                ConsoleInputType.Submit =>    !ctrlcmd && Input.GetKeyDown(KeyCode.Return),
-                ConsoleInputType.Quit =>      !ctrlcmd && Input.GetKeyDown(KeyCode.Escape) ||
-                                          ctrlcmd && Input.GetKeyDown(KeyCode.Return),
+                UnishInputType.Up => !ctrlcmd && Input.GetKeyDown(KeyCode.UpArrow),
+                UnishInputType.Down => !ctrlcmd && Input.GetKeyDown(KeyCode.DownArrow),
+                UnishInputType.Left => !ctrlcmd && Input.GetKeyDown(KeyCode.LeftArrow),
+                UnishInputType.Right => !ctrlcmd && Input.GetKeyDown(KeyCode.RightArrow),
+                UnishInputType.ScrollUp => ctrlcmd && Input.GetKeyDown(KeyCode.UpArrow),
+                UnishInputType.ScrollDown => ctrlcmd && Input.GetKeyDown(KeyCode.DownArrow),
+                UnishInputType.PageUp => ctrlcmd && Input.GetKeyDown(KeyCode.LeftArrow),
+                UnishInputType.PageDown => ctrlcmd && Input.GetKeyDown(KeyCode.RightArrow),
+                UnishInputType.BackSpace => !ctrlcmd && Input.GetKeyDown(KeyCode.Backspace),
+                UnishInputType.Delete => !ctrlcmd && Input.GetKeyDown(KeyCode.Delete),
+                UnishInputType.Submit => !ctrlcmd && Input.GetKeyDown(KeyCode.Return),
+                UnishInputType.Quit => (!ctrlcmd && Input.GetKeyDown(KeyCode.Escape)) ||
+                                       (ctrlcmd && Input.GetKeyDown(KeyCode.Return)),
                 _ => false,
             };
 #endif
@@ -213,7 +213,7 @@ namespace RUtil.Debug.Shell
         private static bool CheckInput(UnishInputType input)
         {
 #if UNISH_INPUT_SYSTEM_SUPPORT
-            var kb      = Keyboard.current;
+            var kb = Keyboard.current;
             var ctrlcmd = kb.ctrlKey.isPressed || kb.leftCommandKey.isPressed || kb.rightCommandKey.isPressed;
             return input switch
             {
@@ -235,17 +235,17 @@ namespace RUtil.Debug.Shell
                           Input.GetKey(KeyCode.LeftCommand) || Input.GetKey(KeyCode.RightCommand);
             return input switch
             {
-                ConsoleInputType.Up =>        !ctrlcmd && Input.GetKey(KeyCode.UpArrow),
-                ConsoleInputType.Down =>      !ctrlcmd && Input.GetKey(KeyCode.DownArrow),
-                ConsoleInputType.Left =>      !ctrlcmd && Input.GetKey(KeyCode.LeftArrow),
-                ConsoleInputType.Right =>     !ctrlcmd && Input.GetKey(KeyCode.RightArrow),
-                ConsoleInputType.ScrollUp =>   ctrlcmd && Input.GetKey(KeyCode.UpArrow),
-                ConsoleInputType.ScrollDown => ctrlcmd && Input.GetKey(KeyCode.DownArrow), 
-                ConsoleInputType.PageUp =>     ctrlcmd && Input.GetKey(KeyCode.LeftArrow), 
-                ConsoleInputType.PageDown =>   ctrlcmd && Input.GetKey(KeyCode.RightArrow),
-                ConsoleInputType.BackSpace => !ctrlcmd && Input.GetKey(KeyCode.Backspace), 
-                ConsoleInputType.Delete =>    !ctrlcmd && Input.GetKey(KeyCode.Delete), 
-                ConsoleInputType.Submit =>    !ctrlcmd && Input.GetKey(KeyCode.Return),
+                UnishInputType.Up => !ctrlcmd && Input.GetKey(KeyCode.UpArrow),
+                UnishInputType.Down => !ctrlcmd && Input.GetKey(KeyCode.DownArrow),
+                UnishInputType.Left => !ctrlcmd && Input.GetKey(KeyCode.LeftArrow),
+                UnishInputType.Right => !ctrlcmd && Input.GetKey(KeyCode.RightArrow),
+                UnishInputType.ScrollUp => ctrlcmd && Input.GetKey(KeyCode.UpArrow),
+                UnishInputType.ScrollDown => ctrlcmd && Input.GetKey(KeyCode.DownArrow),
+                UnishInputType.PageUp => ctrlcmd && Input.GetKey(KeyCode.LeftArrow),
+                UnishInputType.PageDown => ctrlcmd && Input.GetKey(KeyCode.RightArrow),
+                UnishInputType.BackSpace => !ctrlcmd && Input.GetKey(KeyCode.Backspace),
+                UnishInputType.Delete => !ctrlcmd && Input.GetKey(KeyCode.Delete),
+                UnishInputType.Submit => !ctrlcmd && Input.GetKey(KeyCode.Return),
                 _ => false,
             };
 

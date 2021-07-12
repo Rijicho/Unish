@@ -75,6 +75,7 @@ namespace RUtil.Debug.Shell
             env.Set(key, defaultValue);
             return defaultValue;
         }
+
         public static bool Get(this IUnishEnv env, string key, bool defaultValue, bool updateEnv = false)
         {
             if (env.TryGet(key, out bool value))
@@ -85,6 +86,7 @@ namespace RUtil.Debug.Shell
             env.Set(key, defaultValue);
             return defaultValue;
         }
+
         public static int Get(this IUnishEnv env, string key, int defaultValue, bool updateEnv = false)
         {
             if (env.TryGet(key, out int value))
@@ -106,6 +108,7 @@ namespace RUtil.Debug.Shell
             env.Set(key, defaultValue);
             return defaultValue;
         }
+
         public static Vector2 Get(this IUnishEnv env, string key, Vector2 defaultValue, bool updateEnv = false)
         {
             if (env.TryGet(key, out Vector2 value))
@@ -116,7 +119,7 @@ namespace RUtil.Debug.Shell
             env.Set(key, defaultValue);
             return defaultValue;
         }
-        
+
         public static Vector3 Get(this IUnishEnv env, string key, Vector3 defaultValue, bool updateEnv = false)
         {
             if (env.TryGet(key, out Vector3 value))
@@ -127,6 +130,7 @@ namespace RUtil.Debug.Shell
             env.Set(key, defaultValue);
             return defaultValue;
         }
+
         public static Color Get(this IUnishEnv env, string key, Color defaultValue, bool updateEnv = false)
         {
             if (env.TryGet(key, out Color value))
@@ -137,6 +141,7 @@ namespace RUtil.Debug.Shell
             env.Set(key, defaultValue);
             return defaultValue;
         }
+
         public static string[] Get(this IUnishEnv env, string key, string[] defaultValue, bool updateEnv = false)
         {
             if (env.TryGet(key, out string[] value))
@@ -248,7 +253,7 @@ namespace RUtil.Debug.Shell
             value = tmp.C;
             return true;
         }
-        
+
         public static bool TryGet(this IUnishEnv env, string key, out string[] value)
         {
             if (!env.TryGetValue(key, UnishVariableType.Array, out var tmp))
