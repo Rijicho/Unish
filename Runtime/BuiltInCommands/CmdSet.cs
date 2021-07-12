@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Cysharp.Threading.Tasks;
 
 namespace RUtil.Debug.Shell
@@ -16,9 +17,17 @@ namespace RUtil.Debug.Shell
 
         protected override async UniTask Run(Dictionary<string, UnishVariable> args, Dictionary<string, UnishVariable> options)
         {
-            foreach (var arg in args)
+            await IO.WriteLineAsync("Environment variables:");
+            foreach (var arg in EnvVars.OrderBy(v => v.Key))
             {
-                await IO.WriteLineAsync($"${arg.Key} = {arg.Value.S}");
+                await IO.WriteLineAsync($"  ${arg.Key} = {arg.Value.S}");
+            }
+
+            await IO.WriteLineAsync();
+            await IO.WriteLineAsync("Shell variables:");
+            foreach (var arg in ShellVars.OrderBy(v => v.Key))
+            {
+                await IO.WriteLineAsync($"  ${arg.Key} = {arg.Value.S}");
             }
         }
     }

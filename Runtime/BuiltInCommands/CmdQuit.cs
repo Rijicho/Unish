@@ -23,7 +23,7 @@ namespace RUtil.Debug.Shell
         protected override UniTask Run(Dictionary<string, UnishVariable> args,
             Dictionary<string, UnishVariable> options)
         {
-            Env.Set(UnishBuiltInEnvKeys.Quit, true);
+            EnvVars.Set(UnishBuiltInEnvKeys.Quit, true);
             return default;
         }
 

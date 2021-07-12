@@ -16,6 +16,11 @@ namespace RUtil.Debug.Shell
 
     public static class UnishIOExtensions
     {
+        public static UniTask WriteLineAsync(this IUnishIO io)
+        {
+            return io.WriteLineAsync("");
+        }
+        
         public static async UniTask<(string selected, int index, SelectionState state)> SuggestAndSelectAsync(
             this IUnishIO io,
             string searchWord,

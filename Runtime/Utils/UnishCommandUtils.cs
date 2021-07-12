@@ -247,5 +247,20 @@ namespace RUtil.Debug.Shell
                 SplitCommand(input.Substring(firstInStringSpaceIndex + 1), leading);
             }
         }
+
+        public static bool TryParseSetVarExpr(string input, out string varname, out string value)
+        {
+            var eqIdx = input.IndexOf('=');
+            if (eqIdx > 0 && eqIdx < input.Length - 1)
+            {
+                varname = input.Substring(0, eqIdx);
+                value   = input.Substring(eqIdx + 1);
+                value   = RemoveQuotesIfExist(value);
+                return true;
+            }
+
+            varname = value = null;
+            return false;
+        }
     }
 }

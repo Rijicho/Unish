@@ -7,7 +7,8 @@ namespace RUtil.Debug.Shell
     public abstract class UnishCommandBase
     {
         private   IUnishPresenter     mShell;
-        protected IUnishEnv           Env         { get; private set; }
+        protected IUnishEnv           EnvVars     { get; private set; }
+        protected IUnishEnv           ShellVars   => mShell?.Env;
         protected IUnishIO            IO          => mShell?.IO;
         protected IUnishDirectoryRoot Directory   => mShell?.Directory;
         protected IUnishInterpreter   Interpreter => mShell?.Interpreter;
@@ -42,9 +43,16 @@ namespace RUtil.Debug.Shell
             Dictionary<string, UnishVariable> args,
             Dictionary<string, UnishVariable> options)
         {
-            mShell = shell;
-            Env    = shell.GetGlobalEnv();
-            foreach (var e in Env)
+            mShell  = shell;
+            EnvVars = shell.GetGlobalEnv();
+            foreach (var e in EnvVars)
+            {
+                if (!args.ContainsKey(e.Key))
+                {
+                    args[e.Key] = e.Value;
+                }
+            }
+            foreach (var e in ShellVars)
             {
                 if (!args.ContainsKey(e.Key))
                 {
