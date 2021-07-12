@@ -14,7 +14,7 @@ namespace RUtil.Debug.Shell
         public string CurrentHomeRelativePath { get; private set; }
 
         private IUnishEnv mEnv;
-        
+
         public RealFileSystem(string virtualHomeName, string realHomePath)
         {
             HomeName     = virtualHomeName;

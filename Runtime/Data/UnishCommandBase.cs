@@ -8,7 +8,7 @@ namespace RUtil.Debug.Shell
     {
         private   IUnishPresenter     mShell;
         protected IUnishEnv           Env         => mShell?.Env;
-        protected IUnishIO            IO          => mShell?.IO;
+        protected IUnishStandardIO    IO          => mShell?.IO;
         protected IUnishDirectoryRoot Directory   => mShell?.Directory;
         protected IUnishInterpreter   Interpreter => mShell?.Interpreter;
 
@@ -54,12 +54,12 @@ namespace RUtil.Debug.Shell
             return Run(args, options);
         }
 
-        public UniTask WriteUsage(IUnishIO io, bool drawTopLine = true, bool drawBottomLine = true)
+        public UniTask WriteUsage(IUnishStandardIO io, bool drawTopLine = true, bool drawBottomLine = true)
         {
             return WriteUsageInternal(io, Ops[0], drawTopLine, drawBottomLine);
         }
 
-        public UniTask WriteUsage(IUnishIO io, string op, bool drawTopLine = true, bool drawBottomLine = true)
+        public UniTask WriteUsage(IUnishStandardIO io, string op, bool drawTopLine = true, bool drawBottomLine = true)
         {
             return WriteUsageInternal(io, op ?? Ops[0], drawTopLine, drawBottomLine);
         }
@@ -74,7 +74,7 @@ namespace RUtil.Debug.Shell
             return WriteUsageInternal(mShell.IO, op, drawTopLine, drawBottomLine);
         }
 
-        private async UniTask WriteUsageInternal(IUnishIO io, string op, bool drawTopLine, bool drawBottomLine)
+        private async UniTask WriteUsageInternal(IUnishStandardIO io, string op, bool drawTopLine, bool drawBottomLine)
         {
             if (drawTopLine)
             {

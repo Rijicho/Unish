@@ -5,7 +5,7 @@ namespace RUtil.Debug.Shell
     public interface IUnishPresenter
     {
         IUnishEnv           Env         { get; }
-        IUnishIO            IO          { get; }
+        IUnishStandardIO    IO          { get; }
         IUnishInterpreter   Interpreter { get; }
         IUnishDirectoryRoot Directory   { get; }
 

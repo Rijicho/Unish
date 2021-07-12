@@ -26,7 +26,7 @@ namespace RUtil.Debug.Shell
         // properties
         // ----------------------------------
         public abstract IUnishEnv           Env         { get; }
-        public abstract IUnishIO            IO          { get; }
+        public abstract IUnishStandardIO    IO          { get; }
         public abstract IUnishInterpreter   Interpreter { get; }
         public abstract IUnishDirectoryRoot Directory   { get; }
 

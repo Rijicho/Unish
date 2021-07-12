@@ -3,7 +3,7 @@ using Cysharp.Threading.Tasks;
 
 namespace RUtil.Debug.Shell
 {
-    public interface IUnishIO : IUnishResource
+    public interface IUnishStandardIO : IUnishResource
     {
         UniTask<string> ReadAsync();
         UniTask WriteAsync(string text);

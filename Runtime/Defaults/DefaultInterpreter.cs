@@ -115,7 +115,7 @@ namespace RUtil.Debug.Shell
         // ----------------------------------
 
         private async UniTask<(VDictionary Params, VDictionary Options, bool IsSucceeded)> ParseArguments(
-            IUnishIO io,
+            IUnishStandardIO io,
             UnishCommandBase targetCommand,
             string op,
             IEnumerable<(string token, bool isOption)> arguments)

@@ -5,13 +5,12 @@ using System.Text;
 using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.Linq;
 using UnityEngine;
-using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 namespace RUtil.Debug.Shell
 {
-    public class DefaultIO : IUnishIO
+    public class DefaultIO : IUnishStandardIO
     {
         private const    string             SceneName = "UnishDefault";
         private readonly IUnishInputHandler mInputHandler;

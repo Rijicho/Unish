@@ -13,6 +13,7 @@ namespace RUtil.Debug.Shell
         public override (UnishVariableType type, string name, string defVal, string info)[] Params { get; } =
         {
         };
+
         protected override async UniTask Run(Dictionary<string, UnishVariable> args, Dictionary<string, UnishVariable> options)
         {
             foreach (var arg in args)

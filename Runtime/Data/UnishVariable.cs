@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Codice.CM.SEIDInfo;
 using UnityEngine;
 
 namespace RUtil.Debug.Shell
@@ -28,33 +27,33 @@ namespace RUtil.Debug.Shell
 
         public UnishVariable(string name, string s) : this(name, UnishVariableType.String)
         {
-            this.S = s;
+            S = s;
         }
 
         public UnishVariable(string name, bool b) : this(name, UnishVariableType.Bool)
         {
-            S      = b ? "true" : "false";
-            this.B = b;
+            S = b ? "true" : "false";
+            B = b;
         }
 
         public UnishVariable(string name, int i) : this(name, UnishVariableType.Int)
         {
-            S      = i.ToString();
-            this.I = i;
+            S = i.ToString();
+            I = i;
         }
 
 
         public UnishVariable(string name, float f) : this(name, UnishVariableType.Float)
         {
-            S      = f.ToString(CultureInfo.CurrentCulture);
-            this.F = f;
+            S = f.ToString(CultureInfo.CurrentCulture);
+            F = f;
         }
 
 
         public UnishVariable(string name, Vector2 v2) : this(name, UnishVariableType.Vector2)
         {
-            S      = $"[{v2.x},{v2.y}]";
-            this.V2 = v2;
+            S  = $"[{v2.x},{v2.y}]";
+            V2 = v2;
         }
 
         public UnishVariable(string name, Vector3 v) : this(name, UnishVariableType.Vector3)
@@ -65,15 +64,16 @@ namespace RUtil.Debug.Shell
 
         public UnishVariable(string name, Color c) : this(name, UnishVariableType.Color)
         {
-            S      = DefaultColorParser.Instance.ColorToCode(c);
-            this.C = c;
+            S = DefaultColorParser.Instance.ColorToCode(c);
+            C = c;
         }
 
         public UnishVariable(string name, IEnumerable<string> arr) : this(name, UnishVariableType.Array)
         {
-            this.Array = arr.ToArray();
-            S          = $"({this.Array.ToSingleString(" ")})";
+            Array = arr.ToArray();
+            S     = $"({Array.ToSingleString(" ")})";
         }
+
         public UnishVariable(string name, UnishVariableType type, string input) : this(name, type)
         {
             S = input;
@@ -135,12 +135,14 @@ namespace RUtil.Debug.Shell
                     {
                         Type = UnishVariableType.Error;
                     }
+
                     break;
                 case UnishVariableType.Array:
                     if (!TryParseArray(input, out Array))
                     {
                         Type = UnishVariableType.Error;
                     }
+
                     break;
             }
         }
@@ -157,6 +159,7 @@ namespace RUtil.Debug.Shell
                 result = this;
                 return true;
             }
+
             result = new UnishVariable(Name, targetType, S);
             return result.Type == targetType;
         }
@@ -165,22 +168,27 @@ namespace RUtil.Debug.Shell
         {
             return TryCast(UnishVariableType.Bool, out var result) ? result.B : defaultValue;
         }
+
         public int CastOr(int defaultValue)
         {
             return TryCast(UnishVariableType.Int, out var result) ? result.I : defaultValue;
         }
+
         public float CastOr(float defaultValue)
         {
             return TryCast(UnishVariableType.Float, out var result) ? result.F : defaultValue;
         }
+
         public Vector2 CastOr(Vector2 defaultValue)
         {
             return TryCast(UnishVariableType.Vector2, out var result) ? result.V2 : defaultValue;
         }
+
         public Vector3 CastOr(Vector3 defaultValue)
         {
             return TryCast(UnishVariableType.Vector3, out var result) ? result.V3 : defaultValue;
         }
+
         public Color CastOr(Color defaultValue)
         {
             return TryCast(UnishVariableType.Color, out var result) ? result.C : defaultValue;
@@ -246,7 +254,7 @@ namespace RUtil.Debug.Shell
         private static int TryParseVector(string str, float[] dest)
         {
             str = str.Trim();
-            if ((str[0] != '[' || str[str.Length - 1] != ']'))
+            if (str[0] != '[' || str[str.Length - 1] != ']')
             {
                 return -1;
             }
@@ -276,14 +284,14 @@ namespace RUtil.Debug.Shell
         private static bool TryParseArray(string str, out string[] dest)
         {
             str = str.Trim();
-            if ((str[0] != '(' || str[str.Length - 1] != ')'))
+            if (str[0] != '(' || str[str.Length - 1] != ')')
             {
                 dest = null;
                 return false;
             }
-            
+
             dest = str.Substring(1, str.Length - 2).Split(null)
-                .Where(x=>!string.IsNullOrEmpty(x))
+                .Where(x => !string.IsNullOrEmpty(x))
                 .ToArray();
             return dest.Length != 0;
         }

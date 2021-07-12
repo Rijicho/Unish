@@ -11,12 +11,12 @@ namespace RUtil.Debug.Shell
     public class DefaultEnv : IUnishEnv
     {
         private readonly Dictionary<string, UnishVariable> mDictionary;
-        public           int                                 Count  => mDictionary.Count;
-        public           IEnumerable<string>                 Keys   => mDictionary.Keys;
+        public           int                               Count  => mDictionary.Count;
+        public           IEnumerable<string>               Keys   => mDictionary.Keys;
         public           IEnumerable<UnishVariable>        Values => mDictionary.Values;
 
         public event Action<UnishVariable> OnSet;
-        public event Action<string>          OnRemoved;
+        public event Action<string>        OnRemoved;
 
         public UnishVariable this[string key]
         {
