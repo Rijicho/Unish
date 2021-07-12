@@ -1,6 +1,6 @@
 ﻿namespace RUtil.Debug.Shell
 {
-    public static class PathConstants
+    public static class UnishPathConstants
     {
         public const           string Root                  = "/";
         public const           string Home                  = "~";

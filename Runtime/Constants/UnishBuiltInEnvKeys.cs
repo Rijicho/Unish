@@ -1,6 +1,6 @@
 ﻿namespace RUtil.Debug.Shell
 {
-    public static class BuiltInEnvKeys
+    public static class UnishBuiltInEnvKeys
     {
         public const string HomePath         = "HOME";
         public const string WorkingDirectory = "PWD";

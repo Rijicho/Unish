@@ -91,22 +91,22 @@ namespace RUtil.Debug.Shell
             background = component.Background;
             text       = component.Text;
 
-            if (!env.TryGet(BuiltInEnvKeys.BgColor, out Color bgColor))
+            if (!env.TryGet(UnishBuiltInEnvKeys.BgColor, out Color bgColor))
             {
                 bgColor = mColorParser.Parse("#000000cc");
-                env.Set(BuiltInEnvKeys.BgColor, bgColor);
+                env.Set(UnishBuiltInEnvKeys.BgColor, bgColor);
             }
 
-            if (!env.TryGet(BuiltInEnvKeys.CharCountPerLine, out mCharCountPerLine))
+            if (!env.TryGet(UnishBuiltInEnvKeys.CharCountPerLine, out mCharCountPerLine))
             {
                 mCharCountPerLine = 100;
-                env.Set(BuiltInEnvKeys.CharCountPerLine, mCharCountPerLine);
+                env.Set(UnishBuiltInEnvKeys.CharCountPerLine, mCharCountPerLine);
             }
 
-            if (!env.TryGet(BuiltInEnvKeys.LineCount, out mLineCount))
+            if (!env.TryGet(UnishBuiltInEnvKeys.LineCount, out mLineCount))
             {
                 mLineCount = 24;
-                env.Set(BuiltInEnvKeys.LineCount, mLineCount);
+                env.Set(UnishBuiltInEnvKeys.LineCount, mLineCount);
             }
 
             // 背景色設定
@@ -208,14 +208,14 @@ namespace RUtil.Debug.Shell
         {
             switch (envvar.Name)
             {
-                case BuiltInEnvKeys.BgColor:
+                case UnishBuiltInEnvKeys.BgColor:
                     BackgroundColor = envvar.C;
                     break;
-                case BuiltInEnvKeys.CharCountPerLine:
+                case UnishBuiltInEnvKeys.CharCountPerLine:
                     mCharCountPerLine = Mathf.Max(20, envvar.I);
                     RefleshSize();
                     break;
-                case BuiltInEnvKeys.LineCount:
+                case UnishBuiltInEnvKeys.LineCount:
                     mLineCount = Mathf.Max(1, envvar.I);
                     RefleshSize();
                     break;
@@ -226,14 +226,14 @@ namespace RUtil.Debug.Shell
         {
             switch (key)
             {
-                case BuiltInEnvKeys.BgColor:
+                case UnishBuiltInEnvKeys.BgColor:
                     BackgroundColor = mColorParser.Parse("#000000cc");
                     break;
-                case BuiltInEnvKeys.CharCountPerLine:
+                case UnishBuiltInEnvKeys.CharCountPerLine:
                     mCharCountPerLine = 100;
                     RefleshSize();
                     break;
-                case BuiltInEnvKeys.LineCount:
+                case UnishBuiltInEnvKeys.LineCount:
                     mLineCount = 24;
                     RefleshSize();
                     break;

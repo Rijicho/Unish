@@ -62,7 +62,7 @@ namespace RUtil.Debug.Shell
             }
 
             CurrentHomeRelativePath = homeRelativePath;
-            mEnv.Set(BuiltInEnvKeys.WorkingDirectory, $"{PathConstants.Root}{HomeName}{CurrentHomeRelativePath}");
+            mEnv.Set(UnishBuiltInEnvKeys.WorkingDirectory, $"{UnishPathConstants.Root}{HomeName}{CurrentHomeRelativePath}");
             return true;
         }
 

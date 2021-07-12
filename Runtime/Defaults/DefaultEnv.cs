@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace RUtil.Debug.Shell
 {
-    using static BuiltInEnvKeys;
+    using static UnishBuiltInEnvKeys;
 
     public class DefaultEnv : IUnishEnv
     {

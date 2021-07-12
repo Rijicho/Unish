@@ -42,7 +42,7 @@ namespace RUtil.Debug.Shell
                 }
 
                 var maxCharCountPerChild = childs.Max(x => x.Name.Length) + 1;
-                var maxCharCountPerLine  = Env.TryGet(BuiltInEnvKeys.CharCountPerLine, out int count) ? count : 100;
+                var maxCharCountPerLine  = Env.TryGet(UnishBuiltInEnvKeys.CharCountPerLine, out int count) ? count : 100;
                 var childNumPerLine      = maxCharCountPerLine / maxCharCountPerChild;
                 var log                  = "";
                 for (var i = 0; i < childs.Count; i++)

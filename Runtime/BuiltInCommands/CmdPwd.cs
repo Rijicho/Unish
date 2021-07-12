@@ -35,15 +35,15 @@ namespace RUtil.Debug.Shell
 
             if (Directory.Current.IsRoot)
             {
-                return IO.WriteLineAsync(PathConstants.Root);
+                return IO.WriteLineAsync(UnishPathConstants.Root);
             }
 
             if (Directory.Current.IsHome)
             {
-                return IO.WriteLineAsync(PathConstants.Home);
+                return IO.WriteLineAsync(UnishPathConstants.Home);
             }
 
-            return IO.WriteLineAsync(PathConstants.Home + Directory.Current.HomeRelativePath);
+            return IO.WriteLineAsync(UnishPathConstants.Home + Directory.Current.HomeRelativePath);
         }
 
         public override string Usage(string op)

@@ -8,7 +8,7 @@ namespace RUtil.Debug.Shell
         public string HomeName             { get; }
         public string HomeRelativePath     { get; }
         public bool   IsDirectory          { get; }
-        public string FullPath             => $"{PathConstants.Root}{HomeName}{HomeRelativePath}";
+        public string FullPath             => $"{UnishPathConstants.Root}{HomeName}{HomeRelativePath}";
         public bool   IsValid              => HomeName == null;
         public bool   IsRoot               => HomeName == "";
         public bool   IsHome               => HomeRelativePath == "";
