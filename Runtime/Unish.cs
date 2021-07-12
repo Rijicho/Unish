@@ -12,7 +12,7 @@ namespace RUtil.Debug.Shell
         public IUnishDirectoryRoot Directory   { get; private set; }
 
         private IUniShell mMainShell;
-        private bool            mIsUprofileExecuted;
+        private bool      mIsUprofileExecuted;
 
         // ----------------------------------
         // public methods
@@ -30,7 +30,7 @@ namespace RUtil.Debug.Shell
             IO          = io ?? new DefaultIO();
             Interpreter = interpreter ?? new DefaultInterpreter();
             Directory   = directory ?? new DefaultDirectoryRoot();
-            mMainShell  = new UnishCore(shellEnv, io, interpreter, directory, this);
+            mMainShell  = new UnishCore(Env, IO, Interpreter, Directory, this);
         }
 
         public void Run()
