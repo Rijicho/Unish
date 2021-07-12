@@ -9,11 +9,10 @@ namespace RUtil.Debug.Shell
 {
     public class RealFileSystem : IUnishRealFileSystem
     {
-        public string HomeName                { get; }
-        public string RealHomePath            { get; }
-        public string CurrentHomeRelativePath { get; private set; }
-
-        private IUnishEnv mEnv;
+        public IUnishEnv GlobalEnv               { protected get; set; }
+        public string    HomeName                { get; }
+        public string    RealHomePath            { get; }
+        public string    CurrentHomeRelativePath { get; private set; }
 
         public RealFileSystem(string virtualHomeName, string realHomePath)
         {
@@ -21,16 +20,14 @@ namespace RUtil.Debug.Shell
             RealHomePath = realHomePath;
         }
 
-        public UniTask InitializeAsync(IUnishEnv env)
+        public UniTask InitializeAsync()
         {
-            mEnv                    = env;
             CurrentHomeRelativePath = "";
             return default;
         }
 
-        public UniTask FinalizeAsync(IUnishEnv env)
+        public UniTask FinalizeAsync()
         {
-            mEnv = null;
             return default;
         }
 
@@ -62,7 +59,7 @@ namespace RUtil.Debug.Shell
             }
 
             CurrentHomeRelativePath = homeRelativePath;
-            mEnv.Set(UnishBuiltInEnvKeys.WorkingDirectory, $"{UnishPathConstants.Root}{HomeName}{CurrentHomeRelativePath}");
+            GlobalEnv.Set(UnishBuiltInEnvKeys.WorkingDirectory, $"{UnishPathConstants.Root}{HomeName}{CurrentHomeRelativePath}");
             return true;
         }
 

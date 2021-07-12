@@ -4,7 +4,12 @@ namespace RUtil.Debug.Shell
 {
     public interface IUnishResource
     {
-        UniTask InitializeAsync(IUnishEnv env);
-        UniTask FinalizeAsync(IUnishEnv env);
+        UniTask InitializeAsync();
+        UniTask FinalizeAsync();
+    }
+
+    public interface IUnishResourceWithEnv : IUnishResource
+    {
+        IUnishEnv GlobalEnv { set; }
     }
 }

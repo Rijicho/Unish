@@ -2,13 +2,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using UnityEngine;
 
 namespace RUtil.Debug.Shell
 {
-    using static UnishBuiltInEnvKeys;
-
-    public class DefaultEnv : IUnishEnv
+    public class ShellEnv : IUnishEnv
     {
         private readonly Dictionary<string, UnishVariable> mDictionary;
         public           int                               Count  => mDictionary.Count;
@@ -17,6 +14,11 @@ namespace RUtil.Debug.Shell
 
         public event Action<UnishVariable> OnSet;
         public event Action<string>        OnRemoved;
+
+
+        protected virtual UnishVariable[] Initials { get; } =
+        {
+        };
 
         public UnishVariable this[string key]
         {
@@ -28,24 +30,15 @@ namespace RUtil.Debug.Shell
             }
         }
 
-        private readonly UnishVariable[] mInitials =
-        {
-            new UnishVariable(ProfilePath, "~/.uprofile"),
-            new UnishVariable(RcPath, "~/.unishrc"),
-            new UnishVariable(Prompt, "%d $ "),
-            new UnishVariable(CharCountPerLine, 100),
-            new UnishVariable(LineCount, 24),
-            new UnishVariable(BgColor, new Color(0, 0, 0, (float)0xcc / 0xff)),
-        };
-
-        public DefaultEnv()
+        public ShellEnv()
         {
             mDictionary = new Dictionary<string, UnishVariable>();
         }
 
-        public UniTask InitializeAsync(IUnishEnv env)
+        public UniTask InitializeAsync()
         {
-            foreach (var arg in mInitials)
+            mDictionary.Clear();
+            foreach (var arg in Initials)
             {
                 mDictionary.Add(arg.Name, arg);
             }
@@ -53,7 +46,7 @@ namespace RUtil.Debug.Shell
             return default;
         }
 
-        public UniTask FinalizeAsync(IUnishEnv env)
+        public UniTask FinalizeAsync()
         {
             mDictionary.Clear();
             return default;

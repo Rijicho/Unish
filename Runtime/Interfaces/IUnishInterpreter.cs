@@ -3,7 +3,7 @@ using Cysharp.Threading.Tasks;
 
 namespace RUtil.Debug.Shell
 {
-    public interface IUnishInterpreter : IUnishResource
+    public interface IUnishInterpreter : IUnishResourceWithEnv
     {
         IUnishCommandRepository Repository { get; }
         UniTask RunCommandAsync(IUnishPresenter shell, string cmd);

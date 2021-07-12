@@ -9,19 +9,17 @@ namespace RUtil.Debug.Shell
 {
     public class DefaultDirectoryRoot : IUnishDirectoryRoot
     {
+        public  IUnishEnv             GlobalEnv { protected get; set; }
         private IUnishDirectoryHome[] mDirectories;
         public  IUnishDirectoryHome   CurrentHome { get; private set; }
-
-        private IUnishEnv mEnv;
 
         public UnishDirectoryEntry Current => UnishDirectoryEntry.Create(
             CurrentHome?.HomeName ?? "",
             CurrentHome == null ? "" : CurrentHome.CurrentHomeRelativePath,
             true);
 
-        public async UniTask InitializeAsync(IUnishEnv env)
+        public async UniTask InitializeAsync()
         {
-            mEnv = env;
             mDirectories = new[]
             {
                 new RealFileSystem("PersistentData", Application.persistentDataPath),
@@ -29,25 +27,24 @@ namespace RUtil.Debug.Shell
 
             foreach (var d in mDirectories)
             {
-                await d.InitializeAsync(env);
+                await d.InitializeAsync(GlobalEnv);
             }
 
-            if (!env.ContainsKey(UnishBuiltInEnvKeys.HomePath))
+            if (!GlobalEnv.ContainsKey(UnishBuiltInEnvKeys.HomePath))
             {
-                env.Set(UnishBuiltInEnvKeys.HomePath, $"{UnishPathConstants.Root}{mDirectories[0].HomeName}");
+                GlobalEnv.Set(UnishBuiltInEnvKeys.HomePath, $"{UnishPathConstants.Root}{mDirectories[0].HomeName}");
             }
         }
 
-        public async UniTask FinalizeAsync(IUnishEnv env)
+        public async UniTask FinalizeAsync()
         {
             foreach (var d in mDirectories.Reverse())
             {
-                await d.FinalizeAsync(env);
+                await d.FinalizeAsync();
             }
 
             CurrentHome  = null;
             mDirectories = null;
-            mEnv         = null;
         }
 
         public bool TryFindEntry(string path, out UnishDirectoryEntry entry)
@@ -88,7 +85,7 @@ namespace RUtil.Debug.Shell
             if (entry.IsRoot)
             {
                 CurrentHome = default;
-                mEnv.Set(UnishBuiltInEnvKeys.WorkingDirectory, Current.FullPath);
+                GlobalEnv.Set(UnishBuiltInEnvKeys.WorkingDirectory, Current.FullPath);
                 return true;
             }
 

@@ -12,10 +12,12 @@ namespace RUtil.Debug.Shell
 {
     public class DefaultIO : IUnishIO
     {
+        public           IUnishEnv          GlobalEnv { protected get; set; }
         private const    string             SceneName = "UnishDefault";
         private readonly IUnishInputHandler mInputHandler;
         private readonly IUnishTimeProvider mTimeProvider;
         private readonly IUnishColorParser  mColorParser;
+        private readonly Font               mFont;
         private          Scene              loadedScene;
         private          Image              background;
         private          Text               text;
@@ -62,20 +64,33 @@ namespace RUtil.Debug.Shell
         }
 
 
-        public DefaultIO()
+        public DefaultIO() : this(
+            default,
+            new DefaultInputHandler(DefaultTimeProvider.Instance),
+            DefaultTimeProvider.Instance,
+            DefaultColorParser.Instance
+        )
         {
-            mTimeProvider = DefaultTimeProvider.Instance;
-            mInputHandler = new DefaultInputHandler(mTimeProvider);
-            mColorParser  = DefaultColorParser.Instance;
         }
 
-        public DefaultIO(IUnishInputHandler inputHandler, IUnishTimeProvider timeProvider)
+        public DefaultIO(Font font) : this(
+            font,
+            new DefaultInputHandler(DefaultTimeProvider.Instance),
+            DefaultTimeProvider.Instance,
+            DefaultColorParser.Instance
+        )
         {
+        }
+
+        public DefaultIO(Font font, IUnishInputHandler inputHandler, IUnishTimeProvider timeProvider, IUnishColorParser colorParser)
+        {
+            mFont         = font;
             mInputHandler = inputHandler;
             mTimeProvider = timeProvider;
+            mColorParser  = colorParser;
         }
 
-        public async UniTask InitializeAsync(IUnishEnv env)
+        public async UniTask InitializeAsync()
         {
             if (loadedScene.IsValid())
             {
@@ -90,6 +105,12 @@ namespace RUtil.Debug.Shell
             var component = loadedScene.GetRootGameObjects()[0].GetComponent<DefaultDisplay>();
             background = component.Background;
             text       = component.Text;
+            if (mFont)
+            {
+                text.font = mFont;
+            }
+
+            var env = GlobalEnv;
 
             if (!env.TryGet(UnishBuiltInEnvKeys.BgColor, out Color bgColor))
             {
@@ -112,34 +133,27 @@ namespace RUtil.Debug.Shell
             // 背景色設定
             BackgroundColor = bgColor;
 
-            // フォント設定
-            var font = await GetOrLoadFont();
-            if (font)
-            {
-                text.font = font;
-            }
-
             // 画面サイズ設定
             RefleshSize();
 
-            await mInputHandler.InitializeAsync(env);
+            await mInputHandler.InitializeAsync();
             env.OnSet     += OnEnvSet;
             env.OnRemoved += OnEnvRemoved;
 
             StartUpdate().Forget();
         }
 
-        public async UniTask FinalizeAsync(IUnishEnv env)
+        public async UniTask FinalizeAsync()
         {
             if (!loadedScene.IsValid())
             {
                 throw new Exception("Unish scene has not been loaded.");
             }
 
-            env.OnRemoved -= OnEnvRemoved;
-            env.OnSet     -= OnEnvSet;
+            GlobalEnv.OnRemoved -= OnEnvRemoved;
+            GlobalEnv.OnSet     -= OnEnvSet;
 
-            await mInputHandler.FinalizeAsync(env);
+            await mInputHandler.FinalizeAsync();
             await SceneManager.UnloadSceneAsync(loadedScene);
             text        = null;
             background  = null;
@@ -183,9 +197,14 @@ namespace RUtil.Debug.Shell
         }
 
 
-        public async UniTask<string> ReadAsync()
+        public async UniTask<string> ReadAsync(bool withPrompt)
         {
             mIsReading = true;
+            if (withPrompt)
+            {
+                await WriteAsync(ParsedPrompt);
+            }
+
             string ret = null;
             while (ret == null)
             {
@@ -196,13 +215,6 @@ namespace RUtil.Debug.Shell
             mIsReading = false;
             return ret;
         }
-
-
-        protected virtual UniTask<Font> GetOrLoadFont()
-        {
-            return UniTask.FromResult<Font>(default);
-        }
-
 
         private void OnEnvSet(UnishVariable envvar)
         {
@@ -476,6 +488,33 @@ namespace RUtil.Debug.Shell
                             .Take(Mathf.Min(mLineCount, mSubmittedLines.Count) - 1)
                             .ToSingleString("\n") + "\n" + mSubmittedLines.Last() +
                         (mIsReading ? inputWithCursor : "");
+        }
+
+
+        private string ParsedPrompt
+        {
+            get
+            {
+                var env    = GlobalEnv;
+                var prompt = env[UnishBuiltInEnvKeys.Prompt].S;
+                var pwd    = env[UnishBuiltInEnvKeys.WorkingDirectory].S;
+                if (!prompt.Contains("%d"))
+                {
+                    return prompt;
+                }
+
+                if (pwd == UnishPathConstants.Root)
+                {
+                    return prompt.Replace("%d", UnishPathConstants.Root);
+                }
+
+                if (UnishPathUtils.IsHomePath(pwd))
+                {
+                    return prompt.Replace("%d", UnishPathConstants.Home);
+                }
+
+                return prompt.Replace("%d", UnishPathUtils.GetEntryName(pwd));
+            }
         }
     }
 }

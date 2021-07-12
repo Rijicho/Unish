@@ -161,5 +161,15 @@ namespace RUtil.Debug.Shell
             nextHomeName = pathStack.Pop();
             return sb.ToString();
         }
+
+        public static bool IsHomePath(string fullPath)
+        {
+            return fullPath.IndexOf(Separator, 1) < 0;
+        }
+
+        public static string GetEntryName(string path)
+        {
+            return path.Substring(path.LastIndexOf(Separator) + 1);
+        }
     }
 }

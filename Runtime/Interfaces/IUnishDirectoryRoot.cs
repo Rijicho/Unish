@@ -3,7 +3,7 @@ using Cysharp.Threading.Tasks;
 
 namespace RUtil.Debug.Shell
 {
-    public interface IUnishDirectoryRoot : IUnishResource
+    public interface IUnishDirectoryRoot : IUnishResourceWithEnv
     {
         UnishDirectoryEntry Current     { get; }
         IUnishDirectoryHome CurrentHome { get; }

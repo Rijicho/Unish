@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class TestUnishCommandUtils
 {
-    private DefaultEnv env;
+    private ShellEnv env;
 
     [OneTimeSetUp]
     public void OneTimeSetUp()
@@ -14,7 +14,7 @@ public class TestUnishCommandUtils
     [SetUp]
     public void SetUp()
     {
-        env = new DefaultEnv();
+        env = new ShellEnv();
         env.Set("string", "hogefuga");
         env.Set("int", 10);
         env.Set("float", 3.14f);

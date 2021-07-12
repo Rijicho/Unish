@@ -70,7 +70,7 @@ namespace RUtil.Debug.Shell
 
         public UnishVariable(string name, IEnumerable<string> arr) : this(name, UnishVariableType.Array)
         {
-            Array = arr.ToArray();
+            Array = arr.Select(x => x ?? "").ToArray();
             S     = $"({Array.ToSingleString(" ")})";
         }
 

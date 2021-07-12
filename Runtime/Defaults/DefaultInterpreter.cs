@@ -8,22 +8,23 @@ namespace RUtil.Debug.Shell
 {
     public class DefaultInterpreter : IUnishInterpreter
     {
-        public IUnishCommandRepository     Repository { get; private set; }
-        public IDictionary<string, string> Aliases    { get; private set; }
+        public IUnishEnv                   GlobalEnv  { protected get; set; }
+        public IUnishCommandRepository     Repository { get;           private set; }
+        public IDictionary<string, string> Aliases    { get;           private set; }
 
         // ----------------------------------
         // public methods
         // ----------------------------------
-        public async UniTask InitializeAsync(IUnishEnv env)
+        public async UniTask InitializeAsync()
         {
             Repository = DefaultCommandRepository.Instance;
             Aliases    = new Dictionary<string, string>();
-            await Repository.InitializeAsync(env);
+            await Repository.InitializeAsync();
         }
 
-        public async UniTask FinalizeAsync(IUnishEnv env)
+        public async UniTask FinalizeAsync()
         {
-            await Repository.FinalizeAsync(env);
+            await Repository.FinalizeAsync();
             Aliases    = null;
             Repository = null;
         }
