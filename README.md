@@ -14,7 +14,7 @@ public class Test : MonoBehaviour
 {
     private void Start()
     {
-        new UnishRoot().RunAsync();
+        new Unish().Run();
     }
 }
 ```
@@ -31,13 +31,19 @@ public class Test : MonoBehaviour
 
     private void Start()
     {
-        new UnishRoot(
-            new GlobalEnv(),
-            new ShellEnv(),
-            new DefaultIO(font),
-            new DefaultInterpreter(),
-            new DefaultDirectoryRoot()
-        ).RunAsync();
+        new Unish(io: new DefaultIO(font)).Run();
     }
 }
 ```
+
+## Usage
+- `h` shows the brief help.
+- Input `lc -d` to show all commands in detail.
+- `q` closes the window.
+- Ctrl(Command)+Arrows scroll the window. 
+- Window size and font size can be changed by environment variables:
+  - UNISH_CHARCNT_PER_LINE
+  - UNISH_LINECNT
+  - UNISH_FONTSIZE
+- If you want to save the settings, please put .unishrc and .uprofile (like zsh's .zshrc and .zprofile) at `Application.PersistentDataPath`.
+  - The default home path can be changed by overriding Unish's directory system by script. 
