@@ -5,25 +5,25 @@ using System.Text;
 using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.Linq;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using Object = UnityEngine.Object;
 
 namespace RUtil.Debug.Shell
 {
     public class DefaultIO : IUnishIO
     {
         public           IUnishEnv          GlobalEnv { protected get; set; }
-        private const    string             SceneName = "UnishDefault";
+        private const    string             PrefabResourcePath = "Prefabs/Unish";
         private readonly IUnishInputHandler mInputHandler;
         private readonly IUnishTimeProvider mTimeProvider;
         private readonly IUnishColorParser  mColorParser;
         private readonly Font               mFont;
-        private          Scene              loadedScene;
         private          Image              background;
         private          Text               text;
         private          int                mCharCountPerLine;
         private          int                mLineCount;
         private          bool               mIsReading;
+        private          GameObject         mInstantiated;
 
         // 入力履歴
         private readonly List<string> mSubmittedInputs = new List<string>();
@@ -92,17 +92,14 @@ namespace RUtil.Debug.Shell
 
         public async UniTask InitializeAsync()
         {
-            if (loadedScene.IsValid())
-            {
-                throw new Exception("Unish scene has already been loaded.");
-            }
-
             mSubmittedLines.Clear();
             mSubmittedInputs.Clear();
 
-            await SceneManager.LoadSceneAsync(SceneName, LoadSceneMode.Additive);
-            loadedScene = SceneManager.GetSceneByName(SceneName);
-            var component = loadedScene.GetRootGameObjects()[0].GetComponent<DefaultDisplay>();
+            var prefab = await Resources.LoadAsync(PrefabResourcePath) as GameObject;
+            mInstantiated      = Object.Instantiate(prefab);
+            mInstantiated.name = "Unish";
+            Object.DontDestroyOnLoad(mInstantiated);
+            var component = mInstantiated.GetComponent<DefaultDisplay>();
             background = component.Background;
             text       = component.Text;
             if (mFont)
@@ -112,26 +109,11 @@ namespace RUtil.Debug.Shell
 
             var env = GlobalEnv;
 
-            if (!env.TryGet(UnishBuiltInEnvKeys.BgColor, out Color bgColor))
-            {
-                bgColor = mColorParser.Parse("#000000cc");
-                env.Set(UnishBuiltInEnvKeys.BgColor, bgColor);
-            }
+            BackgroundColor   = env.Get(UnishBuiltInEnvKeys.BgColor, mColorParser.Parse("#000000cc"));
+            mCharCountPerLine = env.Get(UnishBuiltInEnvKeys.CharCountPerLine, 100);
+            mLineCount        = env.Get(UnishBuiltInEnvKeys.LineCount, 24);
+            text.fontSize     = env.Get(UnishBuiltInEnvKeys.FontSize, 24);
 
-            if (!env.TryGet(UnishBuiltInEnvKeys.CharCountPerLine, out mCharCountPerLine))
-            {
-                mCharCountPerLine = 100;
-                env.Set(UnishBuiltInEnvKeys.CharCountPerLine, mCharCountPerLine);
-            }
-
-            if (!env.TryGet(UnishBuiltInEnvKeys.LineCount, out mLineCount))
-            {
-                mLineCount = 24;
-                env.Set(UnishBuiltInEnvKeys.LineCount, mLineCount);
-            }
-
-            // 背景色設定
-            BackgroundColor = bgColor;
 
             // 画面サイズ設定
             RefleshSize();
@@ -145,19 +127,13 @@ namespace RUtil.Debug.Shell
 
         public async UniTask FinalizeAsync()
         {
-            if (!loadedScene.IsValid())
-            {
-                throw new Exception("Unish scene has not been loaded.");
-            }
-
             GlobalEnv.OnRemoved -= OnEnvRemoved;
             GlobalEnv.OnSet     -= OnEnvSet;
 
             await mInputHandler.FinalizeAsync();
-            await SceneManager.UnloadSceneAsync(loadedScene);
-            text        = null;
-            background  = null;
-            loadedScene = default;
+            text       = null;
+            background = null;
+            Object.Destroy(mInstantiated);
         }
 
         public event Action OnHaltInput;
@@ -231,6 +207,10 @@ namespace RUtil.Debug.Shell
                     mLineCount = Mathf.Max(1, envvar.CastOr(24));
                     RefleshSize();
                     break;
+                case UnishBuiltInEnvKeys.FontSize:
+                    text.fontSize = envvar.CastOr(24);
+                    RefleshSize();
+                    break;
             }
         }
 
@@ -256,7 +236,7 @@ namespace RUtil.Debug.Shell
         {
             var prevText    = text.text;
             var placeHolder = new StringBuilder();
-            for (var i = 0; i < mLineCount; i++)
+            for (var i = 0; i < mLineCount - 1; i++)
             {
                 placeHolder.AppendLine(new string('0', mCharCountPerLine));
             }

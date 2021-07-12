@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace RUtil.Debug.Shell
 {
@@ -59,6 +60,93 @@ namespace RUtil.Debug.Shell
             env[key] = new UnishVariable(key, value);
         }
 
+        public static void Set(this IUnishEnv env, string key, IEnumerable<string> value)
+        {
+            env[key] = new UnishVariable(key, value);
+        }
+
+        public static string Get(this IUnishEnv env, string key, string defaultValue, bool updateEnv = false)
+        {
+            if (env.TryGet(key, out string value))
+            {
+                return value;
+            }
+
+            env.Set(key, defaultValue);
+            return defaultValue;
+        }
+        public static bool Get(this IUnishEnv env, string key, bool defaultValue, bool updateEnv = false)
+        {
+            if (env.TryGet(key, out bool value))
+            {
+                return value;
+            }
+
+            env.Set(key, defaultValue);
+            return defaultValue;
+        }
+        public static int Get(this IUnishEnv env, string key, int defaultValue, bool updateEnv = false)
+        {
+            if (env.TryGet(key, out int value))
+            {
+                return value;
+            }
+
+            env.Set(key, defaultValue);
+            return defaultValue;
+        }
+
+        public static float Get(this IUnishEnv env, string key, float defaultValue, bool updateEnv = false)
+        {
+            if (env.TryGet(key, out float value))
+            {
+                return value;
+            }
+
+            env.Set(key, defaultValue);
+            return defaultValue;
+        }
+        public static Vector2 Get(this IUnishEnv env, string key, Vector2 defaultValue, bool updateEnv = false)
+        {
+            if (env.TryGet(key, out Vector2 value))
+            {
+                return value;
+            }
+
+            env.Set(key, defaultValue);
+            return defaultValue;
+        }
+        
+        public static Vector3 Get(this IUnishEnv env, string key, Vector3 defaultValue, bool updateEnv = false)
+        {
+            if (env.TryGet(key, out Vector3 value))
+            {
+                return value;
+            }
+
+            env.Set(key, defaultValue);
+            return defaultValue;
+        }
+        public static Color Get(this IUnishEnv env, string key, Color defaultValue, bool updateEnv = false)
+        {
+            if (env.TryGet(key, out Color value))
+            {
+                return value;
+            }
+
+            env.Set(key, defaultValue);
+            return defaultValue;
+        }
+        public static string[] Get(this IUnishEnv env, string key, string[] defaultValue, bool updateEnv = false)
+        {
+            if (env.TryGet(key, out string[] value))
+            {
+                return value;
+            }
+
+            env.Set(key, defaultValue);
+            return defaultValue;
+        }
 
         public static bool TryGetValue(this IUnishEnv env, string key, UnishVariableType type, out UnishVariable value)
         {
@@ -158,6 +246,18 @@ namespace RUtil.Debug.Shell
             }
 
             value = tmp.C;
+            return true;
+        }
+        
+        public static bool TryGet(this IUnishEnv env, string key, out string[] value)
+        {
+            if (!env.TryGetValue(key, UnishVariableType.Array, out var tmp))
+            {
+                value = default;
+                return false;
+            }
+
+            value = tmp.Array;
             return true;
         }
     }

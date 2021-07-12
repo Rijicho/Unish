@@ -9,6 +9,7 @@
         public const string RcPath           = "UNISH_RC";
         public const string CharCountPerLine = "UNISH_CHARCNT_PER_LINE";
         public const string LineCount        = "UNISH_LINECNT";
+        public const string FontSize         = "UNISH_FONTSIZE";
         public const string BgColor          = "UNISH_BGCOLOR";
         public const string Quit             = "UNISH_QUIT";
     }
