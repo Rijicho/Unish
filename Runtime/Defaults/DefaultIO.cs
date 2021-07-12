@@ -12,18 +12,22 @@ namespace RUtil.Debug.Shell
 {
     public class DefaultIO : IUnishIO
     {
-        public           IUnishEnv          GlobalEnv { protected get; set; }
-        private const    string             PrefabResourcePath = "Prefabs/Unish";
+        private const string PrefabResourcePath = "Prefabs/Unish";
+
+        public IUnishEnv GlobalEnv { protected get; set; }
+        
+        private Image background;
+        private Text  displayText;
+
+        private readonly Font               mFont;
         private readonly IUnishInputHandler mInputHandler;
         private readonly IUnishTimeProvider mTimeProvider;
         private readonly IUnishColorParser  mColorParser;
-        private readonly Font               mFont;
-        private          Image              background;
-        private          Text               text;
-        private          int                mCharCountPerLine;
-        private          int                mLineCount;
-        private          bool               mIsReading;
-        private          GameObject         mInstantiated;
+
+        private int        mCharCountPerLine;
+        private int        mLineCount;
+        private bool       mIsReading;
+        private GameObject mInstantiated;
 
         // 入力履歴
         private readonly List<string> mSubmittedInputs = new List<string>();
@@ -33,7 +37,6 @@ namespace RUtil.Debug.Shell
 
         // 入力中文字列
         private string mInput = "";
-
 
         // 入力履歴参照先インデックス
         private int mReferenceIndex;
@@ -50,44 +53,16 @@ namespace RUtil.Debug.Shell
         // カーソルの点滅開始時刻
         private float mCursorBrinkStartTime;
 
-
-        private Color BackgroundColor
-        {
-            get => background ? background.color : Color.clear;
-            set
-            {
-                if (background)
-                {
-                    background.color = value;
-                }
-            }
-        }
-
-
-        public DefaultIO() : this(
-            default,
-            new DefaultInputHandler(DefaultTimeProvider.Instance),
-            DefaultTimeProvider.Instance,
-            DefaultColorParser.Instance
-        )
-        {
-        }
-
-        public DefaultIO(Font font) : this(
-            font,
-            new DefaultInputHandler(DefaultTimeProvider.Instance),
-            DefaultTimeProvider.Instance,
-            DefaultColorParser.Instance
-        )
-        {
-        }
-
-        public DefaultIO(Font font, IUnishInputHandler inputHandler, IUnishTimeProvider timeProvider, IUnishColorParser colorParser)
+        public DefaultIO(
+            Font font = default,
+            IUnishInputHandler inputHandler = default,
+            IUnishTimeProvider timeProvider = default,
+            IUnishColorParser colorParser = default)
         {
             mFont         = font;
-            mInputHandler = inputHandler;
-            mTimeProvider = timeProvider;
-            mColorParser  = colorParser;
+            mInputHandler = inputHandler ?? new DefaultInputHandler(DefaultTimeProvider.Instance);
+            mTimeProvider = timeProvider ?? DefaultTimeProvider.Instance;
+            mColorParser  = colorParser ?? DefaultColorParser.Instance;
         }
 
         public async UniTask InitializeAsync()
@@ -100,19 +75,19 @@ namespace RUtil.Debug.Shell
             mInstantiated.name = "Unish";
             Object.DontDestroyOnLoad(mInstantiated);
             var component = mInstantiated.GetComponent<DefaultDisplay>();
-            background = component.Background;
-            text       = component.Text;
+            background  = component.Background;
+            displayText = component.Text;
             if (mFont)
             {
-                text.font = mFont;
+                displayText.font = mFont;
             }
 
             var env = GlobalEnv;
 
-            BackgroundColor   = env.Get(UnishBuiltInEnvKeys.BgColor, mColorParser.Parse("#000000cc"));
-            mCharCountPerLine = env.Get(UnishBuiltInEnvKeys.CharCountPerLine, 100);
-            mLineCount        = env.Get(UnishBuiltInEnvKeys.LineCount, 24);
-            text.fontSize     = env.Get(UnishBuiltInEnvKeys.FontSize, 24);
+            background.color     = env.Get(UnishBuiltInEnvKeys.BgColor, mColorParser.Parse("#000000cc"));
+            mCharCountPerLine    = env.Get(UnishBuiltInEnvKeys.CharCountPerLine, 100);
+            mLineCount           = env.Get(UnishBuiltInEnvKeys.LineCount, 24);
+            displayText.fontSize = env.Get(UnishBuiltInEnvKeys.FontSize, 24);
 
 
             // 画面サイズ設定
@@ -131,8 +106,8 @@ namespace RUtil.Debug.Shell
             GlobalEnv.OnSet     -= OnEnvSet;
 
             await mInputHandler.FinalizeAsync();
-            text       = null;
-            background = null;
+            displayText = null;
+            background  = null;
             Object.Destroy(mInstantiated);
         }
 
@@ -197,7 +172,7 @@ namespace RUtil.Debug.Shell
             switch (envvar.Name)
             {
                 case UnishBuiltInEnvKeys.BgColor:
-                    BackgroundColor = envvar.CastOr(mColorParser.Parse("#000000cc"));
+                    background.color = envvar.CastOr(mColorParser.Parse("#000000cc"));
                     break;
                 case UnishBuiltInEnvKeys.CharCountPerLine:
                     mCharCountPerLine = Mathf.Max(20, envvar.CastOr(100));
@@ -208,7 +183,7 @@ namespace RUtil.Debug.Shell
                     RefleshSize();
                     break;
                 case UnishBuiltInEnvKeys.FontSize:
-                    text.fontSize = envvar.CastOr(24);
+                    displayText.fontSize = envvar.CastOr(24);
                     RefleshSize();
                     break;
             }
@@ -219,7 +194,7 @@ namespace RUtil.Debug.Shell
             switch (key)
             {
                 case UnishBuiltInEnvKeys.BgColor:
-                    BackgroundColor = mColorParser.Parse("#000000cc");
+                    background.color = mColorParser.Parse("#000000cc");
                     break;
                 case UnishBuiltInEnvKeys.CharCountPerLine:
                     mCharCountPerLine = 100;
@@ -234,7 +209,7 @@ namespace RUtil.Debug.Shell
 
         private void RefleshSize()
         {
-            var prevText    = text.text;
+            var prevText    = displayText.text;
             var placeHolder = new StringBuilder();
             for (var i = 0; i < mLineCount - 1; i++)
             {
@@ -242,10 +217,10 @@ namespace RUtil.Debug.Shell
             }
 
 
-            text.text                          = placeHolder.ToString();
-            text.rectTransform.sizeDelta       = new Vector2(text.preferredWidth, text.preferredHeight);
-            background.rectTransform.sizeDelta = new Vector2(text.preferredWidth + 20, text.preferredHeight + 20);
-            text.text                          = prevText;
+            displayText.text                    = placeHolder.ToString();
+            displayText.rectTransform.sizeDelta = new Vector2(displayText.preferredWidth, displayText.preferredHeight);
+            background.rectTransform.sizeDelta  = new Vector2(displayText.preferredWidth + 20, displayText.preferredHeight + 20);
+            displayText.text                    = prevText;
         }
 
         private async UniTaskVoid StartUpdate()
@@ -443,31 +418,31 @@ namespace RUtil.Debug.Shell
                       : $"<color=orange>{TagEscape(mInput.Substring(mInput.Length - mCursorIndex, 1))}</color>")
                   + TagEscape(mInput.Substring(mInput.Length - mCursorIndex + 1));
 
-            if (!text)
+            if (!displayText)
             {
                 return;
             }
 
             if (mSubmittedLines.Count == 0)
             {
-                text.text = mIsReading ? inputWithCursor : "";
+                displayText.text = mIsReading ? inputWithCursor : "";
                 return;
             }
 
             if (mDisplayLineOffset == 0)
             {
-                text.text = mSubmittedLines
-                                .Skip(mSubmittedLines.Count - mLineCount)
-                                .ToSingleString("\n") +
-                            (mIsReading ? inputWithCursor : "");
+                displayText.text = mSubmittedLines
+                                       .Skip(mSubmittedLines.Count - mLineCount)
+                                       .ToSingleString("\n") +
+                                   (mIsReading ? inputWithCursor : "");
                 return;
             }
 
-            text.text = mSubmittedLines
-                            .Skip(mSubmittedLines.Count - mLineCount - mDisplayLineOffset)
-                            .Take(Mathf.Min(mLineCount, mSubmittedLines.Count) - 1)
-                            .ToSingleString("\n") + "\n" + mSubmittedLines.Last() +
-                        (mIsReading ? inputWithCursor : "");
+            displayText.text = mSubmittedLines
+                                   .Skip(mSubmittedLines.Count - mLineCount - mDisplayLineOffset)
+                                   .Take(Mathf.Min(mLineCount, mSubmittedLines.Count) - 1)
+                                   .ToSingleString("\n") + "\n" + mSubmittedLines.Last() +
+                               (mIsReading ? inputWithCursor : "");
         }
 
 
