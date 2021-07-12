@@ -5,7 +5,7 @@ using Cysharp.Threading.Tasks;
 
 namespace RUtil.Debug.Shell
 {
-    public class CmdListUpCommand : UnishCommandBase
+    public class CmdListCommand : UnishCommandBase
     {
         public override string[] Ops { get; } =
         {
