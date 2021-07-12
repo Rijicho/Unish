@@ -5,6 +5,7 @@ using System.Text;
 using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.Linq;
 using UnityEngine;
+using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -209,14 +210,14 @@ namespace RUtil.Debug.Shell
             switch (envvar.Name)
             {
                 case UnishBuiltInEnvKeys.BgColor:
-                    BackgroundColor = envvar.C;
+                    BackgroundColor = envvar.CastOr(mColorParser.Parse("#000000cc"));
                     break;
                 case UnishBuiltInEnvKeys.CharCountPerLine:
-                    mCharCountPerLine = Mathf.Max(20, envvar.I);
+                    mCharCountPerLine = Mathf.Max(20, envvar.CastOr(100));
                     RefleshSize();
                     break;
                 case UnishBuiltInEnvKeys.LineCount:
-                    mLineCount = Mathf.Max(1, envvar.I);
+                    mLineCount = Mathf.Max(1, envvar.CastOr(24));
                     RefleshSize();
                     break;
             }

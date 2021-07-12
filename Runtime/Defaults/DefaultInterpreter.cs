@@ -64,14 +64,15 @@ namespace RUtil.Debug.Shell
 
             // シェル変数への代入命令は特別扱い
             var eqIdx = cmdToken.IndexOf('=');
-            if (eqIdx > 0 && eqIdx < cmdToken.Length-1)
+            if (eqIdx > 0 && eqIdx < cmdToken.Length - 1)
             {
                 var left  = cmdToken.Substring(0, eqIdx);
                 var right = cmdToken.Substring(eqIdx + 1);
+                right = UnishCommandUtils.RemoveQuotesIfExist(right);
                 shell.Env.Set(left, right);
                 return;
             }
-            
+
             // 対応するコマンドが存在すれば実行
             if (Repository.Map.TryGetValue(cmdToken, out var cmdInstance))
             {
@@ -90,7 +91,7 @@ namespace RUtil.Debug.Shell
 
                 return;
             }
-            
+
             // コマンドが見つからなかった場合の追加評価処理が定義されていれば実行
             if (!await TryRunUnknownCommand(cmd))
             {

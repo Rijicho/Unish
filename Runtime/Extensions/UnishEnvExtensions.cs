@@ -62,7 +62,19 @@ namespace RUtil.Debug.Shell
 
         public static bool TryGetValue(this IUnishEnv env, string key, UnishVariableType type, out UnishVariable value)
         {
-            return env.TryGetValue(key, out value) && value.Type == type;
+            if (!env.TryGetValue(key, out value))
+            {
+                return false;
+            }
+
+            if (value.Type == type)
+            {
+                return true;
+            }
+
+            var casted = new UnishVariable(value.Name, type, value.S);
+
+            return casted.Type == type;
         }
 
         public static bool TryGet(this IUnishEnv env, string key, out string value)

@@ -6,6 +6,17 @@ namespace RUtil.Debug.Shell
 {
     public static class UnishCommandUtils
     {
+        public static string RemoveQuotesIfExist(string token)
+        {
+            if ((token[0] == '"' && token[token.Length - 1] == '"')
+                || (token[0] == '\'' && token[token.Length - 1] == '\''))
+            {
+                return token.Substring(1, token.Length - 2);
+            }
+
+            return token;
+        }
+
         private static string ParseVariables(string input, IUnishEnv env, bool isInsideDoubleQuote)
         {
             if (string.IsNullOrWhiteSpace(input) || !input.Contains('$'))
@@ -170,12 +181,7 @@ namespace RUtil.Debug.Shell
             var ret = new List<string>();
             SplitCommand(input, ret);
 
-            return ret.Select(t =>
-                    (token: (t[0] == '"' && t[t.Length - 1] == '"') || (t[0] == '\'' && t[t.Length - 1] == '\'')
-                            ? t.Substring(1, t.Length - 2)
-                            : t,
-                        isOption: t[0] == '-')
-                )
+            return ret.Select(t => (token: RemoveQuotesIfExist(t), isOption: t[0] == '-'))
                 .ToList();
         }
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Codice.CM.SEIDInfo;
 using UnityEngine;
 
 namespace RUtil.Debug.Shell
@@ -52,13 +53,13 @@ namespace RUtil.Debug.Shell
 
         public UnishVariable(string name, Vector2 v2) : this(name, UnishVariableType.Vector2)
         {
-            S      = $"[{v2.x}, {v2.y}]";
+            S      = $"[{v2.x},{v2.y}]";
             this.V2 = v2;
         }
 
         public UnishVariable(string name, Vector3 v) : this(name, UnishVariableType.Vector3)
         {
-            S  = $"[{v.x}, {v.y}, {v.z}]";
+            S  = $"[{v.x},{v.y},{v.z}]";
             V3 = v;
         }
 
@@ -73,13 +74,6 @@ namespace RUtil.Debug.Shell
             this.Array = arr.ToArray();
             S          = $"({this.Array.ToSingleString(" ")})";
         }
-
-        public static UnishVariable Unit(string name)
-        {
-            return new UnishVariable(name, UnishVariableType.Unit, "<unit>");
-        }
-
-
         public UnishVariable(string name, UnishVariableType type, string input) : this(name, type)
         {
             S = input;
@@ -149,6 +143,52 @@ namespace RUtil.Debug.Shell
                     }
                     break;
             }
+        }
+
+        public static UnishVariable Unit(string name)
+        {
+            return new UnishVariable(name, UnishVariableType.Unit, "<unit>");
+        }
+
+        public bool TryCast(UnishVariableType targetType, out UnishVariable result)
+        {
+            if (Type == targetType)
+            {
+                result = this;
+                return true;
+            }
+            result = new UnishVariable(Name, targetType, S);
+            return result.Type == targetType;
+        }
+
+        public bool CastOr(bool defaultValue)
+        {
+            return TryCast(UnishVariableType.Bool, out var result) ? result.B : defaultValue;
+        }
+        public int CastOr(int defaultValue)
+        {
+            return TryCast(UnishVariableType.Int, out var result) ? result.I : defaultValue;
+        }
+        public float CastOr(float defaultValue)
+        {
+            return TryCast(UnishVariableType.Float, out var result) ? result.F : defaultValue;
+        }
+        public Vector2 CastOr(Vector2 defaultValue)
+        {
+            return TryCast(UnishVariableType.Vector2, out var result) ? result.V2 : defaultValue;
+        }
+        public Vector3 CastOr(Vector3 defaultValue)
+        {
+            return TryCast(UnishVariableType.Vector3, out var result) ? result.V3 : defaultValue;
+        }
+        public Color CastOr(Color defaultValue)
+        {
+            return TryCast(UnishVariableType.Color, out var result) ? result.C : defaultValue;
+        }
+
+        public string[] CastOr(string[] defaultValue)
+        {
+            return TryCast(UnishVariableType.Array, out var result) ? result.Array : defaultValue;
         }
 
         private static readonly string[] TrueStrings =
