@@ -29,7 +29,7 @@ namespace RUtil.Debug.Shell
             Repository = null;
         }
 
-        public async UniTask RunCommandAsync(IUnishPresenter shell, string cmd)
+        public async UniTask RunCommandAsync(IUniShell shell, string cmd)
         {
             if (string.IsNullOrWhiteSpace(cmd))
             {

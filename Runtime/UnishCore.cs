@@ -2,7 +2,7 @@
 
 namespace RUtil.Debug.Shell
 {
-    public class UnishCore : IUnishPresenter
+    public class UnishCore : IUniShell
     {
         // ----------------------------------
         // properties

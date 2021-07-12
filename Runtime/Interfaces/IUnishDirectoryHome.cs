@@ -4,7 +4,6 @@ using Cysharp.Threading.Tasks;
 namespace RUtil.Debug.Shell
 {
     public interface IUnishDirectoryHome : IUnishResourceWithEnv
-
     {
         /// <summary>
         ///     $"/{HomeName}" = "~"

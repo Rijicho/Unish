@@ -6,7 +6,7 @@ namespace RUtil.Debug.Shell
     public interface IUnishInterpreter : IUnishResourceWithEnv
     {
         IUnishCommandRepository Repository { get; }
-        UniTask RunCommandAsync(IUnishPresenter shell, string cmd);
+        UniTask RunCommandAsync(IUniShell shell, string cmd);
         IDictionary<string, string> Aliases { get; }
     }
 }

@@ -7,9 +7,4 @@ namespace RUtil.Debug.Shell
         UniTask InitializeAsync();
         UniTask FinalizeAsync();
     }
-
-    public interface IUnishResourceWithEnv : IUnishResource
-    {
-        IUnishEnv GlobalEnv { set; }
-    }
 }

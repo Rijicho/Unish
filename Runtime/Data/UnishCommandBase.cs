@@ -6,7 +6,7 @@ namespace RUtil.Debug.Shell
 {
     public abstract class UnishCommandBase
     {
-        private   IUnishPresenter     mShell;
+        private   IUniShell     mShell;
         protected IUnishEnv           EnvVars     { get; private set; }
         protected IUnishEnv           ShellVars   => mShell?.Env;
         protected IUnishIO            IO          => mShell?.IO;
@@ -39,7 +39,7 @@ namespace RUtil.Debug.Shell
             Dictionary<string, UnishVariable> args,
             Dictionary<string, UnishVariable> options);
 
-        public UniTask Run(IUnishPresenter shell,
+        public UniTask Run(IUniShell shell,
             Dictionary<string, UnishVariable> args,
             Dictionary<string, UnishVariable> options)
         {
