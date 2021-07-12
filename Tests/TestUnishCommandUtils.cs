@@ -83,6 +83,12 @@ public class TestUnishCommandUtils
         ("$bool$boolean", "truefalse"),
         ("$string piyo", "hogefuga piyo"),
         ("${string}piyo", "hogefugapiyo"),
+
+        // クォーテーション内の変数
+        ("\"$bool $boolean\"", "\"true false\""),
+        ("'$bool $boolean'", "'$bool $boolean'"),
+        ("'$bool\" $boolean'", "'$bool\" $boolean'"),
+        ("\"'$bool $boolean'\"", "\"'true false'\""),
     };
 
     [Test]

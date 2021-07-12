@@ -62,6 +62,16 @@ namespace RUtil.Debug.Shell
                 .Select(x => (x.isOption ? x.token.TrimStart('-') : x.token, x.isOption))
                 .ToArray();
 
+            // シェル変数への代入命令は特別扱い
+            var eqIdx = cmdToken.IndexOf('=');
+            if (eqIdx > 0 && eqIdx < cmdToken.Length-1)
+            {
+                var left  = cmdToken.Substring(0, eqIdx);
+                var right = cmdToken.Substring(eqIdx + 1);
+                shell.Env.Set(left, right);
+                return;
+            }
+            
             // 対応するコマンドが存在すれば実行
             if (Repository.Map.TryGetValue(cmdToken, out var cmdInstance))
             {
@@ -77,9 +87,12 @@ namespace RUtil.Debug.Shell
                 {
                     await shell.IO.WriteErrorAsync(e);
                 }
+
+                return;
             }
+            
             // コマンドが見つからなかった場合の追加評価処理が定義されていれば実行
-            else if (!await TryRunInvalidCommand(cmd))
+            if (!await TryRunUnknownCommand(cmd))
             {
                 await shell.IO.WriteErrorAsync(new Exception("Unknown Command. Enter 'h' to show help."));
             }
@@ -91,7 +104,7 @@ namespace RUtil.Debug.Shell
         // ----------------------------------
         // protected methods
         // ----------------------------------
-        protected virtual UniTask<bool> TryRunInvalidCommand(string cmd)
+        protected virtual UniTask<bool> TryRunUnknownCommand(string cmd)
         {
             return UniTask.FromResult(false);
         }
@@ -251,24 +264,6 @@ namespace RUtil.Debug.Shell
             dParams["-"] = new UnishVariable("-", assembledOptions);
 
             return (dParams, dOptions, true);
-        }
-
-        private bool TryPreParseCommand(IUnishCommandRepository repository, string cmd, out UnishCommandBase op, out string leading, out string trailing)
-        {
-            leading  = cmd;
-            trailing = "";
-            for (var i = 0; i < cmd.Length; i++)
-            {
-                if (cmd[i] == ' ')
-                {
-                    leading  = cmd.Substring(0, i);
-                    trailing = cmd.Substring(i + 1);
-                    break;
-                }
-            }
-
-            return repository.Map.TryGetValue(leading, out op)
-                   || repository.Map.TryGetValue("@" + leading, out op);
         }
     }
 }

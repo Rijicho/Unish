@@ -6,63 +6,148 @@ namespace RUtil.Debug.Shell
 {
     public static class UnishCommandUtils
     {
-        public static string ParseVariables(string input, IUnishEnv env)
+        private static string ParseVariables(string input, IUnishEnv env, bool isInsideDoubleQuote)
         {
+            if (string.IsNullOrWhiteSpace(input) || !input.Contains('$'))
+            {
+                return input;
+            }
+
             var sb          = new StringBuilder();
             var appendBegin = 0;
             for (var i = 0; i < input.Length; i++)
             {
                 var c = input[i];
-                if (c == '$' && i + 1 < input.Length && !char.IsWhiteSpace(input[i + 1]))
+
+                // シングルクォート内部
+                if (c == '\'')
                 {
-                    // ${x} 型
-                    if (input[i + 1] == '{' && i + 3 < input.Length)
+                    var endQuote = input.IndexOf('\'', i + 1);
+                    if (endQuote >= 0)
                     {
-                        sb.Append(input.Substring(appendBegin, i - appendBegin));
-                        var beginIdx = i + 2;
-                        var endIdx   = input.IndexOf('}', i + 3);
-                        if (endIdx < 0)
+                        // -----       
+                        //      a    i     e
+                        // $fuga hoge'$fuga'
+
+                        var insideQuote = input.Substring(i + 1, endQuote - i - 1);
+                        // 外側のダブルクォート内部ならパース
+                        if (isInsideDoubleQuote)
                         {
-                            continue;
+                            insideQuote = ParseVariables(insideQuote, env, true);
                         }
 
-                        var varname = input.Substring(beginIdx, endIdx - beginIdx);
-                        if (env.TryGetValue(varname, out var value))
-                        {
-                            sb.Append(value.S);
-                        }
-
-                        appendBegin = endIdx + 1;
-                        i           = appendBegin;
+                        // -----======
+                        //      a    i     e
+                        // $fuga hoge'$fuga'
+                        sb.Append(input.Substring(appendBegin, i - appendBegin + 1));
+                        // -----------=====
+                        //      a    i     e
+                        // $fuga hoge'$fuga'
+                        sb.Append(insideQuote);
+                        // ----------------
+                        //                 i=a
+                        // $fuga hoge'$fuga'
+                        i = appendBegin = endQuote;
                     }
-                    // $hoge 型
-                    else if (input[i + 1] != '{')
+
+                    continue;
+                }
+
+                // ダブルクォート内部は再帰呼び出しでパース（ダブルクォート内部にダブルクォートはない）
+                if (!isInsideDoubleQuote && c == '"')
+                {
+                    var endQuote = input.IndexOf('"', i + 1);
+                    if (endQuote >= 0)
                     {
-                        sb.Append(input.Substring(appendBegin, i - appendBegin));
-                        var beginIdx = ++i;
-                        c = input[i];
-                        while (!char.IsWhiteSpace(c) && c != '$' && i < input.Length)
-                        {
-                            if (++i < input.Length)
-                            {
-                                c = input[i];
-                            }
-                        }
+                        // -----       
+                        //      a    i     e
+                        // $fuga hoge"$fuga"
 
-                        var varname = beginIdx == i ? ""
-                            : i == input.Length ? input.Substring(beginIdx)
-                            : input.Substring(beginIdx, i - beginIdx);
+                        var insideQuote       = input.Substring(i + 1, endQuote - i - 1);
+                        var parsedInsideQuote = ParseVariables(insideQuote, env, true);
 
-                        if (env.TryGetValue(varname, out var value))
-                        {
-                            sb.Append(value.S);
-                        }
+                        // -----======
+                        //      a    i     e
+                        // $fuga hoge"$fuga"
+                        sb.Append(input.Substring(appendBegin, i - appendBegin + 1));
+                        // -----------=====
+                        //      a    i     e
+                        // $fuga hoge"$fuga"
+                        sb.Append(parsedInsideQuote);
+                        // ----------------
+                        //                 i=a
+                        // $fuga hoge"$fuga"
+                        i = appendBegin = endQuote;
+                    }
 
-                        appendBegin = i;
-                        if (c == '$')
+                    continue;
+                }
+
+                // $までスキップ
+                if (c != '$')
+                {
+                    continue;
+                }
+
+                // 終端の$は無視
+                if (i == input.Length - 1)
+                {
+                    break;
+                }
+
+                // $の次に空白がある場合は無視
+                if (char.IsWhiteSpace(input[i + 1]))
+                {
+                    continue;
+                }
+
+                // ${x} 型
+                if (input[i + 1] == '{' && i + 3 < input.Length)
+                {
+                    sb.Append(input.Substring(appendBegin, i - appendBegin));
+                    var beginIdx = i + 2;
+                    var endIdx   = input.IndexOf('}', i + 3);
+                    if (endIdx < 0)
+                    {
+                        continue;
+                    }
+
+                    var varname = input.Substring(beginIdx, endIdx - beginIdx);
+                    if (env.TryGetValue(varname, out var value))
+                    {
+                        sb.Append(value.S);
+                    }
+
+                    appendBegin = endIdx + 1;
+                    i           = appendBegin;
+                }
+                // $hoge 型
+                else if (input[i + 1] != '{')
+                {
+                    sb.Append(input.Substring(appendBegin, i - appendBegin));
+                    var beginIdx = ++i;
+                    c = input[i];
+                    while (!char.IsWhiteSpace(c) && c != '$' && i < input.Length)
+                    {
+                        if (++i < input.Length)
                         {
-                            i--;
+                            c = input[i];
                         }
+                    }
+
+                    var varname = beginIdx == i ? ""
+                        : i == input.Length ? input.Substring(beginIdx)
+                        : input.Substring(beginIdx, i - beginIdx);
+
+                    if (env.TryGetValue(varname, out var value))
+                    {
+                        sb.Append(value.S);
+                    }
+
+                    appendBegin = i;
+                    if (c == '$')
+                    {
+                        i--;
                     }
                 }
             }
@@ -73,6 +158,11 @@ namespace RUtil.Debug.Shell
             }
 
             return sb.ToString();
+        }
+
+        public static string ParseVariables(string input, IUnishEnv env)
+        {
+            return ParseVariables(input, env, false);
         }
 
         public static List<(string token, bool isOption)> SplitCommand(string input)
