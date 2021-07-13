@@ -16,10 +16,6 @@ namespace RUtil.Debug.Shell
 
         public static DefaultCommandRepository Instance => mInstance ??= new DefaultCommandRepository();
 
-        public IReadOnlyList<UnishCommandBase> Commands => mCommands;
-
-        private readonly List<UnishCommandBase> mCommands = new List<UnishCommandBase>();
-
         public IReadOnlyDictionary<string, UnishCommandBase> Map => mMap;
 
         private readonly Dictionary<string, UnishCommandBase> mMap = new Dictionary<string, UnishCommandBase>();
@@ -35,7 +31,6 @@ namespace RUtil.Debug.Shell
         public UniTask InitializeAsync()
         {
             mMap.Clear();
-            mCommands.Clear();
 
             if (mCommandTypesCache == null)
             {
@@ -49,7 +44,6 @@ namespace RUtil.Debug.Shell
             foreach (var t in mCommandTypesCache)
             {
                 var instance = Activator.CreateInstance(t) as UnishCommandBase;
-                mCommands.Add(instance);
                 foreach (var op in instance.Ops)
                 {
                     mMap[op] = instance;

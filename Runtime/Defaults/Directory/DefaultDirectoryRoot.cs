@@ -9,7 +9,7 @@ namespace RUtil.Debug.Shell
 {
     public class DefaultDirectoryRoot : IUnishDirectoryRoot
     {
-        public  IUnishEnv             GlobalEnv { protected get; set; }
+        public  IUnishEnv             BuiltInEnv { protected get; set; }
         private IUnishDirectoryHome[] mDirectories;
         public  IUnishDirectoryHome   CurrentHome { get; private set; }
 
@@ -27,12 +27,12 @@ namespace RUtil.Debug.Shell
 
             foreach (var d in mDirectories)
             {
-                await d.InitializeAsync(GlobalEnv);
+                await d.InitializeAsync(BuiltInEnv);
             }
 
-            if (!GlobalEnv.ContainsKey(UnishBuiltInEnvKeys.HomePath))
+            if (!BuiltInEnv.ContainsKey(UnishBuiltInEnvKeys.HomePath))
             {
-                GlobalEnv.Set(UnishBuiltInEnvKeys.HomePath, $"{UnishPathConstants.Root}{mDirectories[0].HomeName}");
+                BuiltInEnv.Set(UnishBuiltInEnvKeys.HomePath, $"{UnishPathConstants.Root}{mDirectories[0].HomeName}");
             }
         }
 
@@ -85,7 +85,7 @@ namespace RUtil.Debug.Shell
             if (entry.IsRoot)
             {
                 CurrentHome = default;
-                GlobalEnv.Set(UnishBuiltInEnvKeys.WorkingDirectory, Current.FullPath);
+                BuiltInEnv.Set(UnishBuiltInEnvKeys.WorkingDirectory, Current.FullPath);
                 return true;
             }
 

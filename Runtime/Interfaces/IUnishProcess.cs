@@ -1,10 +1,11 @@
-﻿using Cysharp.Threading.Tasks;
-
-namespace RUtil.Debug.Shell
+﻿namespace RUtil.Debug.Shell
 {
     public interface IUnishProcess
     {
-        IUnishProcess Parent { get; }
-        void Halt();
+        UnishEnvSet         Env         { get; }
+        IUnishIO            IO          { get; }
+        IUnishInterpreter   Interpreter { get; }
+        IUnishDirectoryRoot Directory   { get; }
+        IUnishProcess Fork(IUnishIO io);
     }
 }

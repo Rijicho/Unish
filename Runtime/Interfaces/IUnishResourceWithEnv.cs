@@ -2,6 +2,6 @@
 {
     public interface IUnishResourceWithEnv : IUnishResource
     {
-        IUnishEnv GlobalEnv { set; }
+        IUnishEnv BuiltInEnv { set; }
     }
 }

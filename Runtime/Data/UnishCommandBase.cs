@@ -6,14 +6,13 @@ namespace RUtil.Debug.Shell
 {
     public abstract class UnishCommandBase
     {
-        private   IUniShell     mShell;
-        protected IUnishEnv           EnvVars     { get; private set; }
-        protected IUnishEnv           ShellVars   => mShell?.Env;
-        protected IUnishIO            IO          => mShell?.IO;
-        protected IUnishDirectoryRoot Directory   => mShell?.Directory;
-        protected IUnishInterpreter   Interpreter => mShell?.Interpreter;
-
-        public abstract string[] Ops { get; }
+        private          IUnishProcess       mShell;
+        protected        UnishEnvSet         Env         => mShell?.Env;
+        protected        IUnishIO            IO          => mShell?.IO;
+        protected        IUnishDirectoryRoot Directory   => mShell?.Directory;
+        protected        IUnishInterpreter   Interpreter => mShell?.Interpreter;
+        internal virtual bool                IsBuiltIn   => false;
+        public abstract  string[]            Ops         { get; }
 
         public virtual string[] Aliases { get; } =
         {
@@ -39,28 +38,11 @@ namespace RUtil.Debug.Shell
             Dictionary<string, UnishVariable> args,
             Dictionary<string, UnishVariable> options);
 
-        public UniTask Run(IUniShell shell,
+        public UniTask Run(IUnishProcess shell,
             Dictionary<string, UnishVariable> args,
             Dictionary<string, UnishVariable> options)
         {
-            mShell  = shell;
-            EnvVars = shell.GetGlobalEnv();
-            foreach (var e in EnvVars)
-            {
-                if (!args.ContainsKey(e.Key))
-                {
-                    args[e.Key] = e.Value;
-                }
-            }
-
-            foreach (var e in ShellVars)
-            {
-                if (!args.ContainsKey(e.Key))
-                {
-                    args[e.Key] = e.Value;
-                }
-            }
-
+            mShell = shell;
             return Run(args, options);
         }
 

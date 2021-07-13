@@ -9,7 +9,7 @@ namespace RUtil.Debug.Shell
 {
     public class RealFileSystem : IUnishRealFileSystem
     {
-        public IUnishEnv GlobalEnv               { protected get; set; }
+        public IUnishEnv BuiltInEnv              { protected get; set; }
         public string    HomeName                { get; }
         public string    RealHomePath            { get; }
         public string    CurrentHomeRelativePath { get; private set; }
@@ -59,7 +59,7 @@ namespace RUtil.Debug.Shell
             }
 
             CurrentHomeRelativePath = homeRelativePath;
-            GlobalEnv.Set(UnishBuiltInEnvKeys.WorkingDirectory, $"{UnishPathConstants.Root}{HomeName}{CurrentHomeRelativePath}");
+            BuiltInEnv.Set(UnishBuiltInEnvKeys.WorkingDirectory, $"{UnishPathConstants.Root}{HomeName}{CurrentHomeRelativePath}");
             return true;
         }
 

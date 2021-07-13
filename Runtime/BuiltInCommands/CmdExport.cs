@@ -5,6 +5,8 @@ namespace RUtil.Debug.Shell
 {
     internal class CmdExport : UnishCommandBase
     {
+        internal override bool IsBuiltIn => true;
+
         public override string[] Ops { get; } =
         {
             "export",
@@ -26,13 +28,29 @@ namespace RUtil.Debug.Shell
 
             if (UnishCommandUtils.TryParseSetVarExpr(input, out var varname, out var value))
             {
-                EnvVars.Set(varname, value);
+                if (Env.BuiltIn.ContainsKey(varname))
+                {
+                    Env.BuiltIn.Set(varname, value);
+                }
+                else
+                {
+                    Env.Environment.Set(varname, value);
+                }
+
                 return default;
             }
 
-            if (ShellVars.TryGetValue(input, out var val))
+            if (Env.Shell.TryGetValue(input, out var val))
             {
-                EnvVars[input] = val;
+                if (Env.BuiltIn.ContainsKey(input))
+                {
+                    Env.BuiltIn[input] = val;
+                }
+                else
+                {
+                    Env.Environment[input] = val;
+                }
+
                 return default;
             }
 

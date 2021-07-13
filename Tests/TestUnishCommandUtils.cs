@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class TestUnishCommandUtils
 {
-    private ShellEnv env;
+    private UnishEnvSet env;
 
     [OneTimeSetUp]
     public void OneTimeSetUp()
@@ -14,15 +14,15 @@ public class TestUnishCommandUtils
     [SetUp]
     public void SetUp()
     {
-        env = new ShellEnv();
-        env.Set("string", "hogefuga");
-        env.Set("int", 10);
-        env.Set("float", 3.14f);
-        env.Set("bool", true);
-        env.Set("boolean", false);
-        env.Set("v2", new Vector2(1, 0.5f));
-        env.Set("v3", new Vector3(1, 2, 3.4f));
-        env.Set("color", new Color32(0xff, 0x12, 0x34, 0x56));
+        env = new UnishEnvSet(new BuiltinEnv(), new GlobalEnv(), new ShellEnv());
+        env.Shell.Set("string", "hogefuga");
+        env.Shell.Set("int", 10);
+        env.Shell.Set("float", 3.14f);
+        env.Shell.Set("bool", true);
+        env.Shell.Set("boolean", false);
+        env.Shell.Set("v2", new Vector2(1, 0.5f));
+        env.Shell.Set("v3", new Vector3(1, 2, 3.4f));
+        env.Shell.Set("color", new Color32(0xff, 0x12, 0x34, 0x56));
     }
 
     [TearDown]
@@ -60,15 +60,15 @@ public class TestUnishCommandUtils
         ("$int", "10"),
         ("$float", "3.14"),
         ("$bool", "true"),
-        ("$v2", "[1, 0.5]"),
-        ("$v3", "[1, 2, 3.4]"),
+        ("$v2", "[1,0.5]"),
+        ("$v3", "[1,2,3.4]"),
         ("$color", "#FF123456"),
         ("${string}", "hogefuga"),
         ("${int}", "10"),
         ("${float}", "3.14"),
         ("${bool}", "true"),
-        ("${v2}", "[1, 0.5]"),
-        ("${v3}", "[1, 2, 3.4]"),
+        ("${v2}", "[1,0.5]"),
+        ("${v3}", "[1,2,3.4]"),
         ("${color}", "#FF123456"),
 
         // 存在する変数名から始まる存在しない変数

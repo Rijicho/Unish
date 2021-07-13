@@ -11,10 +11,10 @@ namespace RUtil.Debug.Shell
 
     public class DynamicIO : IUnishIO
     {
-        public IUnishEnv   GlobalEnv { get; set; }
-        public UnishStdIn  In        { get; private set; }
-        public UnishStdOut Out       { get; private set; }
-        public UnishStdErr Err       { get; private set; }
+        public IUnishEnv   BuiltInEnv { get; set; }
+        public UnishStdIn  In         { get; private set; }
+        public UnishStdOut Out        { get; private set; }
+        public UnishStdErr Err        { get; private set; }
 
         public DynamicIO(UnishStdIn stdin, UnishStdOut stdout, UnishStdErr stderr)
         {

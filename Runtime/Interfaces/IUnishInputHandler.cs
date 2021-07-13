@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace RUtil.Debug.Shell
+﻿namespace RUtil.Debug.Shell
 {
     public interface IUnishInputHandler : IUnishResource
     {

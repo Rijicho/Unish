@@ -39,11 +39,11 @@ namespace RUtil.Debug.Shell
 
             if (options.ContainsKey("s") && options["s"].S == "name")
             {
-                ls = Interpreter.Repository.Map.OrderBy(x => x.Key);
+                ls = Interpreter.Commands.OrderBy(x => x.Key);
             }
             else
             {
-                ls = Interpreter.Repository.Map;
+                ls = Interpreter.Commands;
             }
 
             foreach (var c in ls)

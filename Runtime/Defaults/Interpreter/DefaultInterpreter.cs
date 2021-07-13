@@ -8,28 +8,29 @@ namespace RUtil.Debug.Shell
 {
     public class DefaultInterpreter : IUnishInterpreter
     {
-        public IUnishEnv                   GlobalEnv  { protected get; set; }
-        public IUnishCommandRepository     Repository { get;           private set; }
-        public IDictionary<string, string> Aliases    { get;           private set; }
+        public  IUnishEnv                                     BuiltInEnv { protected get; set; }
+        public  IDictionary<string, string>                   Aliases    { get;           private set; }
+        public  IReadOnlyDictionary<string, UnishCommandBase> Commands   => mRepository.Map;
+        private IUnishCommandRepository                       mRepository;
 
         // ----------------------------------
         // public methods
         // ----------------------------------
         public async UniTask InitializeAsync()
         {
-            Repository = DefaultCommandRepository.Instance;
-            Aliases    = new Dictionary<string, string>();
-            await Repository.InitializeAsync();
+            mRepository = DefaultCommandRepository.Instance;
+            Aliases     = new Dictionary<string, string>();
+            await mRepository.InitializeAsync();
         }
 
         public async UniTask FinalizeAsync()
         {
-            await Repository.FinalizeAsync();
-            Aliases    = null;
-            Repository = null;
+            await mRepository.FinalizeAsync();
+            Aliases     = null;
+            mRepository = null;
         }
 
-        public async UniTask RunCommandAsync(IUniShell shell, string cmd)
+        public async UniTask RunCommandAsync(IUnishProcess shell, string cmd)
         {
             if (string.IsNullOrWhiteSpace(cmd))
             {
@@ -70,19 +71,29 @@ namespace RUtil.Debug.Shell
                 var left  = cmdToken.Substring(0, eqIdx);
                 var right = cmdToken.Substring(eqIdx + 1);
                 right = UnishCommandUtils.RemoveQuotesIfExist(right);
-                shell.Env.Set(left, right);
+                if (shell.Env.BuiltIn.ContainsKey(left))
+                {
+                    shell.Env.BuiltIn.Set(left, right);
+                }
+                else
+                {
+                    shell.Env.Shell.Set(left, right);
+                }
+
                 return;
             }
 
             // 対応するコマンドが存在すれば実行
-            if (Repository.Map.TryGetValue(cmdToken, out var cmdInstance))
+            if (mRepository.Map.TryGetValue(cmdToken, out var cmdInstance))
             {
                 try
                 {
                     var (parsedParams, parsedOptions, isSucceeded) = await ParseArguments(shell.IO, cmdInstance, cmdToken, arguments);
                     if (isSucceeded)
                     {
-                        await cmdInstance.Run(shell, parsedParams, parsedOptions);
+                        //TODO: リダイレクトなどに応じてIO差し替え
+                        var runnerShell = cmdInstance.IsBuiltIn ? shell : shell.Fork(shell.IO);
+                        await cmdInstance.Run(runnerShell, parsedParams, parsedOptions);
                     }
                 }
                 catch (Exception e)

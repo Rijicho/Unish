@@ -2,13 +2,13 @@
 
 namespace RUtil.Debug.Shell
 {
-    public class UnishCore : IUniShell
+    public class UnishCore : IUniShell, IUnishProcess
     {
         // ----------------------------------
         // properties
         // ----------------------------------
         public IUnishProcess       Parent      { get; }
-        public IUnishEnv           Env         { get; }
+        public UnishEnvSet         Env         { get; }
         public IUnishIO            IO          { get; }
         public IUnishInterpreter   Interpreter { get; }
         public IUnishDirectoryRoot Directory   { get; }
@@ -16,7 +16,7 @@ namespace RUtil.Debug.Shell
         // ----------------------------------
         // public methods
         // ----------------------------------
-        public UnishCore(IUnishEnv env, IUnishIO io, IUnishInterpreter interpreter, IUnishDirectoryRoot directory, IUnishProcess parent)
+        public UnishCore(UnishEnvSet env, IUnishIO io, IUnishInterpreter interpreter, IUnishDirectoryRoot directory, IUnishProcess parent)
         {
             Env         = env;
             IO          = io;
@@ -27,22 +27,20 @@ namespace RUtil.Debug.Shell
 
         public async UniTask RunAsync()
         {
-            var env    = this.GetGlobalEnv();
-            var prompt = Parent is IUnishRoot;
-            while (!env[UnishBuiltInEnvKeys.Quit].CastOr(false))
+            while (!Env.BuiltIn[UnishBuiltInEnvKeys.Quit].CastOr(false))
             {
-                await Interpreter.RunCommandAsync(this, await IO.ReadAsync(prompt));
+                await Interpreter.RunCommandAsync(this, await IO.ReadAsync(Parent is null));
             }
         }
 
-        public UnishCore Fork(IUnishEnv env, IUnishIO io)
+        public IUnishProcess Fork(IUnishIO io)
         {
-            return new UnishCore(env, io, Interpreter, Directory, this);
+            return new UnishCore(Env.Fork(), io, Interpreter, Directory, this);
         }
 
         public void Halt()
         {
-            this.GetGlobalEnv().Set(UnishBuiltInEnvKeys.Quit, true);
+            Env.BuiltIn.Set(UnishBuiltInEnvKeys.Quit, true);
         }
     }
 }

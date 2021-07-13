@@ -10,8 +10,7 @@ namespace RUtil.Debug.Shell
 
         UnishVariable this[string key] { get; set; }
 
-        IEnumerable<string>        Keys   { get; }
-        IEnumerable<UnishVariable> Values { get; }
+        IEnumerable<string> Keys { get; }
 
         bool ContainsKey(string key);
 
@@ -20,5 +19,7 @@ namespace RUtil.Debug.Shell
         int Count { get; }
 
         void Remove(string key);
+
+        IUnishEnv Fork();
     }
 }

@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Cysharp.Threading.Tasks;
 
 namespace RUtil.Debug.Shell
 {
     internal class CmdAlias : UnishCommandBase
     {
+        internal override bool IsBuiltIn => true;
+
         public override string[] Ops { get; } =
         {
             "alias",
@@ -66,7 +67,7 @@ namespace RUtil.Debug.Shell
                 return;
             }
 
-            if (Interpreter.Repository.Commands.Count(x => x.Ops.Contains(alias)) > 0)
+            if (Interpreter.Commands.ContainsKey(alias))
             {
                 await IO.WriteErrorAsync(new Exception($"The command {alias} already exists."));
                 return;

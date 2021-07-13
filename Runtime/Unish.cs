@@ -2,35 +2,30 @@
 
 namespace RUtil.Debug.Shell
 {
-    public class Unish : IUnishRoot
+    public class Unish
     {
-        public IUnishProcess       Parent      => null;
-        public IUnishEnv           GlobalEnv   { get; private set; }
-        public IUnishEnv           Env         { get; private set; }
-        public IUnishIO            IO          { get; private set; }
-        public IUnishInterpreter   Interpreter { get; private set; }
-        public IUnishDirectoryRoot Directory   { get; private set; }
-
-        private IUniShell mMainShell;
-        private bool      mIsUprofileExecuted;
+        private UnishEnvSet         mEnv;
+        private IUnishIO            mIO;
+        private IUnishInterpreter   mInterpreter;
+        private IUnishDirectoryRoot mDirectory;
+        private IUniShell           mMainShell;
+        private bool                mIsUprofileExecuted;
 
         // ----------------------------------
         // public methods
         // ----------------------------------
 
         public Unish(
-            IUnishEnv globalEnv = default,
-            IUnishEnv shellEnv = default,
+            UnishEnvSet env = default,
             IUnishIO io = default,
             IUnishInterpreter interpreter = default,
             IUnishDirectoryRoot directory = default)
         {
-            GlobalEnv   = globalEnv ?? new GlobalEnv();
-            Env         = shellEnv ?? new ShellEnv();
-            IO          = io ?? new DefaultIO();
-            Interpreter = interpreter ?? new DefaultInterpreter();
-            Directory   = directory ?? new DefaultDirectoryRoot();
-            mMainShell  = new UnishCore(Env, IO, Interpreter, Directory, this);
+            mEnv         = env ?? new UnishEnvSet(new BuiltinEnv(), new GlobalEnv(), new ShellEnv());
+            mIO          = io ?? new DefaultIO();
+            mInterpreter = interpreter ?? new DefaultInterpreter();
+            mDirectory   = directory ?? new DefaultDirectoryRoot();
+            mMainShell   = new UnishCore(mEnv, mIO, mInterpreter, mDirectory, null);
         }
 
         public void Run()
@@ -84,69 +79,65 @@ namespace RUtil.Debug.Shell
         private async UniTask Init()
         {
             await OnPreInitAsync();
-            await GlobalEnv.InitializeAsync();
-            await Env.InitializeAsync();
-            IO.GlobalEnv = GlobalEnv;
-            await IO.InitializeAsync();
-            IO.OnHaltInput      += Halt;
-            Directory.GlobalEnv =  GlobalEnv;
-            await Directory.InitializeAsync();
-            Interpreter.GlobalEnv = GlobalEnv;
-            await Interpreter.InitializeAsync();
-
-            if (GlobalEnv.TryGetValue(UnishBuiltInEnvKeys.HomePath, out var homePath))
-            {
-                Directory.TryChangeDirectory(homePath.S);
-            }
-
+            await mEnv.InitializeAsync();
+            await mIO.InitializeAsync(mEnv.BuiltIn);
+            mIO.OnHaltInput += Halt;
+            await mDirectory.InitializeAsync(mEnv.BuiltIn);
+            await mInterpreter.InitializeAsync(mEnv.BuiltIn);
+            await RunBuiltInProfile();
+            await RunUserProfiles();
             await OnPostInitAsync();
-            await RunInitialScripts();
         }
 
         private async UniTask Quit()
         {
             await OnPreQuitAsync();
-            await Interpreter.FinalizeAsync();
-            Interpreter.GlobalEnv = null;
-            await Directory.FinalizeAsync();
-            Directory.GlobalEnv =  null;
-            IO.OnHaltInput      -= Halt;
-            await IO.FinalizeAsync();
-            IO.GlobalEnv = null;
-            await Env.FinalizeAsync();
-            await GlobalEnv.FinalizeAsync();
-            GlobalEnv   = null;
-            Env         = null;
-            Directory   = null;
-            IO          = null;
-            Interpreter = null;
-            mMainShell  = null;
+            await mInterpreter.FinalizeAsync();
+            await mDirectory.FinalizeAsync();
+            mIO.OnHaltInput -= Halt;
+            await mIO.FinalizeAsync();
+            await mEnv.FinalizeAsync();
+            mEnv         = null;
+            mDirectory   = null;
+            mIO          = null;
+            mInterpreter = null;
+            mMainShell   = null;
             await OnPostQuitAsync();
         }
 
-
-        private async UniTask RunInitialScripts()
+        protected virtual UniTask RunBuiltInProfile()
         {
-            var profile = GlobalEnv[UnishBuiltInEnvKeys.ProfilePath].S;
-            var rc      = GlobalEnv[UnishBuiltInEnvKeys.RcPath].S;
+            if (mEnv.BuiltIn.TryGet(UnishBuiltInEnvKeys.HomePath, out string homePath))
+            {
+                mDirectory.TryChangeDirectory(homePath);
+            }
+
+            return default;
+        }
+
+
+        private async UniTask RunUserProfiles()
+        {
+            var profile = mEnv.BuiltIn[UnishBuiltInEnvKeys.ProfilePath].S;
+            var rc      = mEnv.BuiltIn[UnishBuiltInEnvKeys.RcPath].S;
             if (!mIsUprofileExecuted)
             {
-                if (Directory.TryFindEntry(profile, out _))
+                if (mDirectory.TryFindEntry(profile, out _))
                 {
-                    await foreach (var c in Directory.ReadLines(profile))
+                    await foreach (var c in mDirectory.ReadLines(profile))
                     {
-                        await Interpreter.RunCommandAsync(mMainShell, c);
+                        await mInterpreter.RunCommandAsync(mMainShell, c);
                     }
                 }
 
                 mIsUprofileExecuted = true;
             }
 
-            if (Directory.TryFindEntry(rc, out _))
+            if (mDirectory.TryFindEntry(rc, out _))
             {
-                await foreach (var c in Directory.ReadLines(rc))
+                await foreach (var c in mDirectory.ReadLines(rc))
                 {
-                    await Interpreter.RunCommandAsync(mMainShell, c);
+                    await mInterpreter.RunCommandAsync(mMainShell, c);
                 }
             }
         }

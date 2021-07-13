@@ -4,9 +4,9 @@ namespace RUtil.Debug.Shell
 {
     public static class UnishResourceWithEnvExtensions
     {
-        public static UniTask InitializeAsync(this IUnishResourceWithEnv resource, IUnishEnv globalEnv)
+        public static UniTask InitializeAsync(this IUnishResourceWithEnv resource, IUnishEnv builtInEnv)
         {
-            resource.GlobalEnv = globalEnv;
+            resource.BuiltInEnv = builtInEnv;
             return resource.InitializeAsync();
         }
     }

@@ -14,8 +14,8 @@ namespace RUtil.Debug.Shell
     {
         private const string PrefabResourcePath = "Prefabs/Unish";
 
-        public IUnishEnv GlobalEnv { protected get; set; }
-        
+        public IUnishEnv BuiltInEnv { protected get; set; }
+
         private Image background;
         private Text  displayText;
 
@@ -82,28 +82,26 @@ namespace RUtil.Debug.Shell
                 displayText.font = mFont;
             }
 
-            var env = GlobalEnv;
-
-            background.color     = env.Get(UnishBuiltInEnvKeys.BgColor, mColorParser.Parse("#000000cc"));
-            mCharCountPerLine    = env.Get(UnishBuiltInEnvKeys.CharCountPerLine, 100);
-            mLineCount           = env.Get(UnishBuiltInEnvKeys.LineCount, 24);
-            displayText.fontSize = env.Get(UnishBuiltInEnvKeys.FontSize, 24);
+            background.color     = BuiltInEnv.Get(UnishBuiltInEnvKeys.BgColor, mColorParser.Parse("#000000cc"));
+            mCharCountPerLine    = BuiltInEnv.Get(UnishBuiltInEnvKeys.CharCountPerLine, 100);
+            mLineCount           = BuiltInEnv.Get(UnishBuiltInEnvKeys.LineCount, 24);
+            displayText.fontSize = BuiltInEnv.Get(UnishBuiltInEnvKeys.FontSize, 24);
 
 
             // 画面サイズ設定
             RefleshSize();
 
             await mInputHandler.InitializeAsync();
-            env.OnSet     += OnEnvSet;
-            env.OnRemoved += OnEnvRemoved;
+            BuiltInEnv.OnSet     += OnEnvSet;
+            BuiltInEnv.OnRemoved += OnEnvRemoved;
 
             StartUpdate().Forget();
         }
 
         public async UniTask FinalizeAsync()
         {
-            GlobalEnv.OnRemoved -= OnEnvRemoved;
-            GlobalEnv.OnSet     -= OnEnvSet;
+            BuiltInEnv.OnRemoved -= OnEnvRemoved;
+            BuiltInEnv.OnSet     -= OnEnvSet;
 
             await mInputHandler.FinalizeAsync();
             displayText = null;
@@ -450,9 +448,8 @@ namespace RUtil.Debug.Shell
         {
             get
             {
-                var env    = GlobalEnv;
-                var prompt = env[UnishBuiltInEnvKeys.Prompt].S;
-                var pwd    = env[UnishBuiltInEnvKeys.WorkingDirectory].S;
+                var prompt = BuiltInEnv[UnishBuiltInEnvKeys.Prompt].S;
+                var pwd    = BuiltInEnv[UnishBuiltInEnvKeys.WorkingDirectory].S;
                 if (!prompt.Contains("%d"))
                 {
                     return prompt;

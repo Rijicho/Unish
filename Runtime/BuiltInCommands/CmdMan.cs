@@ -20,12 +20,12 @@ namespace RUtil.Debug.Shell
             Dictionary<string, UnishVariable> args,
             Dictionary<string, UnishVariable> options)
         {
-            if (Interpreter.Repository.Map.TryGetValue(args["op"].S, out var c))
+            if (Interpreter.Commands.TryGetValue(args["op"].S, out var c))
             {
                 return c.WriteUsage(IO, args["op"].S);
             }
 
-            if (Interpreter.Repository.Map.TryGetValue("@" + args["op"].S, out c))
+            if (Interpreter.Commands.TryGetValue("@" + args["op"].S, out c))
             {
                 return c.WriteUsage(IO, args["op"].S);
             }

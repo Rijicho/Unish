@@ -6,6 +6,8 @@ namespace RUtil.Debug.Shell
 {
     internal class CmdChangeDirectory : UnishCommandBase
     {
+        internal override bool IsBuiltIn => true;
+
         public override string[] Ops { get; } =
         {
             "cd",

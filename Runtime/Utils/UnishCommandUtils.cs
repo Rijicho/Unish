@@ -17,7 +17,7 @@ namespace RUtil.Debug.Shell
             return token;
         }
 
-        private static string ParseVariables(string input, IUnishEnv env, bool isInsideDoubleQuote)
+        private static string ParseVariables(string input, UnishEnvSet env, bool isInsideDoubleQuote)
         {
             if (string.IsNullOrWhiteSpace(input) || !input.Contains('$'))
             {
@@ -124,7 +124,9 @@ namespace RUtil.Debug.Shell
                     }
 
                     var varname = input.Substring(beginIdx, endIdx - beginIdx);
-                    if (env.TryGetValue(varname, out var value))
+                    if (env.BuiltIn.TryGetValue(varname, out var value)
+                        || env.Environment.TryGetValue(varname, out value)
+                        || env.Shell.TryGetValue(varname, out value))
                     {
                         sb.Append(value.S);
                     }
@@ -150,7 +152,9 @@ namespace RUtil.Debug.Shell
                         : i == input.Length ? input.Substring(beginIdx)
                         : input.Substring(beginIdx, i - beginIdx);
 
-                    if (env.TryGetValue(varname, out var value))
+                    if (env.BuiltIn.TryGetValue(varname, out var value)
+                        || env.Environment.TryGetValue(varname, out value)
+                        || env.Shell.TryGetValue(varname, out value))
                     {
                         sb.Append(value.S);
                     }
@@ -171,7 +175,7 @@ namespace RUtil.Debug.Shell
             return sb.ToString();
         }
 
-        public static string ParseVariables(string input, IUnishEnv env)
+        public static string ParseVariables(string input, UnishEnvSet env)
         {
             return ParseVariables(input, env, false);
         }

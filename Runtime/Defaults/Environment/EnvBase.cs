@@ -5,12 +5,12 @@ using Cysharp.Threading.Tasks;
 
 namespace RUtil.Debug.Shell
 {
-    public class ShellEnv : IUnishEnv
+    public abstract class EnvBase : IUnishEnv
     {
         private readonly Dictionary<string, UnishVariable> mDictionary;
-        public           int                               Count  => mDictionary.Count;
-        public           IEnumerable<string>               Keys   => mDictionary.Keys;
-        public           IEnumerable<UnishVariable>        Values => mDictionary.Values;
+
+        public int                 Count => mDictionary.Count;
+        public IEnumerable<string> Keys  => mDictionary.Keys;
 
         public event Action<UnishVariable> OnSet;
         public event Action<string>        OnRemoved;
@@ -30,7 +30,7 @@ namespace RUtil.Debug.Shell
             }
         }
 
-        public ShellEnv()
+        protected EnvBase()
         {
             mDictionary = new Dictionary<string, UnishVariable>();
         }
@@ -68,6 +68,8 @@ namespace RUtil.Debug.Shell
             mDictionary.Remove(key);
             OnRemoved?.Invoke(key);
         }
+
+        public abstract IUnishEnv Fork();
 
 
         public IEnumerator<KeyValuePair<string, UnishVariable>> GetEnumerator()

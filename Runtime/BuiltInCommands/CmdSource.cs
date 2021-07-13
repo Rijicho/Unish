@@ -5,6 +5,8 @@ namespace RUtil.Debug.Shell
 {
     internal class CmdSource : UnishCommandBase
     {
+        internal override bool IsBuiltIn => true;
+
         public override string[] Ops { get; } =
         {
             "source",
