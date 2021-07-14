@@ -23,27 +23,28 @@ namespace RUtil.Debug.Shell
         protected override UniTask Run(Dictionary<string, UnishVariable> args,
             Dictionary<string, UnishVariable> options)
         {
+            var wd = Env.BuiltIn[UnishBuiltInEnvKeys.WorkingDirectory].S;
             if (options.ContainsKey("r") && Directory.CurrentHome is IUnishRealFileSystem fileSystem)
             {
-                return IO.WriteLineAsync(fileSystem.RealHomePath + Directory.Current.HomeRelativePath);
+                return IO.WriteLineAsync(fileSystem.RealRootPath + wd.Substring(Directory.CurrentHome.RootPath.Length));
             }
 
             if (options.ContainsKey("a"))
             {
-                return IO.WriteLineAsync(Directory.Current.FullPath);
+                return IO.WriteLineAsync(wd);
             }
 
-            if (Directory.Current.IsRoot)
+            if (wd == UnishPathConstants.Root)
             {
                 return IO.WriteLineAsync(UnishPathConstants.Root);
             }
 
-            if (Directory.Current.IsHome)
+            if (Directory.CurrentHome == default)
             {
-                return IO.WriteLineAsync(UnishPathConstants.Home);
+                return IO.WriteLineAsync(wd);
             }
 
-            return IO.WriteLineAsync(UnishPathConstants.Home + Directory.Current.HomeRelativePath);
+            return IO.WriteLineAsync(UnishPathConstants.Home + wd.Substring(Directory.CurrentHome.RootPath.Length));
         }
 
         public override string Usage(string op)

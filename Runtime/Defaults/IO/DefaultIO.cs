@@ -460,12 +460,12 @@ namespace RUtil.Debug.Shell
                     return prompt.Replace("%d", UnishPathConstants.Root);
                 }
 
-                if (UnishPathUtils.IsHomePath(pwd))
+                if (pwd == BuiltInEnv[UnishBuiltInEnvKeys.HomePath].S)
                 {
                     return prompt.Replace("%d", UnishPathConstants.Home);
                 }
 
-                return prompt.Replace("%d", UnishPathUtils.GetEntryName(pwd));
+                return prompt.Replace("%d", pwd.Substring(pwd.LastIndexOf(UnishPathConstants.Separator)+1));
             }
         }
     }

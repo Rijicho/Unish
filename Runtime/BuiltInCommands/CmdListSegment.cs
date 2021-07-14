@@ -24,17 +24,18 @@ namespace RUtil.Debug.Shell
             Dictionary<string, UnishVariable> options)
         {
             var maxDepth = options.TryGetValue("R", out var value) ? value.I : 0;
-
+            var cd       = Env.BuiltIn[UnishBuiltInEnvKeys.WorkingDirectory].S;
+            
             if (maxDepth > 0)
             {
-                foreach (var (entry, depth) in Directory.GetCurrentChilds(maxDepth))
+                foreach (var (entry, depth) in Directory.GetChilds(cd, maxDepth))
                 {
                     await IO.WriteLineAsync("| " + new string(' ', depth * 2) + entry.Name);
                 }
             }
             else
             {
-                var childsEnumerable = Directory.GetCurrentChilds().Select(x => (x.entry.Name, x.entry.IsDirectory));
+                var childsEnumerable = Directory.GetChilds(cd).Select(x => (x.Entry.Name, x.Entry.IsDirectory));
                 var childs           = childsEnumerable.ToList();
                 if (childs.Count == 0)
                 {

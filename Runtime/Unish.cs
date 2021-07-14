@@ -4,12 +4,12 @@ namespace RUtil.Debug.Shell
 {
     public class Unish
     {
-        private UnishEnvSet         mEnv;
-        private IUnishIO            mIO;
-        private IUnishInterpreter   mInterpreter;
-        private IUnishDirectoryRoot mDirectory;
-        private IUniShell           mMainShell;
-        private bool                mIsUprofileExecuted;
+        private UnishEnvSet          mEnv;
+        private IUnishIO             mIO;
+        private IUnishInterpreter    mInterpreter;
+        private IUnishFileSystemRoot mFileSystem;
+        private IUniShell            mMainShell;
+        private bool                 mIsUprofileExecuted;
 
         // ----------------------------------
         // public methods
@@ -19,13 +19,13 @@ namespace RUtil.Debug.Shell
             UnishEnvSet env = default,
             IUnishIO io = default,
             IUnishInterpreter interpreter = default,
-            IUnishDirectoryRoot directory = default)
+            IUnishFileSystemRoot fileSystem = default)
         {
             mEnv         = env ?? new UnishEnvSet(new BuiltinEnv(), new GlobalEnv(), new ShellEnv());
             mIO          = io ?? new DefaultIO();
             mInterpreter = interpreter ?? new DefaultInterpreter();
-            mDirectory   = directory ?? new DefaultDirectoryRoot();
-            mMainShell   = new UnishCore(mEnv, mIO, mInterpreter, mDirectory, null);
+            mFileSystem  = fileSystem ?? new UnishFileSystemRoot();
+            mMainShell   = new UnishCore(mEnv, mIO, mInterpreter, mFileSystem, null);
         }
 
         public void Run()
@@ -82,7 +82,7 @@ namespace RUtil.Debug.Shell
             await mEnv.InitializeAsync();
             await mIO.InitializeAsync(mEnv.BuiltIn);
             mIO.OnHaltInput += Halt;
-            await mDirectory.InitializeAsync(mEnv.BuiltIn);
+            await mFileSystem.InitializeAsync(mEnv.BuiltIn);
             await mInterpreter.InitializeAsync(mEnv.BuiltIn);
             await RunBuiltInProfile();
             await RunUserProfiles();
@@ -93,12 +93,12 @@ namespace RUtil.Debug.Shell
         {
             await OnPreQuitAsync();
             await mInterpreter.FinalizeAsync();
-            await mDirectory.FinalizeAsync();
+            await mFileSystem.FinalizeAsync();
             mIO.OnHaltInput -= Halt;
             await mIO.FinalizeAsync();
             await mEnv.FinalizeAsync();
             mEnv         = null;
-            mDirectory   = null;
+            mFileSystem  = null;
             mIO          = null;
             mInterpreter = null;
             mMainShell   = null;
@@ -107,9 +107,15 @@ namespace RUtil.Debug.Shell
 
         protected virtual UniTask RunBuiltInProfile()
         {
-            if (mEnv.BuiltIn.TryGet(UnishBuiltInEnvKeys.HomePath, out string homePath))
+            mEnv.BuiltIn.Set(UnishBuiltInEnvKeys.WorkingDirectory, UnishPathConstants.Root);
+            if (!mEnv.BuiltIn.TryGet(UnishBuiltInEnvKeys.HomePath, out string homePath))
             {
-                mDirectory.TryChangeDirectory(homePath);
+                mEnv.BuiltIn.Set(UnishBuiltInEnvKeys.HomePath, UnishPathConstants.Root);
+            }
+
+            if (mFileSystem.TryFindEntry(homePath, out var home) && home.IsDirectory)
+            {
+                mEnv.BuiltIn.Set(UnishBuiltInEnvKeys.WorkingDirectory, home.Path);
             }
 
             return default;
@@ -122,9 +128,9 @@ namespace RUtil.Debug.Shell
             var rc      = mEnv.BuiltIn[UnishBuiltInEnvKeys.RcPath].S;
             if (!mIsUprofileExecuted)
             {
-                if (mDirectory.TryFindEntry(profile, out _))
+                if (mFileSystem.TryFindEntry(profile, out _))
                 {
-                    await foreach (var c in mDirectory.ReadLines(profile))
+                    await foreach (var c in mFileSystem.ReadLines(profile))
                     {
                         await mInterpreter.RunCommandAsync(mMainShell, c);
                     }
@@ -133,9 +139,9 @@ namespace RUtil.Debug.Shell
                 mIsUprofileExecuted = true;
             }
 
-            if (mDirectory.TryFindEntry(rc, out _))
+            if (mFileSystem.TryFindEntry(rc, out _))
             {
-                await foreach (var c in mDirectory.ReadLines(rc))
+                await foreach (var c in mFileSystem.ReadLines(rc))
                 {
                     await mInterpreter.RunCommandAsync(mMainShell, c);
                 }

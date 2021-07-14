@@ -1,7 +1,7 @@
 ﻿namespace RUtil.Debug.Shell
 {
-    public interface IUnishRealFileSystem : IUnishDirectoryHome
+    public interface IUnishRealFileSystem : IUnishFileSystem
     {
-        string RealHomePath { get; }
+        string RealRootPath { get; }
     }
 }

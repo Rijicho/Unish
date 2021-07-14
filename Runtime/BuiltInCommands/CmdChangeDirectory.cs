@@ -22,7 +22,11 @@ namespace RUtil.Debug.Shell
             Dictionary<string, UnishVariable> options)
         {
             var target = args["path"].S;
-            if (!Directory.TryChangeDirectory(target))
+            if (Directory.TryFindEntry(target, out var entry))
+            {
+                Env.BuiltIn.Set(UnishBuiltInEnvKeys.WorkingDirectory, entry.Path);
+            }
+            else
             {
                 await IO.WriteErrorAsync(new Exception($"Directory {target} does not exist."));
             }

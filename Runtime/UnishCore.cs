@@ -7,16 +7,16 @@ namespace RUtil.Debug.Shell
         // ----------------------------------
         // properties
         // ----------------------------------
-        public IUnishProcess       Parent      { get; }
-        public UnishEnvSet         Env         { get; }
-        public IUnishIO            IO          { get; }
-        public IUnishInterpreter   Interpreter { get; }
-        public IUnishDirectoryRoot Directory   { get; }
+        public IUnishProcess     Parent      { get; }
+        public UnishEnvSet       Env         { get; }
+        public IUnishIO          IO          { get; }
+        public IUnishInterpreter Interpreter { get; }
+        public IUnishFileSystemRoot  Directory   { get; }
 
         // ----------------------------------
         // public methods
         // ----------------------------------
-        public UnishCore(UnishEnvSet env, IUnishIO io, IUnishInterpreter interpreter, IUnishDirectoryRoot directory, IUnishProcess parent)
+        public UnishCore(UnishEnvSet env, IUnishIO io, IUnishInterpreter interpreter, IUnishFileSystemRoot directory, IUnishProcess parent)
         {
             Env         = env;
             IO          = io;

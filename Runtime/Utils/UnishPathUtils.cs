@@ -6,108 +6,105 @@ namespace RUtil.Debug.Shell
 {
     public static class UnishPathUtils
     {
-        public static string ConvertToHomeRelativePath(
-            string input,
-            string currentHomeName,
-            string currentHomeRelativePath,
-            string currentParentHomeRelativePath,
-            out string nextHomeName)
+        public static string GetParentPath(string path)
         {
-            // カレントディレクトリがRootの場合：
-            var isInRoot = string.IsNullOrEmpty(currentHomeName) || currentHomeName == Root;
-            if (isInRoot)
+            var lastSeparator = path.LastIndexOf(Separator);
+            if (lastSeparator <= 0)
             {
-                currentHomeName               = "";
-                currentHomeRelativePath       = null;
-                currentParentHomeRelativePath = null;
+                return Root;
             }
 
+            return path.Substring(0, lastSeparator);
+        }
+
+        public static string ConvertToAbsolutePath(string input, string pwd, string homePath)
+        {
             if (input == Root)
             {
-                nextHomeName = "";
-                return null;
+                return Root;
             }
 
             // 最後のセパレータは削除
-            if (input[input.Length - 1] == Separator)
+            input = input.TrimEnd(Separator);
+
+            if (input == Home || input == HomeRelativePrefix)
             {
-                input = input.Substring(0, input.Length - 1);
+                return homePath ?? Root;
             }
 
-            switch (input)
+            if (input == CurrentDir || input == CurrentRelativePrefix)
             {
-                case CurrentDir:
-                    nextHomeName = currentHomeName;
-                    return currentHomeRelativePath;
-                case ParentDir:
-                    {
-                        nextHomeName = currentParentHomeRelativePath == null ? "" : currentHomeName;
-                        return currentParentHomeRelativePath;
-                    }
-                case Home:
-                    nextHomeName = currentHomeName;
-                    return isInRoot ? null : "";
+                return pwd;
             }
 
-            //Rootから見たパスに変換
-            if (input.StartsWith(Root))
+            if (input == ParentDir || input == ParentRelativePrefix)
             {
-                input = input.Substring(Root.Length);
+                if (pwd == Root)
+                {
+                    return Root;
+                }
+
+                return GetParentPath(pwd);
             }
-            else
+
+            var isInRoot = homePath == Root;
+
+            // フルパスに変換
+            if (!input.StartsWith(Root))
             {
                 if (input.StartsWith(HomeRelativePrefix))
                 {
                     // ~/hoge
                     if (isInRoot)
                     {
-                        // hoge
-                        input = input.Substring(HomeRelativePrefix.Length);
+                        // /hoge
+                        input = Root + input.Substring(HomeRelativePrefix.Length);
                     }
                     else
                     {
-                        // home/hoge
-                        input = currentHomeName + input.Substring(Home.Length);
+                        // /h/o/m/e/hoge
+                        input = homePath + Root + input.Substring(HomeRelativePrefix.Length);
                     }
                 }
                 else if (input.StartsWith(CurrentRelativePrefix))
                 {
-                    // ./hoge
-                    if (isInRoot)
+                    if (pwd == Root)
                     {
-                        // hoge
-                        input = input.Substring(CurrentRelativePrefix.Length);
+                        input = Root + input.Substring(CurrentRelativePrefix.Length);
                     }
                     else
                     {
-                        // home/c/u/r/r/e/n/t/hoge
-                        input = currentHomeName + currentHomeRelativePath + input.Substring(CurrentDir.Length);
+                        input = pwd + Separator + input.Substring(CurrentRelativePrefix.Length);
                     }
                 }
                 else if (input.StartsWith(ParentRelativePrefix))
                 {
-                    // ../hoge
-                    if (isInRoot || currentParentHomeRelativePath == null)
+                    var parent = GetParentPath(pwd);
+                    if (parent == Root)
                     {
-                        // hoge
-                        input = input.Substring(ParentRelativePrefix.Length);
+                        input = parent + input.Substring(ParentRelativePrefix.Length);
                     }
                     else
                     {
-                        // home/p/a/r/e/n/t/hoge
-                        input = currentHomeName + currentParentHomeRelativePath + input.Substring(ParentDir.Length);
+                        input = parent + Separator + input.Substring(ParentRelativePrefix.Length);
                     }
                 }
                 else
                 {
-                    // hoge/fuga
-                    if (!isInRoot)
+                    if (pwd == Root)
                     {
-                        // home/c/u/r/r/e/n/t/hoge/fuga
-                        input = currentHomeName + currentHomeRelativePath + Separator + input;
+                        input = Root + input;
+                    }
+                    else
+                    {
+                        input = pwd + Separator + input;
                     }
                 }
             }
+
+
+            // 先頭のRoot記号を一旦削除
+            input = input.Substring(Root.Length);
 
             var pathStack = new Stack<string>();
 
@@ -133,7 +130,11 @@ namespace RUtil.Debug.Shell
                         break;
                     case Home:
                         pathStack.Clear();
-                        pathStack.Push(currentHomeName);
+                        if (!isInRoot)
+                        {
+                            pathStack.Push(homePath);
+                        }
+
                         break;
                     default:
                         pathStack.Push(node);
@@ -146,30 +147,36 @@ namespace RUtil.Debug.Shell
             // Root
             if (pathStack.Count == 0)
             {
-                nextHomeName = null;
-                return null;
+                return Root;
             }
 
             // Root以外
             var sb = new StringBuilder();
-            while (pathStack.Count > 1)
+            while (pathStack.Count > 0)
             {
                 sb.Insert(0, pathStack.Pop());
                 sb.Insert(0, Separator);
             }
 
-            nextHomeName = pathStack.Pop();
             return sb.ToString();
         }
 
-        public static bool IsHomePath(string fullPath)
+        public static IEnumerable<string> SplitPath(string path)
         {
-            return fullPath.IndexOf(Separator, 1) < 0;
-        }
+            if (path == null || string.IsNullOrWhiteSpace(path) || path == Root)
+            {
+                yield break;
+            }
 
-        public static string GetEntryName(string path)
-        {
-            return path.Substring(path.LastIndexOf(Separator) + 1);
+            foreach (var entry in path.Split(Separator))
+            {
+                if (string.IsNullOrWhiteSpace(entry))
+                {
+                    continue;
+                }
+
+                yield return entry.Trim();
+            }
         }
     }
 }

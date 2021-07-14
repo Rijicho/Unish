@@ -6,13 +6,13 @@ namespace RUtil.Debug.Shell
 {
     public abstract class UnishCommandBase
     {
-        private          IUnishProcess       mShell;
-        protected        UnishEnvSet         Env         => mShell?.Env;
-        protected        IUnishIO            IO          => mShell?.IO;
-        protected        IUnishDirectoryRoot Directory   => mShell?.Directory;
-        protected        IUnishInterpreter   Interpreter => mShell?.Interpreter;
-        internal virtual bool                IsBuiltIn   => false;
-        public abstract  string[]            Ops         { get; }
+        private          IUnishProcess     mShell;
+        protected        UnishEnvSet       Env         => mShell?.Env;
+        protected        IUnishIO          IO          => mShell?.IO;
+        protected        IUnishFileSystemRoot  Directory   => mShell?.Directory;
+        protected        IUnishInterpreter Interpreter => mShell?.Interpreter;
+        internal virtual bool              IsBuiltIn   => false;
+        public abstract  string[]          Ops         { get; }
 
         public virtual string[] Aliases { get; } =
         {

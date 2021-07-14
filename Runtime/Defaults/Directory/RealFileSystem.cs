@@ -9,20 +9,18 @@ namespace RUtil.Debug.Shell
 {
     public class RealFileSystem : IUnishRealFileSystem
     {
-        public IUnishEnv BuiltInEnv              { protected get; set; }
-        public string    HomeName                { get; }
-        public string    RealHomePath            { get; }
-        public string    CurrentHomeRelativePath { get; private set; }
+        public string    RootPath     { get; }
+        public IUnishEnv BuiltInEnv   { protected get; set; }
+        public string    RealRootPath { get; }
 
-        public RealFileSystem(string virtualHomeName, string realHomePath)
+        public RealFileSystem(string rootPath, string realRootPath)
         {
-            HomeName     = virtualHomeName;
-            RealHomePath = realHomePath;
+            RootPath     = rootPath;
+            RealRootPath = realRootPath;
         }
 
         public UniTask InitializeAsync()
         {
-            CurrentHomeRelativePath = "";
             return default;
         }
 
@@ -31,58 +29,46 @@ namespace RUtil.Debug.Shell
             return default;
         }
 
-        public bool TryFindEntry(string homeReativePath, out bool isDirectory)
+
+        public bool TryFindEntry(string relativePath, out UnishFileSystemEntry entry)
         {
-            var realPath = RealHomePath + homeReativePath;
+            var realPath = RealRootPath + relativePath;
             if (Directory.Exists(realPath))
             {
-                isDirectory = true;
+                entry = UnishFileSystemEntry.Directory(RootPath + relativePath);
                 return true;
             }
 
             if (File.Exists(realPath))
             {
-                isDirectory = false;
+                entry = UnishFileSystemEntry.File(RootPath + relativePath);
                 return true;
             }
 
-            isDirectory = false;
+            entry = UnishFileSystemEntry.Invalid;
             return false;
         }
 
-        public bool TryChangeDirectory(string homeRelativePath)
+        public IEnumerable<(UnishFileSystemEntry Entry, int Depth)> GetChilds(string relativePath, int maxDepth = 0)
         {
-            var realPath = RealHomePath + homeRelativePath;
-            if (!Directory.Exists(realPath))
-            {
-                return false;
-            }
-
-            CurrentHomeRelativePath = homeRelativePath;
-            BuiltInEnv.Set(UnishBuiltInEnvKeys.WorkingDirectory, $"{UnishPathConstants.Root}{HomeName}{CurrentHomeRelativePath}");
-            return true;
+            return GetChildsInternal(relativePath, maxDepth, maxDepth);
         }
 
-        public IEnumerable<(string homeRelativePath, int Depth, bool IsDirectory)> GetChilds(string homeRelativePath, int maxDepth = 0)
+        public void Open(string relativePath)
         {
-            return GetChildsInternal(homeRelativePath, maxDepth, maxDepth);
+            Application.OpenURL(RealRootPath + relativePath);
         }
 
-        public void Open(string homeRelativePath)
+        public string Read(string relativePath)
         {
-            Application.OpenURL(RealHomePath + homeRelativePath);
+            return File.ReadAllText(RealRootPath + relativePath);
         }
 
-        public string Read(string homeRelativePath)
-        {
-            return File.ReadAllText(RealHomePath + homeRelativePath);
-        }
-
-        public IUniTaskAsyncEnumerable<string> ReadLines(string homeRelativePath)
+        public IUniTaskAsyncEnumerable<string> ReadLines(string relativePath)
         {
             return UniTaskAsyncEnumerable.Create<string>(async (writer, token) =>
             {
-                var realPath = RealHomePath + homeRelativePath;
+                var realPath = RealRootPath + relativePath;
                 if (!File.Exists(realPath))
                 {
                     return;
@@ -97,19 +83,19 @@ namespace RUtil.Debug.Shell
             });
         }
 
-        public void Write(string homeRelativePath, string data)
+        public void Write(string relativePath, string data)
         {
-            File.WriteAllText(RealHomePath + homeRelativePath, data);
+            File.WriteAllText(RealRootPath + relativePath, data);
         }
 
-        public void Append(string homeRelativePath, string data)
+        public void Append(string relativePath, string data)
         {
-            File.AppendAllText(RealHomePath + homeRelativePath, data);
+            File.AppendAllText(RealRootPath + relativePath, data);
         }
 
-        public void Create(string homeRelativePath, bool isDirectory)
+        public void Create(string relativePath, bool isDirectory)
         {
-            var realPath = RealHomePath + homeRelativePath;
+            var realPath = RealRootPath + relativePath;
             if (isDirectory)
             {
                 if (!Directory.Exists(realPath))
@@ -126,9 +112,9 @@ namespace RUtil.Debug.Shell
             }
         }
 
-        public void Delete(string homeRelativePath, bool isRecursive)
+        public void Delete(string relativePath, bool isRecursive)
         {
-            var realPath = RealHomePath + homeRelativePath;
+            var realPath = RealRootPath + relativePath;
             if (File.Exists(realPath))
             {
                 File.Delete(realPath);
@@ -140,22 +126,23 @@ namespace RUtil.Debug.Shell
             }
         }
 
-        private IEnumerable<(string homeRelativePath, int Depth, bool IsDirectory)> GetChildsInternal(string homeRelativePath, int maxDepth,
+        private IEnumerable<(UnishFileSystemEntry Entry, int Depth)> GetChildsInternal(string relativePath, int maxDepth,
             int remainDepth)
         {
-            var realPath = RealHomePath + homeRelativePath;
+            var realPath = RealRootPath + relativePath;
             foreach (var filePath in Directory.GetFiles(realPath))
             {
-                yield return (filePath.Substring(RealHomePath.Length), maxDepth - remainDepth, false);
+                var path = filePath.Substring(RealRootPath.Length);
+                yield return (UnishFileSystemEntry.File(path), maxDepth - remainDepth);
             }
 
             foreach (var dirPath in Directory.GetDirectories(realPath))
             {
-                var dirPathWithoutHome = dirPath.Substring(RealHomePath.Length);
-                yield return (dirPathWithoutHome, maxDepth - remainDepth, true);
+                var virtualPath = dirPath.Substring(RealRootPath.Length);
+                yield return (UnishFileSystemEntry.Directory(RootPath + virtualPath), maxDepth - remainDepth);
                 if (remainDepth != 0)
                 {
-                    foreach (var elem in GetChildsInternal(dirPathWithoutHome, maxDepth, remainDepth - 1))
+                    foreach (var elem in GetChildsInternal(virtualPath, maxDepth, remainDepth - 1))
                     {
                         yield return elem;
                     }
