@@ -7,76 +7,6 @@ using UnityEngine;
 
 namespace RUtil.Debug.Shell
 {
-    public class PathTree
-    {
-        public IUnishFileSystem     FileSystem { get; }
-        public UnishFileSystemEntry Entry      { get; }
-        public List<PathTree>       Childs     { get; }
-
-        public PathTree(UnishFileSystemEntry entry)
-        {
-            Entry = entry;
-            if (entry.Type == UnishFileSystemEntryType.Directory || entry.IsRoot)
-            {
-                Childs = new List<PathTree>();
-            }
-        }
-
-        public PathTree(IUnishFileSystem fileSystem)
-        {
-            FileSystem = fileSystem;
-            Entry      = UnishFileSystemEntry.FileSystem(fileSystem.RootPath);
-            Childs     = null;
-        }
-
-        public bool TryNext(string childName, out PathTree childTree)
-        {
-            if (Childs == null)
-            {
-                childTree = null;
-                return false;
-            }
-
-            childTree = Childs.FirstOrDefault(child => child.Entry.Name == childName);
-            return childTree != null;
-        }
-
-        public IEnumerable<(UnishFileSystemEntry Entry, int depth)> GetChilds(int maxDepth)
-        {
-            return GetChilds(0, maxDepth);
-        }
-
-        private IEnumerable<(UnishFileSystemEntry Entry, int depth)> GetChilds(int depth, int maxDepth)
-        {
-            if (depth > maxDepth)
-            {
-                yield break;
-            }
-
-            if (Childs == null)
-            {
-                if (Entry.IsFileSystem)
-                {
-                    foreach (var c in FileSystem.GetChilds("", maxDepth - depth))
-                    {
-                        yield return (c.Entry, c.Depth + depth);
-                    }
-                }
-
-                yield break;
-            }
-
-            foreach (var child in Childs)
-            {
-                yield return (child.Entry, depth);
-                foreach (var c in child.GetChilds(depth + 1, maxDepth))
-                {
-                    yield return c;
-                }
-            }
-        }
-    }
-
     public class UnishFileSystemRoot : IUnishFileSystemRoot
     {
         public IUnishEnv BuiltInEnv { private get; set; }
@@ -110,37 +40,16 @@ namespace RUtil.Debug.Shell
                 await child.InitializeAsync();
             }
 
-            mPathTree = new PathTree(UnishFileSystemEntry.Root);
-            foreach (var childFileSystem in Childs)
-            {
-                var homePath = UnishPathUtils.SplitPath(childFileSystem.RootPath).ToArray();
-                var current  = mPathTree;
-                for (var i = 0; i < homePath.Length; i++)
-                {
-                    var entry = homePath[i];
-                    var path  = current.Entry.Path + UnishPathConstants.Separator + entry;
-                    var next  = current.Childs?.FirstOrDefault(x => x.Entry.Path == path);
-                    if (next == default)
-                    {
-                        next = i == homePath.Length - 1
-                            ? new PathTree(childFileSystem)
-                            : new PathTree(UnishFileSystemEntry.Directory(path));
-                        current.Childs.Add(next);
-                    }
-
-                    current = next;
-                }
-            }
+            mPathTree = new PathTree(Childs);
         }
 
         public async UniTask FinalizeAsync()
         {
+            mPathTree = null;
             foreach (var child in Childs.Reverse())
             {
                 await child.FinalizeAsync();
             }
-
-            mPathTree = null;
         }
 
         public bool TryFindEntry(string relativePath, out UnishFileSystemEntry entry)
@@ -193,8 +102,20 @@ namespace RUtil.Debug.Shell
                 i++;
             }
 
-            // 子ファイルシステム以外で止まっていたら
-            if (current.Entry.IsRoot || !current.Entry.IsFileSystem)
+
+            // 子ファイルシステムで止まっていたら
+            if (current.SubFileSystem != null)
+            {
+                foreach (var entry in current.SubFileSystem.GetChilds(i == splitted.Length ? "" : path.Substring(consumedLength), maxDepth))
+                {
+                    yield return entry;
+                }
+
+                yield break;
+            }
+
+            // 子ファイルシステム以外で終端として止まっていたら
+            if (i == splitted.Length)
             {
                 foreach (var child in current.GetChilds(maxDepth))
                 {
@@ -204,14 +125,7 @@ namespace RUtil.Debug.Shell
                 yield break;
             }
 
-            // ファイルシステムで止まっていたら
-            if (current.Entry.IsFileSystem)
-            {
-                foreach (var entry in current.FileSystem.GetChilds(i == splitted.Length ? "" : path.Substring(consumedLength), maxDepth))
-                {
-                    yield return entry;
-                }
-            }
+            throw new DirectoryNotFoundException($"The directory {path} does not exist.");
         }
 
         public void Open(string relativePath)
