@@ -1,4 +1,5 @@
-﻿using Cysharp.Threading.Tasks;
+﻿using System.Text;
+using Cysharp.Threading.Tasks;
 
 namespace RUtil.Debug.Shell
 {
@@ -17,10 +18,13 @@ namespace RUtil.Debug.Shell
                 await io.WriteAsync($"<color={colorCode}>{data}</color>");
             }
 
+            var sb = new StringBuilder();
             for (var i = 0; i < lines.Length; i++)
             {
-                await io.WriteAsync($"<color={colorCode}>{lines[i]}</color>{(i == lines.Length - 1 ? "" : "\n")}");
+                sb.Append($"<color={colorCode}>{lines[i]}</color>{(i == lines.Length - 1 ? "" : "\n")}");
             }
+
+            await io.WriteAsync(sb.ToString());
         }
     }
 }

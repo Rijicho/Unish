@@ -4,6 +4,18 @@ using System.Text;
 
 namespace RUtil.Debug.Shell
 {
+    public enum UnishCommandTokenType
+    {
+        Invalid,
+        Param,
+        Option,
+        RedirectIn,
+        RedirectOut,
+        RedirectOutAppend,
+        RedirectErr,
+        RedirectErrAppend,
+    }
+
     public static class UnishCommandUtils
     {
         public static string RemoveQuotesIfExist(string token)
@@ -180,16 +192,104 @@ namespace RUtil.Debug.Shell
             return ParseVariables(input, env, false);
         }
 
+        public static List<(string Token, UnishCommandTokenType Type)> CommandToTokens(string input)
+        {
+            var ret = new List<string>();
+            SplitCommandInternal(input, ret);
+
+
+            var tokens = ret.Select(t =>
+            {
+                var type  = UnishCommandTokenType.Invalid;
+                var token = t;
+                if (t[0] == '-')
+                {
+                    type  = UnishCommandTokenType.Option;
+                    token = token.TrimStart('-');
+                }
+                else if (t.StartsWith("<"))
+                {
+                    type  = UnishCommandTokenType.RedirectIn;
+                    token = t.Length == 1 ? "" : t.Substring(1);
+                }
+                else if (t.StartsWith("0<"))
+                {
+                    type  = UnishCommandTokenType.RedirectIn;
+                    token = t.Length == 2 ? "" : t.Substring(2);
+                }
+                else if (t.StartsWith(">>"))
+                {
+                    type  = UnishCommandTokenType.RedirectOutAppend;
+                    token = t.Length == 2 ? "" : t.Substring(2);
+                }
+                else if (t.StartsWith("1>>"))
+                {
+                    type  = UnishCommandTokenType.RedirectOutAppend;
+                    token = t.Length == 3 ? "" : t.Substring(3);
+                }
+                else if (t.StartsWith(">"))
+                {
+                    type  = UnishCommandTokenType.RedirectOut;
+                    token = t.Length == 1 ? "" : t.Substring(1);
+                }
+                else if (t.StartsWith("1>"))
+                {
+                    type  = UnishCommandTokenType.RedirectOut;
+                    token = t.Length == 2 ? "" : t.Substring(2);
+                }
+                else if (t.StartsWith("2>>"))
+                {
+                    type  = UnishCommandTokenType.RedirectErrAppend;
+                    token = t.Length == 3 ? "" : t.Substring(3);
+                }
+                else if (t.StartsWith("2>"))
+                {
+                    type  = UnishCommandTokenType.RedirectErr;
+                    token = t.Length == 2 ? "" : t.Substring(2);
+                }
+                else
+                {
+                    type  = UnishCommandTokenType.Param;
+                    token = RemoveQuotesIfExist(t);
+                }
+
+                return (token, type);
+            }).ToList();
+            for (var i = 0; i < tokens.Count; i++)
+            {
+                switch (tokens[i].type)
+                {
+                    case UnishCommandTokenType.RedirectIn:
+                    case UnishCommandTokenType.RedirectOut:
+                    case UnishCommandTokenType.RedirectErr:
+                    case UnishCommandTokenType.RedirectOutAppend:
+                    case UnishCommandTokenType.RedirectErrAppend:
+                        if (string.IsNullOrEmpty(tokens[i].token))
+                        {
+                            if (i + 1 < tokens.Count && tokens[i + 1].type == UnishCommandTokenType.Param)
+                            {
+                                tokens[i] = (tokens[i + 1].token, tokens[i].type);
+                                tokens.RemoveAt(i+1);
+                            }
+                        }
+                        break;
+                }
+            }
+
+            return tokens;
+        }
+
+
         public static List<(string token, bool isOption)> SplitCommand(string input)
         {
             var ret = new List<string>();
-            SplitCommand(input, ret);
+            SplitCommandInternal(input, ret);
 
             return ret.Select(t => (token: RemoveQuotesIfExist(t), isOption: t[0] == '-'))
                 .ToList();
         }
 
-        private static void SplitCommand(string input, List<string> leading)
+        private static void SplitCommandInternal(string input, List<string> leading)
         {
             if (string.IsNullOrWhiteSpace(input))
             {
@@ -220,7 +320,7 @@ namespace RUtil.Debug.Shell
                             {
                                 var token = input.Substring(tokenStartedIndex, i - tokenStartedIndex);
                                 leading.Add(token);
-                                SplitCommand(input.Substring(i + 1), leading);
+                                SplitCommandInternal(input.Substring(i + 1), leading);
                                 return;
                             }
                         }
@@ -248,7 +348,7 @@ namespace RUtil.Debug.Shell
             else
             {
                 leading.Add(input.Substring(tokenStartedIndex, firstInStringSpaceIndex - tokenStartedIndex));
-                SplitCommand(input.Substring(firstInStringSpaceIndex + 1), leading);
+                SplitCommandInternal(input.Substring(firstInStringSpaceIndex + 1), leading);
             }
         }
 

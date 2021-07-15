@@ -57,12 +57,13 @@ namespace RUtil.Debug.Shell
             }
 
             var noVariableInput = UnishCommandUtils.ParseVariables(cmd, shell.Env);
-            var tokens          = UnishCommandUtils.SplitCommand(noVariableInput);
-            var cmdToken        = tokens[0].token;
+            var tokens          = UnishCommandUtils.CommandToTokens(noVariableInput);
+
+
+            //var tokens          = UnishCommandUtils.SplitCommand(noVariableInput);
+            var cmdToken = tokens[0].Token;
             var arguments = tokens
-                .Skip(1)
-                .Select(x => (x.isOption ? x.token.TrimStart('-') : x.token, x.isOption))
-                .ToArray();
+                .Skip(1).ToArray();
 
             // シェル変数への代入命令は特別扱い
             var eqIdx = cmdToken.IndexOf('=');
@@ -88,12 +89,13 @@ namespace RUtil.Debug.Shell
             {
                 try
                 {
-                    var (parsedParams, parsedOptions, isSucceeded) = await ParseArguments(shell.IO, cmdInstance, cmdToken, arguments);
-                    if (isSucceeded)
+                    var parsed = await ParseArguments(shell.IO, cmdInstance, cmdToken, arguments);
+                    if (parsed.IsSucceeded)
                     {
-                        //TODO: リダイレクトなどに応じてIO差し替え
-                        var runnerShell = cmdInstance.IsBuiltIn ? shell : shell.Fork(shell.IO);
-                        await cmdInstance.Run(runnerShell, parsedParams, parsedOptions);
+                        // リダイレクトに応じてIO差し替え
+                        var io          = ConstructIO(parsed, shell.IO, shell.Directory);
+                        var runnerShell = cmdInstance.IsBuiltIn ? shell : shell.Fork(io);
+                        await cmdInstance.Run(runnerShell, parsed.Params, parsed.Options);
                     }
                 }
                 catch (Exception e)
@@ -126,12 +128,25 @@ namespace RUtil.Debug.Shell
         // private methods
         // ----------------------------------
 
-        private async UniTask<(VDictionary Params, VDictionary Options, bool IsSucceeded)> ParseArguments(
+        public class UnishCommandParseResult
+        {
+            public bool        IsSucceeded;
+            public VDictionary Params;
+            public VDictionary Options;
+            public string      RedirectIn;
+            public string      RedirectOut;
+            public string      RedirectErr;
+            public bool        IsRedirectOutAppend;
+            public bool        IsRedirectErrAppend;
+        }
+
+        private static async UniTask<UnishCommandParseResult> ParseArguments(
             IUnishIO io,
             UnishCommandBase targetCommand,
             string op,
-            IEnumerable<(string token, bool isOption)> arguments)
+            IEnumerable<(string Token, UnishCommandTokenType TokenType)> arguments)
         {
+            var ret      = new UnishCommandParseResult();
             var dParams  = new VDictionary();
             var dOptions = new VDictionary();
             dParams["0"] = new UnishVariable("0", op);
@@ -142,49 +157,52 @@ namespace RUtil.Debug.Shell
 
             var currentParamIndex = 0;
 
-            foreach (var (token, isOption) in arguments)
+            foreach (var (token, tokenType) in arguments)
             {
-                if (isOption)
+                // 前のトークンがオプションで、引数を必要としていて、現在のトークンがパラメータ以外なら既定値を入れて生成
+                if (parsingOptionType != UnishVariableType.Unit && tokenType != UnishCommandTokenType.Param)
                 {
-                    // 前のトークンがオプションで、引数を必要としていたら既定値を入れて生成
-                    if (parsingOptionType != UnishVariableType.Unit)
-                    {
-                        dOptions[parsingOptionName] = new UnishVariable(parsingOptionName, parsingOptionType, parsingOptionDefault);
-                        parsingOptionType           = UnishVariableType.Unit;
-                        parsingOptionName           = "";
-                        parsingOptionDefault        = "";
-                    }
+                    dOptions[parsingOptionName] = new UnishVariable(parsingOptionName, parsingOptionType, parsingOptionDefault);
+                    parsingOptionType           = UnishVariableType.Unit;
+                    parsingOptionName           = "";
+                    parsingOptionDefault        = "";
+                }
 
+                // 現在のトークンがオプションなら
+                if (tokenType == UnishCommandTokenType.Option)
+                {
                     // 現在のトークンに相当するオプションを検索
                     foreach (var expected in targetCommand.Options)
                     {
-                        if (token == expected.name)
+                        if (token != expected.name)
                         {
-                            // 引数を必要としないならこの場で生成
-                            if (expected.type == UnishVariableType.Unit)
-                            {
-                                dOptions[token]      = UnishVariable.Unit(token);
-                                parsingOptionType    = UnishVariableType.Unit;
-                                parsingOptionName    = "";
-                                parsingOptionDefault = "";
-                            }
-                            // 引数を必要とするなら、次のトークンを引数として判定するための情報を確保
-                            else
-                            {
-                                parsingOptionType    = expected.type;
-                                parsingOptionName    = expected.name;
-                                parsingOptionDefault = expected.defVal;
-                            }
-
-                            break;
+                            continue;
                         }
+
+                        // 引数を必要としないならこの場で生成
+                        if (expected.type == UnishVariableType.Unit)
+                        {
+                            dOptions[token]      = UnishVariable.Unit(token);
+                            parsingOptionType    = UnishVariableType.Unit;
+                            parsingOptionName    = "";
+                            parsingOptionDefault = "";
+                        }
+                        // 引数を必要とするなら、次のトークンを引数として判定するための情報を確保
+                        else
+                        {
+                            parsingOptionType    = expected.type;
+                            parsingOptionName    = expected.name;
+                            parsingOptionDefault = expected.defVal;
+                        }
+
+                        break;
                     }
 
                     continue;
                 }
 
-                // 前のトークンがオプションかつ要引数で、現在のトークンがオプションでない場合
-                if (parsingOptionType != UnishVariableType.Unit)
+                // 前のトークンがオプションかつ要引数で、現在のトークンがパラメータの場合
+                if (parsingOptionType != UnishVariableType.Unit && tokenType == UnishCommandTokenType.Param)
                 {
                     // 現在のトークンをオプションの引数として格納
                     var arg = new UnishVariable(parsingOptionName, parsingOptionType, token);
@@ -204,7 +222,7 @@ namespace RUtil.Debug.Shell
                 }
 
                 // 現在のトークンがパラメータであり、期待されるパラメータの個数に収まっている場合
-                if (currentParamIndex < targetCommand.Params.Length)
+                if (tokenType == UnishCommandTokenType.Param && currentParamIndex < targetCommand.Params.Length)
                 {
                     var expectedParam = targetCommand.Params[currentParamIndex];
                     // 現在のトークンをコマンドの引数として格納
@@ -225,11 +243,37 @@ namespace RUtil.Debug.Shell
                 }
 
                 // 現在のトークンはパラメータだが、期待されるパラメータ数を超過している場合
+                if (tokenType == UnishCommandTokenType.Param)
                 {
                     // string入力として $1, $2,...にのみ格納
                     var name = $"{currentParamIndex + 1}";
                     dParams[name] = new UnishVariable(name, token);
                     currentParamIndex++;
+                    continue;
+                }
+
+                // 他のトークンタイプの場合
+                switch (tokenType)
+                {
+                    case UnishCommandTokenType.RedirectIn:
+                        ret.RedirectIn = token;
+                        break;
+                    case UnishCommandTokenType.RedirectOut:
+                        ret.RedirectOut         = token;
+                        ret.IsRedirectOutAppend = false;
+                        break;
+                    case UnishCommandTokenType.RedirectErr:
+                        ret.RedirectErr         = token;
+                        ret.IsRedirectErrAppend = false;
+                        break;
+                    case UnishCommandTokenType.RedirectOutAppend:
+                        ret.RedirectOut         = token;
+                        ret.IsRedirectOutAppend = true;
+                        break;
+                    case UnishCommandTokenType.RedirectErrAppend:
+                        ret.RedirectErr         = token;
+                        ret.IsRedirectErrAppend = true;
+                        break;
                 }
             }
 
@@ -276,7 +320,49 @@ namespace RUtil.Debug.Shell
             dParams["@"] = new UnishVariable("@", listedParams);
             dParams["-"] = new UnishVariable("-", assembledOptions);
 
-            return (dParams, dOptions, true);
+            ret.Params      = dParams;
+            ret.Options     = dOptions;
+            ret.IsSucceeded = true;
+            return ret;
+        }
+
+        private static DynamicIO ConstructIO(UnishCommandParseResult parsed, IUnishIO stdio, IUnishFileSystemRoot fileSystem)
+        {
+         return new DynamicIO(
+             string.IsNullOrEmpty(parsed.RedirectIn)
+                 ? stdio.ReadAsync
+                 : new UnishStdIn(_ => UniTask.FromResult(fileSystem.Read(parsed.RedirectIn))),
+             string.IsNullOrEmpty(parsed.RedirectOut)
+                 ? stdio.WriteAsync
+                 : new UnishStdOut(text =>
+                 {
+                     if (parsed.IsRedirectOutAppend)
+                     {
+                         fileSystem.Append(parsed.RedirectOut, text);
+                     }
+                     else
+                     {
+                         fileSystem.Write(parsed.RedirectOut, text);
+                     }
+
+                     return default;
+                 }),
+             string.IsNullOrEmpty(parsed.RedirectErr)
+                 ? stdio.WriteErrorAsync
+                 : new UnishStdErr(err =>
+                 {
+                     var message = err.Message + "\n" + err.StackTrace + "\n";
+                     if (parsed.IsRedirectErrAppend)
+                     {
+                         fileSystem.Append(parsed.RedirectErr, message);
+                     }
+                     else
+                     {
+                         fileSystem.Write(parsed.RedirectErr, message);
+                     }
+                     return default;
+                 })
+         );   
         }
     }
 }

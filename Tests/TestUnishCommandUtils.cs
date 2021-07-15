@@ -160,6 +160,20 @@ public class TestUnishCommandUtils
             ("hoge fuga", false),
             ("-a", true),
         }),
+        ("ls '-l' 'hoge fuga' -a", new[]
+        {
+            ("ls", false),
+            ("-l", false),
+            ("hoge fuga", false),
+            ("-a", true),
+        }),
+        ("ls \"-l\" 'hoge fuga' -a", new[]
+        {
+            ("ls", false),
+            ("-l", false),
+            ("hoge fuga", false),
+            ("-a", true),
+        }),
     };
 
     [Test]
@@ -168,5 +182,158 @@ public class TestUnishCommandUtils
         var (input, want) = tc;
         var splited = UnishCommandUtils.SplitCommand(input);
         Assert.AreEqual(want, splited.ToArray());
+    }
+
+
+    private static (string input, (string, UnishCommandTokenType)[] want)[] tc2 =
+    {
+        ("hoge", new[]
+        {
+            ("hoge", UnishCommandTokenType.Param),
+        }),
+        ("\"hoge\"", new[]
+        {
+            ("hoge", UnishCommandTokenType.Param),
+        }),
+        ("'hoge'", new[]
+        {
+            ("hoge", UnishCommandTokenType.Param),
+        }),
+        ("hoge fuga", new[]
+        {
+            ("hoge", UnishCommandTokenType.Param),
+            ("fuga", UnishCommandTokenType.Param),
+        }),
+        ("hoge fuga = piyo", new[]
+        {
+            ("hoge", UnishCommandTokenType.Param),
+            ("fuga", UnishCommandTokenType.Param),
+            ("=", UnishCommandTokenType.Param),
+            ("piyo", UnishCommandTokenType.Param),
+        }),
+        ("hoge \"fuga = piyo\"", new[]
+        {
+            ("hoge", UnishCommandTokenType.Param),
+            ("fuga = piyo", UnishCommandTokenType.Param),
+        }),
+        ("hoge 'fuga = piyo'", new[]
+        {
+            ("hoge", UnishCommandTokenType.Param),
+            ("fuga = piyo", UnishCommandTokenType.Param),
+        }),
+        ("hoge -a fuga --bbb", new[]
+        {
+            ("hoge", UnishCommandTokenType.Param),
+            ("a", UnishCommandTokenType.Option),
+            ("fuga", UnishCommandTokenType.Param),
+            ("bbb", UnishCommandTokenType.Option),
+        }),
+        ("hoge -a fuga <in >out 2>err ", new[]
+        {
+            ("hoge", UnishCommandTokenType.Param),
+            ("a", UnishCommandTokenType.Option),
+            ("fuga", UnishCommandTokenType.Param),
+            ("in", UnishCommandTokenType.RedirectIn),
+            ("out", UnishCommandTokenType.RedirectOut),
+            ("err", UnishCommandTokenType.RedirectErr),
+        }),
+        ("hoge < out.txt", new[]
+        {
+            ("hoge", UnishCommandTokenType.Param),
+            ("out.txt", UnishCommandTokenType.RedirectIn),
+        }),
+        ("hoge <out.txt", new[]
+        {
+            ("hoge", UnishCommandTokenType.Param),
+            ("out.txt", UnishCommandTokenType.RedirectIn),
+        }),
+        ("hoge 0< out.txt", new[]
+        {
+            ("hoge", UnishCommandTokenType.Param),
+            ("out.txt", UnishCommandTokenType.RedirectIn),
+        }),
+        ("hoge 0<out.txt", new[]
+        {
+            ("hoge", UnishCommandTokenType.Param),
+            ("out.txt", UnishCommandTokenType.RedirectIn),
+        }),
+        ("hoge > out.txt", new[]
+        {
+            ("hoge", UnishCommandTokenType.Param),
+            ("out.txt", UnishCommandTokenType.RedirectOut),
+        }),
+        ("hoge >out.txt", new[]
+        {
+            ("hoge", UnishCommandTokenType.Param),
+            ("out.txt", UnishCommandTokenType.RedirectOut),
+        }),
+        ("hoge 1> out.txt", new[]
+        {
+            ("hoge", UnishCommandTokenType.Param),
+            ("out.txt", UnishCommandTokenType.RedirectOut),
+        }),
+        ("hoge 1>out.txt", new[]
+        {
+            ("hoge", UnishCommandTokenType.Param),
+            ("out.txt", UnishCommandTokenType.RedirectOut),
+        }),
+        ("hoge >> out.txt", new[]
+        {
+            ("hoge", UnishCommandTokenType.Param),
+            ("out.txt", UnishCommandTokenType.RedirectOutAppend),
+        }),
+        ("hoge >>out.txt", new[]
+        {
+            ("hoge", UnishCommandTokenType.Param),
+            ("out.txt", UnishCommandTokenType.RedirectOutAppend),
+        }),
+        ("hoge 1>> out.txt", new[]
+        {
+            ("hoge", UnishCommandTokenType.Param),
+            ("out.txt", UnishCommandTokenType.RedirectOutAppend),
+        }),
+        ("hoge 1>>out.txt", new[]
+        {
+            ("hoge", UnishCommandTokenType.Param),
+            ("out.txt", UnishCommandTokenType.RedirectOutAppend),
+        }),
+        ("hoge 2> out.txt", new[]
+        {
+            ("hoge", UnishCommandTokenType.Param),
+            ("out.txt", UnishCommandTokenType.RedirectErr),
+        }),
+        ("hoge 2>out.txt", new[]
+        {
+            ("hoge", UnishCommandTokenType.Param),
+            ("out.txt", UnishCommandTokenType.RedirectErr),
+        }),
+        ("hoge 2>> out.txt", new[]
+        {
+            ("hoge", UnishCommandTokenType.Param),
+            ("out.txt", UnishCommandTokenType.RedirectErrAppend),
+        }),
+        ("hoge 2>>out.txt", new[]
+        {
+            ("hoge", UnishCommandTokenType.Param),
+            ("out.txt", UnishCommandTokenType.RedirectErrAppend),
+        }),
+        ("hoge -a  fuga < in  > out  2>   err ", new[]
+        {
+            ("hoge", UnishCommandTokenType.Param),
+            ("a", UnishCommandTokenType.Option),
+            ("fuga", UnishCommandTokenType.Param),
+            ("in", UnishCommandTokenType.RedirectIn),
+            ("out", UnishCommandTokenType.RedirectOut),
+            ("err", UnishCommandTokenType.RedirectErr),
+        }),
+    };
+
+
+    [Test]
+    public void _2_CommandToTokens([ValueSource(nameof(tc2))] (string input, (string, UnishCommandTokenType)[] want) tc)
+    {
+        var (input, want) = tc;
+        var splited = UnishCommandUtils.CommandToTokens(input).ToArray();
+        Assert.That(splited, Is.EqualTo(want));
     }
 }
