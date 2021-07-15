@@ -54,16 +54,9 @@ namespace RUtil.Debug.Shell
             }
         }
 
-        public bool TryNext(string childName, out PathTree childTree)
+        public PathTree Next(string childName)
         {
-            if (mChilds == null)
-            {
-                childTree = null;
-                return false;
-            }
-
-            childTree = mChilds.FirstOrDefault(child => child.mEntry.Name == childName);
-            return childTree != null;
+            return mChilds?.FirstOrDefault(child => child.mEntry.Name == childName);
         }
 
         public IEnumerable<(UnishFileSystemEntry Entry, int depth)> GetChilds(int maxDepth)

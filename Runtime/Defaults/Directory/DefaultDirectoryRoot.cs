@@ -95,11 +95,9 @@ namespace RUtil.Debug.Shell
             // 進めるところまで進む
             var i              = 0;
             var consumedLength = 0;
-            while (i < splitted.Length && current.TryNext(splitted[i], out var next))
+            while (i < splitted.Length && (current = current.Next(splitted[i])) != null)
             {
-                current        =  next;
-                consumedLength += 1 + splitted[i].Length;
-                i++;
+                consumedLength += 1 + splitted[i++].Length;
             }
 
 
