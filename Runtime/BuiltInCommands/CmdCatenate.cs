@@ -46,11 +46,11 @@ namespace RUtil.Debug.Shell
                     sb.Append(Directory.Read(path2));
                 }
 
-                await IO.WriteAsync(sb.ToString());
+                await IO.Out(sb.ToString());
             }
             catch (Exception e) when (e is FileNotFoundException || e is DirectoryNotFoundException || e is InvalidOperationException)
             {
-                await IO.WriteErrorAsync(new Exception(e.Message));
+                await IO.Err(new Exception(e.Message));
             }
         }
     }

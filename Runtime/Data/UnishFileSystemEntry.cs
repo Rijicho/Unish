@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 
 namespace RUtil.Debug.Shell
 {
@@ -10,15 +9,16 @@ namespace RUtil.Debug.Shell
         Directory,
         FileSystemRoot,
     }
+
     public readonly struct UnishFileSystemEntry
     {
-        public UnishFileSystemEntryType Type             { get; }
-        public string                   Path             { get; }
-        public bool                     IsFileSystem     => Type == UnishFileSystemEntryType.FileSystemRoot;
-        public bool                     IsDirectory      => Type == UnishFileSystemEntryType.Directory;
-        public bool                     IsRoot           => Path == UnishPathConstants.Root;
-        public string                   Name             => System.IO.Path.GetFileName(Path);
-        public string                   DirectoryName    => System.IO.Path.GetDirectoryName(Path);
+        public UnishFileSystemEntryType Type          { get; }
+        public string                   Path          { get; }
+        public bool                     IsFileSystem  => Type == UnishFileSystemEntryType.FileSystemRoot;
+        public bool                     IsDirectory   => Type == UnishFileSystemEntryType.Directory;
+        public bool                     IsRoot        => Path == UnishPathConstants.Root;
+        public string                   Name          => System.IO.Path.GetFileName(Path);
+        public string                   DirectoryName => System.IO.Path.GetDirectoryName(Path);
 
         public static UnishFileSystemEntry Invalid => default;
         public static UnishFileSystemEntry Root    => FileSystem(UnishPathConstants.Root);
@@ -49,6 +49,7 @@ namespace RUtil.Debug.Shell
             {
                 throw new InvalidOperationException("Invalid path.");
             }
+
             Path = fullPath;
             Type = type;
         }

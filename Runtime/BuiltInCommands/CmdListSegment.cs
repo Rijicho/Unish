@@ -25,7 +25,7 @@ namespace RUtil.Debug.Shell
         {
             var maxDepth = options.TryGetValue("R", out var value) ? value.I : 0;
             var cd       = Env.BuiltIn[UnishBuiltInEnvKeys.WorkingDirectory].S;
-            
+
             if (maxDepth > 0)
             {
                 foreach (var (entry, depth) in Directory.GetChilds(cd, maxDepth))

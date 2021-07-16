@@ -28,7 +28,7 @@ namespace RUtil.Debug.Shell
             }
             else
             {
-                await IO.WriteErrorAsync(new Exception($"Directory {target} does not exist."));
+                await IO.Err(new Exception($"Directory {target} does not exist."));
             }
         }
     }

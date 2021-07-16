@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using Cysharp.Threading.Tasks;
-
-namespace RUtil.Debug.Shell
+﻿namespace RUtil.Debug.Shell
 {
     public interface IUnishFileSystemRoot : IUnishFileSystem
     {

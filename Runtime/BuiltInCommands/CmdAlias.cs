@@ -69,7 +69,7 @@ namespace RUtil.Debug.Shell
 
             if (Interpreter.Commands.ContainsKey(alias))
             {
-                await IO.WriteErrorAsync(new Exception($"The command {alias} already exists."));
+                await IO.Err(new Exception($"The command {alias} already exists."));
                 return;
             }
 
@@ -78,7 +78,7 @@ namespace RUtil.Debug.Shell
             {
                 if (!aliases.ContainsKey(alias))
                 {
-                    await IO.WriteErrorAsync(new Exception($"Alias {alias} does not exist."));
+                    await IO.Err(new Exception($"Alias {alias} does not exist."));
                     return;
                 }
 

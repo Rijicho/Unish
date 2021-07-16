@@ -10,7 +10,7 @@ using Object = UnityEngine.Object;
 
 namespace RUtil.Debug.Shell
 {
-    public class DefaultIO : IUnishIO
+    public class DefaultTerminal : IUnishTerminal
     {
         private const string PrefabResourcePath = "Prefabs/Unish";
 
@@ -53,7 +53,7 @@ namespace RUtil.Debug.Shell
         // カーソルの点滅開始時刻
         private float mCursorBrinkStartTime;
 
-        public DefaultIO(
+        public DefaultTerminal(
             Font font = default,
             IUnishInputHandler inputHandler = default,
             IUnishTimeProvider timeProvider = default,
@@ -141,7 +141,7 @@ namespace RUtil.Debug.Shell
 
         public async UniTask WriteErrorAsync(Exception error)
         {
-            await this.WriteLineAsync($"error: {error.Message}", "#ff7777");
+            await WriteAsync($"error: {error.Message}\n");
             UnityEngine.Debug.LogError(error);
         }
 
@@ -341,7 +341,7 @@ namespace RUtil.Debug.Shell
                 }
 
                 var ret = mInput;
-                await this.WriteLineAsync(mInput);
+                await WriteAsync(mInput + "\n");
                 mInput             = "";
                 mDisplayLineOffset = 0;
                 mReferenceIndex    = 0;
@@ -465,7 +465,7 @@ namespace RUtil.Debug.Shell
                     return prompt.Replace("%d", UnishPathConstants.Home);
                 }
 
-                return prompt.Replace("%d", pwd.Substring(pwd.LastIndexOf(UnishPathConstants.Separator)+1));
+                return prompt.Replace("%d", pwd.Substring(pwd.LastIndexOf(UnishPathConstants.Separator) + 1));
             }
         }
     }

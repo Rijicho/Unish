@@ -100,7 +100,7 @@ namespace RUtil.Debug.Shell
                 }
                 catch (Exception e)
                 {
-                    await shell.IO.WriteErrorAsync(e);
+                    await shell.IO.Err(e);
                 }
 
                 return;
@@ -109,7 +109,7 @@ namespace RUtil.Debug.Shell
             // コマンドが見つからなかった場合の追加評価処理が定義されていれば実行
             if (!await TryRunUnknownCommand(cmd))
             {
-                await shell.IO.WriteErrorAsync(new Exception("Unknown Command. Enter 'h' to show help."));
+                await shell.IO.Err(new Exception("Unknown Command. Enter 'h' to show help."));
             }
 
             await UniTask.Yield();
@@ -141,7 +141,7 @@ namespace RUtil.Debug.Shell
         }
 
         private static async UniTask<UnishCommandParseResult> ParseArguments(
-            IUnishIO io,
+            UnishIOs io,
             UnishCommandBase targetCommand,
             string op,
             IEnumerable<(string Token, UnishCommandTokenType TokenType)> arguments)
@@ -210,7 +210,7 @@ namespace RUtil.Debug.Shell
                     // 型エラーチェック
                     if (arg.Type == UnishVariableType.Error)
                     {
-                        await io.WriteErrorAsync(new Exception($"Type mismatch: {token} is not {parsingOptionType}."));
+                        await io.Err(new Exception($"Type mismatch: {token} is not {parsingOptionType}."));
                         await targetCommand.WriteUsage(io, op);
                         return default;
                     }
@@ -232,7 +232,7 @@ namespace RUtil.Debug.Shell
                     // 型エラーチェック
                     if (arg.Type == UnishVariableType.Error)
                     {
-                        await io.WriteErrorAsync(new Exception($"Type mismatch: {token} is not {expectedParam.type}."));
+                        await io.Err(new Exception($"Type mismatch: {token} is not {expectedParam.type}."));
                         await targetCommand.WriteUsage(io, op);
                         return default;
                     }
@@ -326,43 +326,44 @@ namespace RUtil.Debug.Shell
             return ret;
         }
 
-        private static DynamicIO ConstructIO(UnishCommandParseResult parsed, IUnishIO stdio, IUnishFileSystemRoot fileSystem)
+        private static UnishIOs ConstructIO(UnishCommandParseResult parsed, UnishIOs stdio, IUnishFileSystemRoot fileSystem)
         {
-         return new DynamicIO(
-             string.IsNullOrEmpty(parsed.RedirectIn)
-                 ? stdio.ReadAsync
-                 : new UnishStdIn(_ => UniTask.FromResult(fileSystem.Read(parsed.RedirectIn))),
-             string.IsNullOrEmpty(parsed.RedirectOut)
-                 ? stdio.WriteAsync
-                 : new UnishStdOut(text =>
-                 {
-                     if (parsed.IsRedirectOutAppend)
-                     {
-                         fileSystem.Append(parsed.RedirectOut, text);
-                     }
-                     else
-                     {
-                         fileSystem.Write(parsed.RedirectOut, text);
-                     }
+            return new UnishIOs(
+                string.IsNullOrEmpty(parsed.RedirectIn)
+                    ? stdio.In
+                    : _ => UniTask.FromResult(fileSystem.Read(parsed.RedirectIn)),
+                string.IsNullOrEmpty(parsed.RedirectOut)
+                    ? stdio.Out
+                    : text =>
+                    {
+                        if (parsed.IsRedirectOutAppend)
+                        {
+                            fileSystem.Append(parsed.RedirectOut, text);
+                        }
+                        else
+                        {
+                            fileSystem.Write(parsed.RedirectOut, text);
+                        }
 
-                     return default;
-                 }),
-             string.IsNullOrEmpty(parsed.RedirectErr)
-                 ? stdio.WriteErrorAsync
-                 : new UnishStdErr(err =>
-                 {
-                     var message = err.Message + "\n" + err.StackTrace + "\n";
-                     if (parsed.IsRedirectErrAppend)
-                     {
-                         fileSystem.Append(parsed.RedirectErr, message);
-                     }
-                     else
-                     {
-                         fileSystem.Write(parsed.RedirectErr, message);
-                     }
-                     return default;
-                 })
-         );   
+                        return default;
+                    },
+                string.IsNullOrEmpty(parsed.RedirectErr)
+                    ? stdio.Err
+                    : err =>
+                    {
+                        var message = err.Message + "\n" + err.StackTrace + "\n";
+                        if (parsed.IsRedirectErrAppend)
+                        {
+                            fileSystem.Append(parsed.RedirectErr, message);
+                        }
+                        else
+                        {
+                            fileSystem.Write(parsed.RedirectErr, message);
+                        }
+
+                        return default;
+                    }
+            );
         }
     }
 }

@@ -30,7 +30,7 @@ namespace RUtil.Debug.Shell
                 return c.WriteUsage(IO, args["op"].S);
             }
 
-            return IO.WriteErrorAsync(new Exception("Undefined Command."));
+            return IO.Err(new Exception("Undefined Command."));
         }
 
         public override string Usage(string op)

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -16,13 +17,40 @@ namespace RUtil.Debug.Shell
 
     public static class UnishIOExtensions
     {
-        public static UniTask WriteLineAsync(this IUnishIO io)
+        public static UniTask WriteLineAsync(this UnishIOs io)
         {
             return io.WriteLineAsync("");
         }
 
+        public static UniTask WriteLineAsync(this UnishIOs io, string data, string colorCode)
+        {
+            return io.WriteColoredAsync(data + '\n', colorCode);
+        }
+
+        public static UniTask WriteLineAsync(this UnishIOs io, string data)
+        {
+            return io.Out(data + '\n');
+        }
+
+        public static async UniTask WriteColoredAsync(this UnishIOs io, string data, string colorCode = "white")
+        {
+            var lines = data.Split('\n');
+            if (lines.Length == 1)
+            {
+                await io.Out($"<color={colorCode}>{data}</color>");
+            }
+
+            var sb = new StringBuilder();
+            for (var i = 0; i < lines.Length; i++)
+            {
+                sb.Append($"<color={colorCode}>{lines[i]}</color>{(i == lines.Length - 1 ? "" : "\n")}");
+            }
+
+            await io.Out(sb.ToString());
+        }
+
         public static async UniTask<(string selected, int index, SelectionState state)> SuggestAndSelectAsync(
-            this IUnishIO io,
+            this UnishIOs io,
             string searchWord,
             IEnumerable<string> candidates,
             int lineWidth,
@@ -84,8 +112,9 @@ namespace RUtil.Debug.Shell
                 }
 
                 await io.WriteLineAsync("| Select index: ", "orange");
+                await io.Out("> ");
 
-                var newInput = await io.ReadAsync();
+                var newInput = await io.In(false);
 
                 if (string.IsNullOrWhiteSpace(newInput))
                 {

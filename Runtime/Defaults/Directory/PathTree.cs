@@ -6,7 +6,7 @@ namespace RUtil.Debug.Shell
     public class PathTree
     {
         public IUnishFileSystem SubFileSystem { get; }
-        
+
         private readonly UnishFileSystemEntry mEntry;
         private readonly List<PathTree>       mChilds;
 

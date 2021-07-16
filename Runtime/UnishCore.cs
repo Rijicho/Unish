@@ -2,21 +2,21 @@
 
 namespace RUtil.Debug.Shell
 {
-    public class UnishCore : IUniShell, IUnishProcess
+    public class UnishCore : IUniShell
     {
         // ----------------------------------
         // properties
         // ----------------------------------
-        public IUnishProcess     Parent      { get; }
-        public UnishEnvSet       Env         { get; }
-        public IUnishIO          IO          { get; }
-        public IUnishInterpreter Interpreter { get; }
-        public IUnishFileSystemRoot  Directory   { get; }
+        public UnishEnvSet          Env         { get; }
+        public UnishIOs             IO          { get; }
+        public IUnishInterpreter    Interpreter { get; }
+        public IUnishFileSystemRoot Directory   { get; }
+        public IUnishProcess        Parent      { get; }
 
         // ----------------------------------
         // public methods
         // ----------------------------------
-        public UnishCore(UnishEnvSet env, IUnishIO io, IUnishInterpreter interpreter, IUnishFileSystemRoot directory, IUnishProcess parent)
+        public UnishCore(UnishEnvSet env, UnishIOs io, IUnishInterpreter interpreter, IUnishFileSystemRoot directory, IUnishProcess parent)
         {
             Env         = env;
             IO          = io;
@@ -29,11 +29,11 @@ namespace RUtil.Debug.Shell
         {
             while (!Env.BuiltIn[UnishBuiltInEnvKeys.Quit].CastOr(false))
             {
-                await Interpreter.RunCommandAsync(this, await IO.ReadAsync(Parent is null));
+                await Interpreter.RunCommandAsync(this, await IO.In(Parent is null));
             }
         }
 
-        public IUnishProcess Fork(IUnishIO io)
+        public IUnishProcess Fork(UnishIOs io)
         {
             return new UnishCore(Env.Fork(), io, Interpreter, Directory, this);
         }

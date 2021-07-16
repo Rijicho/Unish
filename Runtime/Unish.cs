@@ -5,10 +5,10 @@ namespace RUtil.Debug.Shell
     public class Unish
     {
         private UnishEnvSet          mEnv;
-        private IUnishIO             mIO;
+        private IUnishTerminal       mTerminal;
         private IUnishInterpreter    mInterpreter;
         private IUnishFileSystemRoot mFileSystem;
-        private IUniShell            mMainShell;
+        private IUniShell            mTerminalShell;
         private bool                 mIsUprofileExecuted;
 
         // ----------------------------------
@@ -17,15 +17,16 @@ namespace RUtil.Debug.Shell
 
         public Unish(
             UnishEnvSet env = default,
-            IUnishIO io = default,
+            IUnishTerminal terminal = default,
             IUnishInterpreter interpreter = default,
             IUnishFileSystemRoot fileSystem = default)
         {
             mEnv         = env ?? new UnishEnvSet(new BuiltinEnv(), new GlobalEnv(), new ShellEnv());
-            mIO          = io ?? new DefaultIO();
+            mTerminal    = terminal ?? new DefaultTerminal();
             mInterpreter = interpreter ?? new DefaultInterpreter();
             mFileSystem  = fileSystem ?? new UnishFileSystemRoot();
-            mMainShell   = new UnishCore(mEnv, mIO, mInterpreter, mFileSystem, null);
+            var fds = new UnishIOs(mTerminal.ReadAsync, mTerminal.WriteAsync, mTerminal.WriteErrorAsync);
+            mTerminalShell = new UnishCore(mEnv, fds, mInterpreter, mFileSystem, null);
         }
 
         public void Run()
@@ -36,13 +37,13 @@ namespace RUtil.Debug.Shell
         public async UniTask RunAsync()
         {
             await Init();
-            await mMainShell.RunAsync();
+            await mTerminalShell.RunAsync();
             await Quit();
         }
 
         public void Halt()
         {
-            mMainShell.Halt();
+            mTerminalShell.Halt();
         }
 
 
@@ -80,8 +81,8 @@ namespace RUtil.Debug.Shell
         {
             await OnPreInitAsync();
             await mEnv.InitializeAsync();
-            await mIO.InitializeAsync(mEnv.BuiltIn);
-            mIO.OnHaltInput += Halt;
+            await mTerminal.InitializeAsync(mEnv.BuiltIn);
+            mTerminal.OnHaltInput += Halt;
             await mFileSystem.InitializeAsync(mEnv.BuiltIn);
             await mInterpreter.InitializeAsync(mEnv.BuiltIn);
             await RunBuiltInProfile();
@@ -94,14 +95,14 @@ namespace RUtil.Debug.Shell
             await OnPreQuitAsync();
             await mInterpreter.FinalizeAsync();
             await mFileSystem.FinalizeAsync();
-            mIO.OnHaltInput -= Halt;
-            await mIO.FinalizeAsync();
+            mTerminal.OnHaltInput -= Halt;
+            await mTerminal.FinalizeAsync();
             await mEnv.FinalizeAsync();
-            mEnv         = null;
-            mFileSystem  = null;
-            mIO          = null;
-            mInterpreter = null;
-            mMainShell   = null;
+            mEnv           = null;
+            mFileSystem    = null;
+            mTerminal      = null;
+            mInterpreter   = null;
+            mTerminalShell = null;
             await OnPostQuitAsync();
         }
 
@@ -132,7 +133,7 @@ namespace RUtil.Debug.Shell
                 {
                     await foreach (var c in mFileSystem.ReadLines(profile))
                     {
-                        await mInterpreter.RunCommandAsync(mMainShell, c);
+                        await mInterpreter.RunCommandAsync(mTerminalShell, c);
                     }
                 }
 
@@ -143,7 +144,7 @@ namespace RUtil.Debug.Shell
             {
                 await foreach (var c in mFileSystem.ReadLines(rc))
                 {
-                    await mInterpreter.RunCommandAsync(mMainShell, c);
+                    await mInterpreter.RunCommandAsync(mTerminalShell, c);
                 }
             }
         }

@@ -269,9 +269,10 @@ namespace RUtil.Debug.Shell
                             if (i + 1 < tokens.Count && tokens[i + 1].type == UnishCommandTokenType.Param)
                             {
                                 tokens[i] = (tokens[i + 1].token, tokens[i].type);
-                                tokens.RemoveAt(i+1);
+                                tokens.RemoveAt(i + 1);
                             }
                         }
+
                         break;
                 }
             }

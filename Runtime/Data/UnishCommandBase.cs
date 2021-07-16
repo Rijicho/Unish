@@ -6,13 +6,13 @@ namespace RUtil.Debug.Shell
 {
     public abstract class UnishCommandBase
     {
-        private          IUnishProcess     mShell;
-        protected        UnishEnvSet       Env         => mShell?.Env;
-        protected        IUnishIO          IO          => mShell?.IO;
-        protected        IUnishFileSystemRoot  Directory   => mShell?.Directory;
-        protected        IUnishInterpreter Interpreter => mShell?.Interpreter;
-        internal virtual bool              IsBuiltIn   => false;
-        public abstract  string[]          Ops         { get; }
+        private          IUnishProcess        mShell;
+        protected        UnishEnvSet          Env         => mShell?.Env;
+        protected        UnishIOs             IO          => mShell?.IO;
+        protected        IUnishFileSystemRoot Directory   => mShell?.Directory;
+        protected        IUnishInterpreter    Interpreter => mShell?.Interpreter;
+        internal virtual bool                 IsBuiltIn   => false;
+        public abstract  string[]             Ops         { get; }
 
         public virtual string[] Aliases { get; } =
         {
@@ -46,12 +46,12 @@ namespace RUtil.Debug.Shell
             return Run(args, options);
         }
 
-        public UniTask WriteUsage(IUnishIO io, bool drawTopLine = true, bool drawBottomLine = true)
+        public UniTask WriteUsage(UnishIOs io, bool drawTopLine = true, bool drawBottomLine = true)
         {
             return WriteUsageInternal(io, Ops[0], drawTopLine, drawBottomLine);
         }
 
-        public UniTask WriteUsage(IUnishIO io, string op, bool drawTopLine = true, bool drawBottomLine = true)
+        public UniTask WriteUsage(UnishIOs io, string op, bool drawTopLine = true, bool drawBottomLine = true)
         {
             return WriteUsageInternal(io, op ?? Ops[0], drawTopLine, drawBottomLine);
         }
@@ -66,7 +66,7 @@ namespace RUtil.Debug.Shell
             return WriteUsageInternal(mShell.IO, op, drawTopLine, drawBottomLine);
         }
 
-        private async UniTask WriteUsageInternal(IUnishIO io, string op, bool drawTopLine, bool drawBottomLine)
+        private async UniTask WriteUsageInternal(UnishIOs io, string op, bool drawTopLine, bool drawBottomLine)
         {
             if (drawTopLine)
             {
