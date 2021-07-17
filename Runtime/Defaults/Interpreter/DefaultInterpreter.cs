@@ -85,7 +85,8 @@ namespace RUtil.Debug.Shell
             }
 
             // 対応するコマンドが存在すれば実行
-            if (mRepository.Map.TryGetValue(cmdToken, out var cmdInstance))
+            if (mRepository.Map.TryGetValue(cmdToken, out var cmdInstance)
+                || mRepository.Map.TryGetValue("@" + cmdToken, out cmdInstance))
             {
                 try
                 {
@@ -93,7 +94,7 @@ namespace RUtil.Debug.Shell
                     if (parsed.IsSucceeded)
                     {
                         // リダイレクトに応じてIO差し替え
-                        var io          = ConstructIO(parsed, shell.IO, shell.Directory);
+                        var io          = ConstructIO(parsed, shell.IO, shell.Directory, BuiltInEnv);
                         var runnerShell = cmdInstance.IsBuiltIn ? shell : shell.Fork(io);
                         await cmdInstance.Run(runnerShell, parsed.Params, parsed.Options);
                     }
@@ -107,7 +108,7 @@ namespace RUtil.Debug.Shell
             }
 
             // コマンドが見つからなかった場合の追加評価処理が定義されていれば実行
-            if (!await TryRunUnknownCommand(cmd))
+            if (!await TryRunUnknownCommand(shell, cmd))
             {
                 await shell.IO.Err(new Exception("Unknown Command. Enter 'h' to show help."));
             }
@@ -119,7 +120,7 @@ namespace RUtil.Debug.Shell
         // ----------------------------------
         // protected methods
         // ----------------------------------
-        protected virtual UniTask<bool> TryRunUnknownCommand(string cmd)
+        protected virtual UniTask<bool> TryRunUnknownCommand(IUnishProcess process, string cmd)
         {
             return UniTask.FromResult(false);
         }
@@ -162,10 +163,11 @@ namespace RUtil.Debug.Shell
                 // 前のトークンがオプションで、引数を必要としていて、現在のトークンがパラメータ以外なら既定値を入れて生成
                 if (parsingOptionType != UnishVariableType.Unit && tokenType != UnishCommandTokenType.Param)
                 {
-                    dOptions[parsingOptionName] = new UnishVariable(parsingOptionName, parsingOptionType, parsingOptionDefault);
-                    parsingOptionType           = UnishVariableType.Unit;
-                    parsingOptionName           = "";
-                    parsingOptionDefault        = "";
+                    dOptions[parsingOptionName] =
+                        new UnishVariable(parsingOptionName, parsingOptionType, parsingOptionDefault);
+                    parsingOptionType    = UnishVariableType.Unit;
+                    parsingOptionName    = "";
+                    parsingOptionDefault = "";
                 }
 
                 // 現在のトークンがオプションなら
@@ -280,7 +282,8 @@ namespace RUtil.Debug.Shell
             // 最後のオプションが引数を必要とするものだった場合、既定値を格納
             if (parsingOptionType != UnishVariableType.Unit)
             {
-                dOptions[parsingOptionName] = new UnishVariable(parsingOptionName, parsingOptionType, parsingOptionDefault);
+                dOptions[parsingOptionName] =
+                    new UnishVariable(parsingOptionName, parsingOptionType, parsingOptionDefault);
             }
 
             // 入力だけでは期待されるパラメータリストを全て満たせない場合、それぞれ既定値を格納
@@ -326,7 +329,8 @@ namespace RUtil.Debug.Shell
             return ret;
         }
 
-        private static UnishIOs ConstructIO(UnishCommandParseResult parsed, UnishIOs stdio, IUnishFileSystemRoot fileSystem)
+        private static UnishIOs ConstructIO(UnishCommandParseResult parsed, UnishIOs stdio,
+            IUnishFileSystemRoot fileSystem, IUnishEnv builtInEnv)
         {
             return new UnishIOs(
                 string.IsNullOrEmpty(parsed.RedirectIn)
@@ -362,7 +366,8 @@ namespace RUtil.Debug.Shell
                         }
 
                         return default;
-                    }
+                    },
+                builtInEnv
             );
         }
     }

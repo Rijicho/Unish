@@ -11,15 +11,17 @@ namespace RUtil.Debug.Shell
 
     public class UnishIOs
     {
-        public UnishFdIn  In  { get; }
-        public UnishFdOut Out { get; }
-        public UnishFdErr Err { get; }
+        public IUnishEnv  BuiltInEnv { get; }
+        public UnishFdIn  In         { get; }
+        public UnishFdOut Out        { get; }
+        public UnishFdErr Err        { get; }
 
-        public UnishIOs(UnishFdIn stdin, UnishFdOut stdout, UnishFdErr stderr)
+        public UnishIOs(UnishFdIn stdin, UnishFdOut stdout, UnishFdErr stderr, IUnishEnv builtInEnv)
         {
-            In  = stdin;
-            Out = stdout;
-            Err = stderr;
+            In         = stdin;
+            Out        = stdout;
+            Err        = stderr;
+            BuiltInEnv = builtInEnv;
         }
     }
 }

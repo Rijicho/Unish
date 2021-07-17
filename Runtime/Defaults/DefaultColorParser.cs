@@ -4,7 +4,7 @@ namespace RUtil.Debug.Shell
 {
     public class DefaultColorParser : IUnishColorParser
     {
-        private DefaultColorParser()
+        protected DefaultColorParser()
         {
         }
 
@@ -23,7 +23,7 @@ namespace RUtil.Debug.Shell
             return Color.clear;
         }
 
-        public bool TryParse(string str, out Color value)
+        public virtual bool TryParse(string str, out Color value)
         {
             str = str.Replace(" ", "");
             if (ColorUtility.TryParseHtmlString(str, out var tmp))

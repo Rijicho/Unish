@@ -53,12 +53,12 @@ namespace RUtil.Debug.Shell
             this UnishIOs io,
             string searchWord,
             IEnumerable<string> candidates,
-            int lineWidth,
             bool enableRegex = true,
             Func<string, string> entryFormatter = default)
         {
-            var list  = candidates.ToList();
-            var index = list.FindIndex(x => x == searchWord);
+            var lineWidth = io.BuiltInEnv[UnishBuiltInEnvKeys.CharCountPerLine].I;
+            var list      = candidates.ToList();
+            var index     = list.FindIndex(x => x == searchWord);
             if (index >= 0)
             {
                 return (searchWord, index, SelectionState.Succeeded);
