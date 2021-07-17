@@ -93,11 +93,13 @@ namespace RUtil.Debug.Shell
             var current = mPathTree;
 
             // 進めるところまで進む
-            var i              = 0;
-            var consumedLength = 0;
-            while (i < splitted.Length && (current = current.Next(splitted[i])) != null)
+            var      i              = 0;
+            var      consumedLength = 0;
+            PathTree next;
+            while (i < splitted.Length && (next = current.Next(splitted[i])) != null)
             {
                 consumedLength += 1 + splitted[i++].Length;
+                current        =  next;
             }
 
 
@@ -138,7 +140,7 @@ namespace RUtil.Debug.Shell
                 }
             }
 
-            if (TryFindEntry(path, out var entry))
+            if (TryFindEntry(path, out _))
             {
                 throw new InvalidOperationException("Virtual entries cannot be opened.");
             }
@@ -157,7 +159,7 @@ namespace RUtil.Debug.Shell
                 }
             }
 
-            if (TryFindEntry(path, out var entry))
+            if (TryFindEntry(path, out _))
             {
                 throw new InvalidOperationException("Virtual entries cannot be read.");
             }
@@ -176,7 +178,7 @@ namespace RUtil.Debug.Shell
                 }
             }
 
-            if (TryFindEntry(path, out var entry))
+            if (TryFindEntry(path, out _))
             {
                 throw new InvalidOperationException("Virtual entries cannot be read.");
             }
@@ -196,7 +198,7 @@ namespace RUtil.Debug.Shell
                 }
             }
 
-            if (TryFindEntry(path, out var entry))
+            if (TryFindEntry(path, out _))
             {
                 throw new InvalidOperationException("Virtual entries cannot be written.");
             }
@@ -216,7 +218,7 @@ namespace RUtil.Debug.Shell
                 }
             }
 
-            if (TryFindEntry(path, out var entry))
+            if (TryFindEntry(path, out _))
             {
                 throw new InvalidOperationException("Virtual entries cannot be written.");
             }
@@ -236,7 +238,7 @@ namespace RUtil.Debug.Shell
                 }
             }
 
-            if (TryFindEntry(path, out var entry))
+            if (TryFindEntry(path, out _))
             {
                 throw new InvalidOperationException("The directory allready exists.");
             }
@@ -256,7 +258,7 @@ namespace RUtil.Debug.Shell
                 }
             }
 
-            if (TryFindEntry(path, out var entry))
+            if (TryFindEntry(path, out _))
             {
                 throw new InvalidOperationException("Virtual entries cannot be deleted.");
             }
