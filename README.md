@@ -31,7 +31,7 @@ public class Test : MonoBehaviour
 
     private void Start()
     {
-        new Unish(io: new DefaultIO(font)).Run();
+        new Unish(terminal: new DefaultTerminal(font)).Run();
     }
 }
 ```
