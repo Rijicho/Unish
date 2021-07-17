@@ -114,7 +114,7 @@ namespace RUtil.Debug.Shell
                 mEnv.BuiltIn.Set(UnishBuiltInEnvKeys.HomePath, UnishPathConstants.Root);
             }
 
-            if (mFileSystem.TryFindEntry(homePath, out var home) && home.IsDirectory)
+            if (mFileSystem.TryFindEntry(homePath, out var home) && (home.IsDirectory || home.IsFileSystem))
             {
                 mEnv.BuiltIn.Set(UnishBuiltInEnvKeys.WorkingDirectory, home.Path);
             }
@@ -133,6 +133,12 @@ namespace RUtil.Debug.Shell
                 {
                     await foreach (var c in mFileSystem.ReadLines(profile))
                     {
+                        var cmd = c.Trim();
+                        if (string.IsNullOrEmpty(cmd) || cmd.StartsWith("#"))
+                        {
+                            continue;
+                        }
+
                         await mInterpreter.RunCommandAsync(mTerminalShell, c);
                     }
                 }
@@ -144,6 +150,12 @@ namespace RUtil.Debug.Shell
             {
                 await foreach (var c in mFileSystem.ReadLines(rc))
                 {
+                    var cmd = c.Trim();
+                    if (string.IsNullOrEmpty(cmd) || cmd.StartsWith("#"))
+                    {
+                        continue;
+                    }
+
                     await mInterpreter.RunCommandAsync(mTerminalShell, c);
                 }
             }
