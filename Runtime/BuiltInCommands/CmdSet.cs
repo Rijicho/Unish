@@ -36,6 +36,17 @@ namespace RUtil.Debug.Shell
             {
                 await IO.WriteLineAsync($"  ${arg.Key} = {arg.Value.S}");
             }
+
+            await IO.WriteLineAsync();
+            await IO.WriteLineAsync("Command arguments:");
+            await IO.WriteLineAsync($"  $# = {args["#"].S}");
+            await IO.WriteLineAsync($"  $* = {args["*"].S}");
+            await IO.WriteLineAsync($"  $@ = {args["@"].S}");
+            await IO.WriteLineAsync($"  $- = {args["-"].S}");
+            for (var i = 0; i <= args["#"].I; i++)
+            {
+                await IO.WriteLineAsync($"  ${i} = {args[i.ToString()].S}");
+            }
         }
     }
 }

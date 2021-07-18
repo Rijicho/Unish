@@ -18,7 +18,7 @@ namespace RUtil.Debug.Shell
         protected override UniTask Run(Dictionary<string, UnishVariable> args,
             Dictionary<string, UnishVariable> options)
         {
-            return IO.WriteLineAsync(args["text"].S);
+            return IO.WriteLineAsync(args["*"].S);
         }
 
         public override string Usage(string op)

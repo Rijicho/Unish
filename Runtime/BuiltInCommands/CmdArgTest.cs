@@ -16,8 +16,8 @@ namespace RUtil.Debug.Shell
             (UnishVariableType.Bool, "bool", "false", "表示するテキスト"),
             (UnishVariableType.Int, "int", "57", "表示するテキスト"),
             (UnishVariableType.Float, "float", "2.71828", "表示するテキスト"),
-            (UnishVariableType.Vector2, "vector2", "[ 0.1,1]", "表示するテキスト"),
-            (UnishVariableType.Vector3, "vector3", "[1,10 ,100]", "表示するテキスト"),
+            (UnishVariableType.Vector2, "vector2", "[0.1,1]", "表示するテキスト"),
+            (UnishVariableType.Vector3, "vector3", "[1,10,100]", "表示するテキスト"),
             (UnishVariableType.Color, "color", "red", "表示するテキスト"),
             (UnishVariableType.Array, "array", "( foo bar  )", "表示するテキスト"),
         };
@@ -29,8 +29,8 @@ namespace RUtil.Debug.Shell
             (UnishVariableType.Bool, "b", "true", ""),
             (UnishVariableType.Int, "i", "42", ""),
             (UnishVariableType.Float, "f", "3.14", ""),
-            (UnishVariableType.Vector2, "v", "[1, 2 ]", ""),
-            (UnishVariableType.Vector3, "w", "[ 1.2,3.4, 5.6]", ""),
+            (UnishVariableType.Vector2, "v", "[1,2]", ""),
+            (UnishVariableType.Vector3, "w", "[1.2,3.4,5.6]", ""),
             (UnishVariableType.Color, "c", "#33ccffaa", ""),
             (UnishVariableType.Array, "a", "(hoge fuga piyo nyan )", ""),
         };

@@ -17,6 +17,7 @@ namespace RUtil.Debug.Shell
 
         public override (UnishVariableType type, string name, string defVal, string info)[] Options { get; } =
         {
+            (UnishVariableType.Unit, "a", null, "include entries that begin with '.'"),
             (UnishVariableType.Int, "R", "0", "list up recursively (DFS)"),
         };
 
@@ -30,12 +31,15 @@ namespace RUtil.Debug.Shell
             {
                 foreach (var (entry, depth) in Directory.GetChilds(cd, maxDepth))
                 {
-                    await IO.WriteLineAsync("| " + new string(' ', depth * 2) + entry.Name);
+                    if (options.ContainsKey("a") || entry.Name[0] != '.')
+                    {
+                        await IO.WriteLineAsync("| " + new string(' ', depth * 2) + entry.Name);
+                    }
                 }
             }
             else
             {
-                var childsEnumerable = Directory.GetChilds(cd).Select(x => (x.Entry.Name, x.Entry.IsDirectory));
+                var childsEnumerable = Directory.GetChilds(cd).Select(x => (x.Entry.Name, x.Entry.IsDirectory, x.Entry.IsFileSystem));
                 var childs           = childsEnumerable.ToList();
                 if (childs.Count == 0)
                 {
@@ -49,7 +53,11 @@ namespace RUtil.Debug.Shell
                 for (var i = 0; i < childs.Count; i++)
                 {
                     var c = childs[i];
-                    if (c.IsDirectory)
+                    if (c.Name[0] == '.' && !options.ContainsKey("a"))
+                    {
+                        continue;
+                    }
+                    if (c.IsDirectory || c.IsFileSystem)
                     {
                         log += $"<color=cyan>{childs[i].Name.PadRight(maxCharCountPerChild)}</color>";
                     }
