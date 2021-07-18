@@ -54,7 +54,7 @@ namespace RUtil.Debug.Shell
         {
             return io.In(withPrompt).FirstAsync();
         }
-        
+
         public static async UniTask<(string selected, int index, SelectionState state)> SuggestAndSelectAsync(
             this UnishIOs io,
             string searchWord,
@@ -120,7 +120,7 @@ namespace RUtil.Debug.Shell
                 await io.WriteLineAsync("| Select index: ", "orange");
                 await io.Out("> ");
 
-                var newInput = await io.ReadLineAsync(false);
+                var newInput = await io.ReadLineAsync();
 
                 if (string.IsNullOrWhiteSpace(newInput))
                 {

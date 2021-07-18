@@ -1,5 +1,4 @@
 ﻿using Cysharp.Threading.Tasks;
-using Cysharp.Threading.Tasks.Linq;
 
 namespace RUtil.Debug.Shell
 {

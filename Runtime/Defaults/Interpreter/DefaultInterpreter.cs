@@ -62,7 +62,7 @@ namespace RUtil.Debug.Shell
 
             var pipeInString  = "";
             var pipeOutString = "";
-            
+
             foreach (var command in commands)
             {
                 var cmdToken   = command.Command;
@@ -100,13 +100,13 @@ namespace RUtil.Debug.Shell
                         {
                             // リダイレクトに応じてIO差し替え
                             pipeInString = pipeOutString;
-                            UnishFdIn  pipeIn  = null;
+                            UnishFdIn pipeIn = null;
                             if (isPipedIn)
                             {
-                                pipeIn = _=>UniTaskAsyncEnumerable.Create<string>(async (writer, token) =>
+                                pipeIn = _ => UniTaskAsyncEnumerable.Create<string>(async (writer, token) =>
                                 {
-                                    int b = 0;
-                                    for (int i = 0; i < pipeInString.Length; i++)
+                                    var b = 0;
+                                    for (var i = 0; i < pipeInString.Length; i++)
                                     {
                                         if (pipeInString[i] == '\n')
                                         {
@@ -121,6 +121,7 @@ namespace RUtil.Debug.Shell
                                     }
                                 });
                             }
+
                             UnishFdOut pipeOut = null;
                             if (isPipedOut)
                             {
@@ -131,7 +132,7 @@ namespace RUtil.Debug.Shell
                                 };
                             }
 
-                            var io = ConstructIO(parsed, shell.IO, shell.Directory, BuiltInEnv, pipeIn, pipeOut);
+                            var io          = ConstructIO(parsed, shell.IO, shell.Directory, BuiltInEnv, pipeIn, pipeOut);
                             var runnerShell = cmdInstance.IsBuiltIn ? shell : shell.Fork(io);
                             await cmdInstance.Run(runnerShell, parsed.Params, parsed.Options);
                         }

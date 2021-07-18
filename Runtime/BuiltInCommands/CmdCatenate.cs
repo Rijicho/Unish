@@ -35,7 +35,7 @@ namespace RUtil.Debug.Shell
                 }
             }
 
-            for (int i = 1; i <= args["#"].I; i++)
+            for (var i = 1; i <= args["#"].I; i++)
             {
                 var path = args[$"{i}"].S;
                 try
@@ -47,6 +47,7 @@ namespace RUtil.Debug.Shell
                     await IO.Err(new Exception(e.Message));
                 }
             }
+
             await IO.Out(sb.ToString());
         }
     }

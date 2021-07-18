@@ -175,6 +175,7 @@ namespace RUtil.Debug.Shell
                 }
             });
         }
+
         private async UniTask<string> ReadLineAsync(bool withPrompt)
         {
             mIsReading = true;
