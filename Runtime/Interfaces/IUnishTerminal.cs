@@ -8,6 +8,5 @@ namespace RUtil.Debug.Shell
         IUniTaskAsyncEnumerable<string> ReadLinesAsync(bool withPrompt = false);
         UniTask WriteAsync(string text);
         UniTask WriteErrorAsync(Exception error);
-        event Action OnHaltInput;
     }
 }

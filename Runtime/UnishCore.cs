@@ -7,23 +7,15 @@ namespace RUtil.Debug.Shell
         // ----------------------------------
         // properties
         // ----------------------------------
-        public UnishEnvSet          Env         { get; }
-        public UnishIOs             IO          { get; }
-        public IUnishInterpreter    Interpreter { get; }
-        public IUnishFileSystemRoot Directory   { get; }
-        public IUnishProcess        Parent      { get; }
+        public UnishEnvSet          Env         { get; set; }
+        public UnishIOs             IO          { get; set; }
+        public IUnishInterpreter    Interpreter { get; set; }
+        public IUnishFileSystemRoot Directory   { get; set; }
+        public IUnishProcess        Parent      { get; set; }
 
         // ----------------------------------
         // public methods
         // ----------------------------------
-        public UnishCore(UnishEnvSet env, UnishIOs io, IUnishInterpreter interpreter, IUnishFileSystemRoot directory, IUnishProcess parent)
-        {
-            Env         = env;
-            IO          = io;
-            Interpreter = interpreter;
-            Directory   = directory;
-            Parent      = parent;
-        }
 
         public async UniTask RunAsync()
         {
@@ -31,21 +23,28 @@ namespace RUtil.Debug.Shell
             {
                 if (Env.BuiltIn.Get(UnishBuiltInEnvKeys.Quit, false))
                 {
-                    break;
+                    return;
                 }
 
                 await Interpreter.RunCommandAsync(this, input);
+
+                if (Env.BuiltIn.Get(UnishBuiltInEnvKeys.Quit, false))
+                {
+                    return;
+                }
             }
         }
 
         public IUnishProcess Fork(UnishIOs io)
         {
-            return new UnishCore(Env.Fork(), io, Interpreter, Directory, this);
-        }
-
-        public void Halt()
-        {
-            Env.BuiltIn.Set(UnishBuiltInEnvKeys.Quit, true);
+            return new UnishCore
+            {
+                Env         = Env.Fork(),
+                IO          = io,
+                Interpreter = Interpreter,
+                Directory   = Directory,
+                Parent      = this,
+            };
         }
     }
 }

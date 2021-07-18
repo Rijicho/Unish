@@ -2,11 +2,11 @@
 {
     public interface IUnishProcess
     {
-        IUnishProcess        Parent      { get; }
-        UnishEnvSet          Env         { get; }
-        UnishIOs             IO          { get; }
-        IUnishInterpreter    Interpreter { get; }
-        IUnishFileSystemRoot Directory   { get; }
+        IUnishProcess        Parent      { get; set; }
+        UnishEnvSet          Env         { get; set; }
+        UnishIOs             IO          { get; set; }
+        IUnishInterpreter    Interpreter { get; set; }
+        IUnishFileSystemRoot Directory   { get; set; }
         IUnishProcess Fork(UnishIOs io);
     }
 }

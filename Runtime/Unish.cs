@@ -2,7 +2,19 @@
 
 namespace RUtil.Debug.Shell
 {
-    public class Unish
+    public class Unish : Unish<UnishCore>
+    {
+        public Unish(
+            UnishEnvSet env = default,
+            IUnishTerminal terminal = default,
+            IUnishInterpreter interpreter = default,
+            IUnishFileSystemRoot fileSystem = default) : base(env, terminal, interpreter, fileSystem)
+        {
+        }
+    }
+
+    public class Unish<T>
+        where T : class, IUniShell, new()
     {
         private UnishEnvSet          mEnv;
         private IUnishTerminal       mTerminal;
@@ -26,7 +38,14 @@ namespace RUtil.Debug.Shell
             mInterpreter = interpreter ?? new DefaultInterpreter();
             mFileSystem  = fileSystem ?? new UnishFileSystemRoot();
             var fds = new UnishIOs(mTerminal.ReadLinesAsync, mTerminal.WriteAsync, mTerminal.WriteErrorAsync, mEnv.BuiltIn);
-            mTerminalShell = new UnishCore(mEnv, fds, mInterpreter, mFileSystem, null);
+            mTerminalShell = new T
+            {
+                Parent      = null,
+                Env         = mEnv,
+                IO          = fds,
+                Interpreter = mInterpreter,
+                Directory   = mFileSystem,
+            };
         }
 
         public void Run()
@@ -40,12 +59,6 @@ namespace RUtil.Debug.Shell
             await mTerminalShell.RunAsync();
             await Quit();
         }
-
-        public void Halt()
-        {
-            mTerminalShell.Halt();
-        }
-
 
         // ----------------------------------
         // protected methods
@@ -71,41 +84,6 @@ namespace RUtil.Debug.Shell
             return default;
         }
 
-
-        // ----------------------------------
-        // private methods
-        // ----------------------------------
-
-
-        private async UniTask Init()
-        {
-            await OnPreInitAsync();
-            await mEnv.InitializeAsync();
-            await mTerminal.InitializeAsync(mEnv.BuiltIn);
-            mTerminal.OnHaltInput += Halt;
-            await mFileSystem.InitializeAsync(mEnv.BuiltIn);
-            await mInterpreter.InitializeAsync(mEnv.BuiltIn);
-            await RunBuiltInProfile();
-            await RunUserProfiles();
-            await OnPostInitAsync();
-        }
-
-        private async UniTask Quit()
-        {
-            await OnPreQuitAsync();
-            await mInterpreter.FinalizeAsync();
-            await mFileSystem.FinalizeAsync();
-            mTerminal.OnHaltInput -= Halt;
-            await mTerminal.FinalizeAsync();
-            await mEnv.FinalizeAsync();
-            mEnv           = null;
-            mFileSystem    = null;
-            mTerminal      = null;
-            mInterpreter   = null;
-            mTerminalShell = null;
-            await OnPostQuitAsync();
-        }
-
         protected virtual UniTask RunBuiltInProfile()
         {
             mEnv.BuiltIn.Set(UnishBuiltInEnvKeys.WorkingDirectory, UnishPathConstants.Root);
@@ -122,8 +100,7 @@ namespace RUtil.Debug.Shell
             return default;
         }
 
-
-        private async UniTask RunUserProfiles()
+        protected virtual async UniTask RunUserProfiles()
         {
             var profile = mEnv.BuiltIn[UnishBuiltInEnvKeys.ProfilePath].S;
             var rc      = mEnv.BuiltIn[UnishBuiltInEnvKeys.RcPath].S;
@@ -159,6 +136,38 @@ namespace RUtil.Debug.Shell
                     await mInterpreter.RunCommandAsync(mTerminalShell, c);
                 }
             }
+        }
+
+        // ----------------------------------
+        // private methods
+        // ----------------------------------
+
+
+        private async UniTask Init()
+        {
+            await OnPreInitAsync();
+            await mEnv.InitializeAsync();
+            await mTerminal.InitializeAsync(mEnv.BuiltIn);
+            await mFileSystem.InitializeAsync(mEnv.BuiltIn);
+            await mInterpreter.InitializeAsync(mEnv.BuiltIn);
+            await RunBuiltInProfile();
+            await RunUserProfiles();
+            await OnPostInitAsync();
+        }
+
+        private async UniTask Quit()
+        {
+            await OnPreQuitAsync();
+            await mInterpreter.FinalizeAsync();
+            await mFileSystem.FinalizeAsync();
+            await mTerminal.FinalizeAsync();
+            await mEnv.FinalizeAsync();
+            mEnv           = null;
+            mFileSystem    = null;
+            mTerminal      = null;
+            mInterpreter   = null;
+            mTerminalShell = null;
+            await OnPostQuitAsync();
         }
     }
 }
