@@ -1,4 +1,5 @@
 ﻿using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks.Linq;
 
 namespace RUtil.Debug.Shell
 {
@@ -25,7 +26,7 @@ namespace RUtil.Debug.Shell
             mTerminal    = terminal ?? new DefaultTerminal();
             mInterpreter = interpreter ?? new DefaultInterpreter();
             mFileSystem  = fileSystem ?? new UnishFileSystemRoot();
-            var fds = new UnishIOs(mTerminal.ReadAsync, mTerminal.WriteAsync, mTerminal.WriteErrorAsync, mEnv.BuiltIn);
+            var fds = new UnishIOs(mTerminal.ReadLinesAsync, mTerminal.WriteAsync, mTerminal.WriteErrorAsync, mEnv.BuiltIn);
             mTerminalShell = new UnishCore(mEnv, fds, mInterpreter, mFileSystem, null);
         }
 

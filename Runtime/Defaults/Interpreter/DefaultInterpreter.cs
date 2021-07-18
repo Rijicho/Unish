@@ -286,18 +286,6 @@ namespace RUtil.Debug.Shell
                     new UnishVariable(parsingOptionName, parsingOptionType, parsingOptionDefault);
             }
 
-            // 入力だけでは期待されるパラメータリストを全て満たせない場合、それぞれ既定値を格納
-            while (currentParamIndex < targetCommand.Params.Length)
-            {
-                var expectedParam = targetCommand.Params[currentParamIndex];
-                dParams[$"{currentParamIndex + 1}"] = dParams[expectedParam.name]
-                    = new UnishVariable(expectedParam.name, expectedParam.type, expectedParam.defVal);
-
-                currentParamIndex++;
-            }
-
-            // パラメータの個数を格納
-            dParams["#"] = new UnishVariable("#", currentParamIndex);
 
             var assembledParams = "";
             var listedParams    = new string[currentParamIndex];
@@ -319,9 +307,21 @@ namespace RUtil.Debug.Shell
                 assembledOptions += option;
             }
 
+            // パラメータの個数を格納
+            dParams["#"] = new UnishVariable("#", currentParamIndex);
             dParams["*"] = new UnishVariable("*", assembledParams);
             dParams["@"] = new UnishVariable("@", listedParams);
             dParams["-"] = new UnishVariable("-", assembledOptions);
+
+            // 入力だけでは期待されるパラメータリストを全て満たせない場合、それぞれ既定値を格納
+            while (currentParamIndex < targetCommand.Params.Length)
+            {
+                var expectedParam = targetCommand.Params[currentParamIndex];
+                dParams[$"{currentParamIndex + 1}"] = dParams[expectedParam.name]
+                    = new UnishVariable(expectedParam.name, expectedParam.type, expectedParam.defVal);
+
+                currentParamIndex++;
+            }
 
             ret.Params      = dParams;
             ret.Options     = dOptions;
@@ -335,7 +335,7 @@ namespace RUtil.Debug.Shell
             return new UnishIOs(
                 string.IsNullOrEmpty(parsed.RedirectIn)
                     ? stdio.In
-                    : _ => UniTask.FromResult(fileSystem.Read(parsed.RedirectIn)),
+                    : _ => fileSystem.ReadLines(parsed.RedirectIn),
                 string.IsNullOrEmpty(parsed.RedirectOut)
                     ? stdio.Out
                     : text =>

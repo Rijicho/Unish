@@ -15,8 +15,7 @@ namespace RUtil.Debug.Shell
 
         public override (UnishVariableType type, string name, string defVal, string info)[] Params { get; } =
         {
-            (UnishVariableType.String, "path1", null, "接続したいファイル１"),
-            (UnishVariableType.String, "path2", null, "接続したいファイル２"),
+            (UnishVariableType.String, "paths", null, "接続したいファイル"),
         };
 
         public override string Usage(string op)
@@ -27,31 +26,28 @@ namespace RUtil.Debug.Shell
         protected override async UniTask Run(Dictionary<string, UnishVariable> args,
             Dictionary<string, UnishVariable> options)
         {
-            var path1 = args["path1"].S;
-            var path2 = args["path2"].S;
-            var d     = Directory;
-
-            if (string.IsNullOrEmpty(path1))
-            {
-                await WriteUsage();
-                return;
-            }
-
             var sb = new StringBuilder();
-            try
+            if (args["#"].I == 0)
             {
-                sb.Append(Directory.Read(path1));
-                if (!string.IsNullOrEmpty(path2))
+                await foreach (var input in IO.In(false))
                 {
-                    sb.Append(Directory.Read(path2));
+                    sb.AppendLine(input);
                 }
+            }
 
-                await IO.Out(sb.ToString());
-            }
-            catch (Exception e) when (e is FileNotFoundException || e is DirectoryNotFoundException || e is InvalidOperationException)
+            for (int i = 1; i <= args["#"].I; i++)
             {
-                await IO.Err(new Exception(e.Message));
+                var path = args[$"{i}"].S;
+                try
+                {
+                    sb.Append(Directory.Read(path));
+                }
+                catch (Exception e) when (e is FileNotFoundException || e is DirectoryNotFoundException || e is InvalidOperationException)
+                {
+                    await IO.Err(new Exception(e.Message));
+                }
             }
+            await IO.Out(sb.ToString());
         }
     }
 }

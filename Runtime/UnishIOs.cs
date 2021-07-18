@@ -3,7 +3,7 @@ using Cysharp.Threading.Tasks;
 
 namespace RUtil.Debug.Shell
 {
-    public delegate UniTask<string> UnishFdIn(bool withPrompt);
+    public delegate IUniTaskAsyncEnumerable<string> UnishFdIn(bool withPrompt);
 
     public delegate UniTask UnishFdOut(string text);
 

@@ -27,9 +27,14 @@ namespace RUtil.Debug.Shell
 
         public async UniTask RunAsync()
         {
-            while (!Env.BuiltIn[UnishBuiltInEnvKeys.Quit].CastOr(false))
+            await foreach (var input in IO.In(Parent is null))
             {
-                await Interpreter.RunCommandAsync(this, await IO.In(Parent is null));
+                if (Env.BuiltIn.Get(UnishBuiltInEnvKeys.Quit, false))
+                {
+                    break;
+                }
+
+                await Interpreter.RunCommandAsync(this, input);
             }
         }
 

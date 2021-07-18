@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks.Linq;
 using UnityEngine;
 
 namespace RUtil.Debug.Shell
@@ -49,6 +50,11 @@ namespace RUtil.Debug.Shell
             await io.Out(sb.ToString());
         }
 
+        public static UniTask<string> ReadLineAsync(this UnishIOs io, bool withPrompt = false)
+        {
+            return io.In(withPrompt).FirstAsync();
+        }
+        
         public static async UniTask<(string selected, int index, SelectionState state)> SuggestAndSelectAsync(
             this UnishIOs io,
             string searchWord,
@@ -114,7 +120,7 @@ namespace RUtil.Debug.Shell
                 await io.WriteLineAsync("| Select index: ", "orange");
                 await io.Out("> ");
 
-                var newInput = await io.In(false);
+                var newInput = await io.ReadLineAsync(false);
 
                 if (string.IsNullOrWhiteSpace(newInput))
                 {

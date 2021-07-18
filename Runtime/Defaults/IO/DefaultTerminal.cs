@@ -146,7 +146,36 @@ namespace RUtil.Debug.Shell
         }
 
 
-        public async UniTask<string> ReadAsync(bool withPrompt)
+        public IUniTaskAsyncEnumerable<string> ReadLinesAsync(bool withPrompt = false)
+        {
+            return UniTaskAsyncEnumerable.Create<string>(async (writer, token) =>
+            {
+                while (!token.IsCancellationRequested)
+                {
+                    var input = await ReadLineAsync(withPrompt);
+                    if (input == null)
+                    {
+                        break;
+                    }
+
+                    var eotIndex = input.IndexOf('\u0004');
+                    if (eotIndex < 0)
+                    {
+                        await writer.YieldAsync(input);
+                    }
+                    else if (eotIndex == 0)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        await writer.YieldAsync(input.Substring(0, eotIndex));
+                        break;
+                    }
+                }
+            });
+        }
+        private async UniTask<string> ReadLineAsync(bool withPrompt)
         {
             mIsReading = true;
             if (withPrompt)
@@ -237,11 +266,6 @@ namespace RUtil.Debug.Shell
         private bool OnUpdate()
         {
             isInputEventUsed = HandleScrollInput();
-            if (mInputHandler.CheckInputOnThisFrame(UnishInputType.Quit))
-            {
-                OnHaltInput?.Invoke();
-                return false;
-            }
 
             UpdateDisplay();
             return true;
@@ -347,6 +371,10 @@ namespace RUtil.Debug.Shell
                 mReferenceIndex    = 0;
                 mCursorIndex       = 0;
                 return ret;
+            }
+            else if (mInputHandler.CheckInputOnThisFrame(UnishInputType.Quit))
+            {
+                return "\u0004";
             }
 
             if (mInputHandler.CurrentCharInput != default)

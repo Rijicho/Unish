@@ -9,7 +9,7 @@ namespace RUtil.Debug.Shell
 {
     public class UnishFileSystemRoot : IUnishFileSystemRoot
     {
-        public IUnishEnv BuiltInEnv { private get; set; }
+        public IUnishEnv BuiltInEnv { get; set; }
         public string    RootPath   => UnishPathConstants.Root;
 
         private PathTree mPathTree;

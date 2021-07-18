@@ -203,7 +203,7 @@ namespace RUtil.Debug.Shell
                 UnishInputType.Delete => !ctrlcmd && Input.GetKeyDown(KeyCode.Delete),
                 UnishInputType.Submit => !ctrlcmd && Input.GetKeyDown(KeyCode.Return),
                 UnishInputType.Quit => (!ctrlcmd && Input.GetKeyDown(KeyCode.Escape)) ||
-                                       (ctrlcmd && Input.GetKeyDown(KeyCode.Return)),
+                                       (ctrlcmd && Input.GetKeyDown(KeyCode.D)),
                 _ => false,
             };
 #endif
