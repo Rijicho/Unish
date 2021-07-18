@@ -4,18 +4,6 @@ using System.Text;
 
 namespace RUtil.Debug.Shell
 {
-    public enum UnishCommandTokenType
-    {
-        Invalid,
-        Param,
-        Option,
-        RedirectIn,
-        RedirectOut,
-        RedirectOutAppend,
-        RedirectErr,
-        RedirectErrAppend,
-    }
-
     public static class UnishCommandUtils
     {
         public static string RemoveQuotesIfExist(string token)
@@ -247,6 +235,16 @@ namespace RUtil.Debug.Shell
                     type  = UnishCommandTokenType.RedirectErr;
                     token = t.Length == 2 ? "" : t.Substring(2);
                 }
+                else if (t == "|")
+                {
+                    type  = UnishCommandTokenType.Pipe;
+                    token = "";
+                }
+                else if (t == ";")
+                {
+                    type  = UnishCommandTokenType.Separate;
+                    token = "";
+                }
                 else
                 {
                     type  = UnishCommandTokenType.Param;
@@ -257,6 +255,12 @@ namespace RUtil.Debug.Shell
             }).ToList();
             for (var i = 0; i < tokens.Count; i++)
             {
+                if (tokens[i].token.EndsWith(";"))
+                {
+                    tokens[i] = (tokens[i].token.Substring(0, tokens[i].token.Length - 1), tokens[i].type);
+                    tokens.Insert(i + 1, ("", UnishCommandTokenType.Separate));
+                }
+
                 switch (tokens[i].type)
                 {
                     case UnishCommandTokenType.RedirectIn:
@@ -280,6 +284,47 @@ namespace RUtil.Debug.Shell
             return tokens;
         }
 
+        public static List<(string Command, List<(string Token, UnishCommandTokenType Type)> Arguments, bool IsPipeIn, bool IsPipeOut)> SplitTokens(
+            List<(string Token, UnishCommandTokenType Type)> tokens)
+        {
+            var ret = new List<(string, List<(string, UnishCommandTokenType)>, bool, bool)>();
+
+            string command   = null;
+            var    arguments = new List<(string, UnishCommandTokenType)>();
+            var    pipeIn    = false;
+            foreach (var token in tokens)
+            {
+                if (command == null && token.Type == UnishCommandTokenType.Param)
+                {
+                    command = token.Token;
+                    continue;
+                }
+
+                if (token.Type == UnishCommandTokenType.Pipe)
+                {
+                    ret.Add((command, arguments, pipeIn, true));
+                    command   = null;
+                    arguments = new List<(string, UnishCommandTokenType)>();
+                    pipeIn    = true;
+                    continue;
+                }
+
+                if (token.Type == UnishCommandTokenType.Separate)
+                {
+                    ret.Add((command, arguments, pipeIn, false));
+                    command   = null;
+                    arguments = new List<(string, UnishCommandTokenType)>();
+                    pipeIn    = false;
+                    continue;
+                }
+
+                arguments.Add(token);
+            }
+
+            ret.Add((command, arguments, pipeIn, false));
+
+            return ret;
+        }
 
         public static List<(string token, bool isOption)> SplitCommand(string input)
         {

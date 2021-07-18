@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks.Linq;
 using VDictionary = System.Collections.Generic.Dictionary<string, RUtil.Debug.Shell.UnishVariable>;
 
 namespace RUtil.Debug.Shell
@@ -58,62 +58,100 @@ namespace RUtil.Debug.Shell
 
             var noVariableInput = UnishCommandUtils.ParseVariables(cmd, shell.Env);
             var tokens          = UnishCommandUtils.CommandToTokens(noVariableInput);
+            var commands        = UnishCommandUtils.SplitTokens(tokens);
 
-
-            //var tokens          = UnishCommandUtils.SplitCommand(noVariableInput);
-            var cmdToken = tokens[0].Token;
-            var arguments = tokens
-                .Skip(1).ToArray();
-
-            // シェル変数への代入命令は特別扱い
-            var eqIdx = cmdToken.IndexOf('=');
-            if (eqIdx > 0 && eqIdx < cmdToken.Length - 1)
+            var pipeInString  = "";
+            var pipeOutString = "";
+            
+            foreach (var command in commands)
             {
-                var left  = cmdToken.Substring(0, eqIdx);
-                var right = cmdToken.Substring(eqIdx + 1);
-                right = UnishCommandUtils.RemoveQuotesIfExist(right);
-                if (shell.Env.BuiltIn.ContainsKey(left))
-                {
-                    shell.Env.BuiltIn.Set(left, right);
-                }
-                else
-                {
-                    shell.Env.Shell.Set(left, right);
-                }
+                var cmdToken   = command.Command;
+                var arguments  = command.Arguments;
+                var isPipedIn  = command.IsPipeIn;
+                var isPipedOut = command.IsPipeOut;
 
-                return;
-            }
-
-            // 対応するコマンドが存在すれば実行
-            if (mRepository.Map.TryGetValue(cmdToken, out var cmdInstance)
-                || mRepository.Map.TryGetValue("@" + cmdToken, out cmdInstance))
-            {
-                try
+                // シェル変数への代入命令は特別扱い
+                var eqIdx = cmdToken.IndexOf('=');
+                if (eqIdx > 0 && eqIdx < cmdToken.Length - 1)
                 {
-                    var parsed = await ParseArguments(shell.IO, cmdInstance, cmdToken, arguments);
-                    if (parsed.IsSucceeded)
+                    var left  = cmdToken.Substring(0, eqIdx);
+                    var right = cmdToken.Substring(eqIdx + 1);
+                    right = UnishCommandUtils.RemoveQuotesIfExist(right);
+                    if (shell.Env.BuiltIn.ContainsKey(left))
                     {
-                        // リダイレクトに応じてIO差し替え
-                        var io          = ConstructIO(parsed, shell.IO, shell.Directory, BuiltInEnv);
-                        var runnerShell = cmdInstance.IsBuiltIn ? shell : shell.Fork(io);
-                        await cmdInstance.Run(runnerShell, parsed.Params, parsed.Options);
+                        shell.Env.BuiltIn.Set(left, right);
                     }
+                    else
+                    {
+                        shell.Env.Shell.Set(left, right);
+                    }
+
+                    continue;
                 }
-                catch (Exception e)
+
+                // 対応するコマンドが存在すれば実行
+                if (mRepository.Map.TryGetValue(cmdToken, out var cmdInstance)
+                    || mRepository.Map.TryGetValue("@" + cmdToken, out cmdInstance))
                 {
-                    await shell.IO.Err(e);
+                    try
+                    {
+                        var parsed = await ParseArguments(shell.IO, cmdInstance, cmdToken, arguments);
+                        if (parsed.IsSucceeded)
+                        {
+                            // リダイレクトに応じてIO差し替え
+                            pipeInString = pipeOutString;
+                            UnishFdIn  pipeIn  = null;
+                            if (isPipedIn)
+                            {
+                                pipeIn = _=>UniTaskAsyncEnumerable.Create<string>(async (writer, token) =>
+                                {
+                                    int b = 0;
+                                    for (int i = 0; i < pipeInString.Length; i++)
+                                    {
+                                        if (pipeInString[i] == '\n')
+                                        {
+                                            await writer.YieldAsync(pipeInString.Substring(b, i - b + 1));
+                                            b = i + 1;
+                                        }
+                                    }
+
+                                    if (b < pipeInString.Length)
+                                    {
+                                        await writer.YieldAsync(pipeInString.Substring(b, pipeInString.Length - b));
+                                    }
+                                });
+                            }
+                            UnishFdOut pipeOut = null;
+                            if (isPipedOut)
+                            {
+                                pipeOut = text =>
+                                {
+                                    pipeOutString += text;
+                                    return default;
+                                };
+                            }
+
+                            var io = ConstructIO(parsed, shell.IO, shell.Directory, BuiltInEnv, pipeIn, pipeOut);
+                            var runnerShell = cmdInstance.IsBuiltIn ? shell : shell.Fork(io);
+                            await cmdInstance.Run(runnerShell, parsed.Params, parsed.Options);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        await shell.IO.Err(e);
+                    }
+
+                    continue;
                 }
 
-                return;
-            }
+                // コマンドが見つからなかった場合の追加評価処理が定義されていれば実行
+                if (!await TryRunUnknownCommand(shell, cmd))
+                {
+                    await shell.IO.Err(new Exception("Unknown Command. Enter 'h' to show help."));
+                }
 
-            // コマンドが見つからなかった場合の追加評価処理が定義されていれば実行
-            if (!await TryRunUnknownCommand(shell, cmd))
-            {
-                await shell.IO.Err(new Exception("Unknown Command. Enter 'h' to show help."));
+                await UniTask.Yield();
             }
-
-            await UniTask.Yield();
         }
 
 
@@ -329,46 +367,80 @@ namespace RUtil.Debug.Shell
             return ret;
         }
 
-        private static UnishIOs ConstructIO(UnishCommandParseResult parsed, UnishIOs stdio,
-            IUnishFileSystemRoot fileSystem, IUnishEnv builtInEnv)
+        private static UnishIOs ConstructIO(
+            UnishCommandParseResult parsed,
+            UnishIOs stdio,
+            IUnishFileSystemRoot fileSystem,
+            IUnishEnv builtInEnv,
+            UnishFdIn pipeIn,
+            UnishFdOut pipeOut)
         {
-            return new UnishIOs(
-                string.IsNullOrEmpty(parsed.RedirectIn)
-                    ? stdio.In
-                    : _ => fileSystem.ReadLines(parsed.RedirectIn),
-                string.IsNullOrEmpty(parsed.RedirectOut)
-                    ? stdio.Out
-                    : text =>
-                    {
-                        if (parsed.IsRedirectOutAppend)
-                        {
-                            fileSystem.Append(parsed.RedirectOut, text);
-                        }
-                        else
-                        {
-                            fileSystem.Write(parsed.RedirectOut, text);
-                        }
+            UnishFdIn  input;
+            UnishFdOut output;
+            UnishFdErr error;
 
-                        return default;
-                    },
-                string.IsNullOrEmpty(parsed.RedirectErr)
-                    ? stdio.Err
-                    : err =>
-                    {
-                        var message = err.Message + "\n" + err.StackTrace + "\n";
-                        if (parsed.IsRedirectErrAppend)
-                        {
-                            fileSystem.Append(parsed.RedirectErr, message);
-                        }
-                        else
-                        {
-                            fileSystem.Write(parsed.RedirectErr, message);
-                        }
+            if (pipeIn != null)
+            {
+                input = pipeIn;
+            }
+            else if (string.IsNullOrEmpty(parsed.RedirectIn))
+            {
+                input = stdio.In;
+            }
+            else
+            {
+                input = _ => fileSystem.ReadLines(parsed.RedirectIn);
+            }
 
-                        return default;
-                    },
-                builtInEnv
-            );
+            if (pipeOut != null)
+            {
+                output = pipeOut;
+            }
+            else if (string.IsNullOrEmpty(parsed.RedirectOut))
+            {
+                output = stdio.Out;
+            }
+            else if (parsed.IsRedirectOutAppend)
+            {
+                output = text =>
+                {
+                    fileSystem.Append(parsed.RedirectOut, text);
+                    return UniTask.CompletedTask;
+                };
+            }
+            else
+            {
+                output = text =>
+                {
+                    fileSystem.Write(parsed.RedirectOut, text);
+                    return UniTask.CompletedTask;
+                };
+            }
+
+            if (string.IsNullOrEmpty(parsed.RedirectErr))
+            {
+                error = stdio.Err;
+            }
+            else if (parsed.IsRedirectOutAppend)
+            {
+                error = err =>
+                {
+                    var message = err.Message + "\n" + err.StackTrace + "\n";
+                    fileSystem.Append(parsed.RedirectErr, message);
+                    return UniTask.CompletedTask;
+                };
+            }
+            else
+            {
+                error = err =>
+                {
+                    var message = err.Message + "\n" + err.StackTrace + "\n";
+                    fileSystem.Write(parsed.RedirectErr, message);
+                    return UniTask.CompletedTask;
+                };
+            }
+
+            return new UnishIOs(input, output, error, builtInEnv);
         }
     }
 }
