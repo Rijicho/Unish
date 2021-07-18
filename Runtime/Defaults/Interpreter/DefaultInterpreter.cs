@@ -110,7 +110,7 @@ namespace RUtil.Debug.Shell
                                     {
                                         if (pipeInString[i] == '\n')
                                         {
-                                            await writer.YieldAsync(pipeInString.Substring(b, i - b + 1));
+                                            await writer.YieldAsync(pipeInString.Substring(b, i - b));
                                             b = i + 1;
                                         }
                                     }

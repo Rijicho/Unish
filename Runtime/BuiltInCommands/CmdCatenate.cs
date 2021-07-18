@@ -48,6 +48,10 @@ namespace RUtil.Debug.Shell
                 }
             }
 
+            if (sb[sb.Length - 1] != '\n')
+            {
+                sb.AppendLine();
+            }
             await IO.Out(sb.ToString());
         }
     }
