@@ -109,9 +109,6 @@ namespace RUtil.Debug.Shell
             Object.Destroy(mInstantiated);
         }
 
-        public event Action OnHaltInput;
-
-
         public UniTask WriteAsync(string input)
         {
             if (mSubmittedLines.Count == 0)

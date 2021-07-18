@@ -73,11 +73,9 @@ namespace RUtil.Debug.Shell
                 await io.WriteLineAsync("+-----------------------------+", "#aaaaaa");
             }
 
-            var i = 0;
-
             var optionString = Options?.Length > 0 ? "[<color=#ff7777>options</color>] " : "";
 
-            var argString = Params.ToSingleString(i++ % 3 == 2 ? "\n" + new string(' ', op.Length + 1) : " ",
+            var argString = Params.ToSingleString(" ",
                 toString: x =>
                     x.defVal == null
                         ? $"<<color=cyan>{x.type}</color> <color=#77ff77>{x.name}</color>>"

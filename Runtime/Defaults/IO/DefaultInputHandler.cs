@@ -35,7 +35,9 @@ namespace RUtil.Debug.Shell
         public event Action<char> OnTextInput;
 #endif
         private static char mCurrentCharInput;
+        #if UNISH_INPUT_SYSTEM_SUPPORT
         private static bool hasBackSpaceInput;
+#endif
         public         char CurrentCharInput => mCurrentCharInput;
 
         private void UpdateCurrentCharInput(char c)
@@ -43,7 +45,9 @@ namespace RUtil.Debug.Shell
             switch (c)
             {
                 case var bs when bs == 8:
+#if UNISH_INPUT_SYSTEM_SUPPORT
                     hasBackSpaceInput = true;
+#endif
                     return;
                 default:
                     mCurrentCharInput = c;
@@ -153,7 +157,9 @@ namespace RUtil.Debug.Shell
 
         public void LateUpdate()
         {
+#if UNISH_INPUT_SYSTEM_SUPPORT
             hasBackSpaceInput = false;
+#endif
             mCurrentCharInput = default;
         }
 
