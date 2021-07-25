@@ -44,7 +44,14 @@ namespace RUtil.Debug.Shell
             var sb = new StringBuilder();
             for (var i = 0; i < lines.Length; i++)
             {
-                sb.Append($"<color={colorCode}>{lines[i]}</color>{(i == lines.Length - 1 ? "" : "\n")}");
+                if (string.IsNullOrEmpty(lines[i]))
+                {
+                    sb.Append(i == lines.Length - 1 ? "" : "\n");
+                }
+                else
+                {
+                    sb.Append($"<color={colorCode}>{lines[i]}</color>{(i == lines.Length - 1 ? "" : "\n")}");
+                }
             }
 
             await io.Out(sb.ToString());
