@@ -28,9 +28,13 @@ namespace RUtil.Debug.Shell
 
             if (UnishCommandUtils.TryParseSetVarExpr(input, out var varname, out var value))
             {
-                if (Env.BuiltIn.ContainsKey(varname))
+                if (Env.BuiltIn.TryGetValue(varname, out var v))
                 {
-                    Env.BuiltIn.Set(varname, value);
+                    if (!Env.BuiltIn.TrySet(varname, value, v.Type))
+                    {
+                        IO.Out($"Type mismatch: {value} is not {v.Type}.");
+                        return default;
+                    }
                 }
                 else
                 {
