@@ -21,7 +21,7 @@ namespace RUtil.Debug.Shell
         private readonly Dictionary<string, UnishCommandBase> mMap = new Dictionary<string, UnishCommandBase>();
 
 
-        protected virtual Assembly[] GetDomainAssemblies()
+        protected virtual IEnumerable<Assembly> GetDomainAssemblies()
         {
             return AppDomain.CurrentDomain.GetAssemblies();
         }

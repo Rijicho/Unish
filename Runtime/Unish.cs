@@ -35,7 +35,7 @@ namespace RUtil.Debug.Shell
         {
             mEnv         = env ?? new UnishEnvSet(new BuiltinEnv(), new GlobalEnv(), new ShellEnv());
             mTerminal    = terminal ?? new DefaultTerminal();
-            mInterpreter = interpreter ?? new DefaultInterpreter();
+            mInterpreter = interpreter ?? new DefaultInterpreter(DefaultCommandRepository.Instance);
             mFileSystem  = fileSystem ?? new UnishFileSystemRoot();
             var fds = new UnishIOs(mTerminal.ReadLinesAsync, mTerminal.WriteAsync, mTerminal.WriteErrorAsync, mEnv.BuiltIn);
             mTerminalShell = new T

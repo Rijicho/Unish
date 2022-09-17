@@ -16,9 +16,16 @@ namespace RUtil.Debug.Shell
         // ----------------------------------
         // public methods
         // ----------------------------------
-        public async UniTask InitializeAsync()
+        public DefaultInterpreter()
         {
             mRepository = DefaultCommandRepository.Instance;
+        }
+        public DefaultInterpreter(IUnishCommandRepository cmdRepo)
+        {
+            mRepository = cmdRepo;
+        }
+        public async UniTask InitializeAsync()
+        {
             Aliases     = new Dictionary<string, string>();
             await mRepository.InitializeAsync();
         }
