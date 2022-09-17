@@ -12,28 +12,28 @@ namespace RUtil.Debug.Shell
 {
     public class DefaultTerminal : IUnishTerminal
     {
-        private const string PrefabResourcePath = "Prefabs/Unish";
+        private const string prefabResourcePath = "Prefabs/Unish";
 
         public IUnishEnv BuiltInEnv { protected get; set; }
 
         private Image background;
         private Text  displayText;
 
-        private readonly Font               mFont;
         private readonly IUnishInputHandler mInputHandler;
         private readonly IUnishTimeProvider mTimeProvider;
         private readonly IUnishColorParser  mColorParser;
 
+        private Font       mFont;
         private int        mCharCountPerLine;
         private int        mLineCount;
         private bool       mIsReading;
         private GameObject mInstantiated;
 
         // 入力履歴
-        private readonly List<string> mSubmittedInputs = new List<string>();
+        private readonly List<string> mSubmittedInputs = new();
 
         // 表示履歴
-        private readonly List<string> mSubmittedLines = new List<string>();
+        private readonly List<string> mSubmittedLines = new();
 
         // 入力中文字列
         private string mInput = "";
@@ -53,13 +53,16 @@ namespace RUtil.Debug.Shell
         // カーソルの点滅開始時刻
         private float mCursorBrinkStartTime;
 
+        // ----------------------------------
+        // public methods
+        // ----------------------------------
         public DefaultTerminal(
             Font font = default,
             IUnishInputHandler inputHandler = default,
             IUnishTimeProvider timeProvider = default,
             IUnishColorParser colorParser = default)
         {
-            mFont         = font;
+            SetFont(font);
             mInputHandler = inputHandler ?? new DefaultInputHandler(DefaultTimeProvider.Instance);
             mTimeProvider = timeProvider ?? DefaultTimeProvider.Instance;
             mColorParser  = colorParser ?? DefaultColorParser.Instance;
@@ -70,7 +73,7 @@ namespace RUtil.Debug.Shell
             mSubmittedLines.Clear();
             mSubmittedInputs.Clear();
 
-            var prefab = await Resources.LoadAsync(PrefabResourcePath) as GameObject;
+            var prefab = await Resources.LoadAsync(prefabResourcePath) as GameObject;
             mInstantiated      = Object.Instantiate(prefab);
             mInstantiated.name = "Unish";
             Object.DontDestroyOnLoad(mInstantiated);
@@ -141,8 +144,7 @@ namespace RUtil.Debug.Shell
             await WriteAsync($"error: {error.Message}\n");
             UnityEngine.Debug.LogError(error);
         }
-
-
+        
         public IUniTaskAsyncEnumerable<string> ReadLinesAsync(bool withPrompt = false)
         {
             return UniTaskAsyncEnumerable.Create<string>(async (writer, token) =>
@@ -173,6 +175,14 @@ namespace RUtil.Debug.Shell
             });
         }
 
+        public void SetFont(Font font)
+        {
+            mFont = font;
+        }
+        
+        // ----------------------------------
+        // private methods
+        // ----------------------------------
         private async UniTask<string> ReadLineAsync(bool withPrompt)
         {
             mIsReading = true;
@@ -384,7 +394,6 @@ namespace RUtil.Debug.Shell
             return null;
         }
 
-
         private bool HandleScrollInput()
         {
             if (mInputHandler.CheckInputOnThisFrame(UnishInputType.ScrollUp))
@@ -422,7 +431,6 @@ namespace RUtil.Debug.Shell
 
             return false;
         }
-
 
         private void UpdateDisplay()
         {
@@ -468,7 +476,6 @@ namespace RUtil.Debug.Shell
                                    .ToSingleString("\n") + "\n" + mSubmittedLines.Last() +
                                (mIsReading ? inputWithCursor : "");
         }
-
 
         private string ParsedPrompt
         {
